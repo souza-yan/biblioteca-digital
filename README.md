@@ -59,45 +59,153 @@ The Laravel framework is open-sourced software licensed under the [MIT license](
 
 # Biblioteca Digital de Robótica
 
-## Escopo do Projeto
+## 1. Descrição do Projeto
 
-A **Biblioteca Digital de Robótica** é uma plataforma interna da **Secretaria Municipal de Educação** para centralizar, organizar e disponibilizar materiais digitais relacionados à robótica educacional.
+A **Biblioteca Digital de Robótica** é uma plataforma interna da Secretaria Municipal de Educação para centralizar, organizar, versionar e disponibilizar materiais digitais de robótica educacional.
 
-O sistema tem como objetivo substituir a dependência de arquivos compartilhados, como Google Drive, por uma fonte oficial onde os professores possam **consultar e baixar materiais sem alterar os arquivos originais**.
+Professores poderão consultar e baixar os materiais sem alterar os arquivos originais, enquanto a equipe responsável poderá publicar novas versões mantendo o histórico dos conteúdos.
 
-A equipe responsável poderá disponibilizar **novas versões dos materiais**, mantendo o histórico das versões anteriores e garantindo maior controle sobre os conteúdos.
+## 2. Tecnologias Utilizadas
 
-### Objetivos
+* Laravel
+* Laravel Jetstream
+* Livewire
+* Blade
+* Tailwind CSS
+* MySQL
+* Git e GitHub
 
-* Centralizar materiais de robótica educacional;
-* Permitir consulta e download pelos professores;
-* Proteger os arquivos originais contra alterações e exclusões;
-* Permitir o gerenciamento e versionamento dos materiais;
-* Garantir organização e segurança dos conteúdos.
+## 3. Requisitos
 
-### Materiais
+* PHP
+* Composer
+* Node.js e NPM
+* MySQL
+* Git
 
-A plataforma poderá armazenar:
+## 4. Instalação
 
-* PDFs e apostilas;
-* Apresentações;
-* Vídeos;
-* Atividades;
-* Documentos;
-* Arquivos complementares.
+```bash
+git clone <https://github.com/souza-yan/biblioteca-digital.git>
+cd <bibioteca-digital>
 
-## Tecnologias Obrigatórias
+composer install
+npm install
 
-| Tecnologia            | Utilização                       |
-| --------------------- | -------------------------------- |
-| **Laravel**           | Framework principal              |
-| **Laravel Jetstream** | Autenticação e recursos iniciais |
-| **Livewire**          | Interações e telas reativas      |
-| **Blade**             | Views do sistema                 |
-| **Tailwind CSS**      | Interface e responsividade       |
-| **MySQL**             | Banco de dados                   |
-| **Git / GitHub**      | Versionamento do projeto         |
+cp .env.example .env
 
-## Resultado Esperado
+php artisan key:generate
+```
 
-Uma plataforma interna capaz de **centralizar, organizar, versionar e disponibilizar materiais de robótica**, proporcionando aos professores acesso seguro aos conteúdos e à equipe responsável maior controle sobre os arquivos oficiais.
+## 5. Configuração do `.env`
+
+Configure as principais informações da aplicação no arquivo `.env`, principalmente:
+
+```env
+APP_NAME="Biblioteca Digital de Robótica"
+
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=biblioteca_digital
+DB_USERNAME=root
+DB_PASSWORD=password
+```
+
+## 6. Configuração do Banco de Dados
+
+Crie o banco de dados MySQL e configure suas credenciais no `.env`.
+
+Depois, execute:
+
+```bash
+php artisan migrate
+```
+
+Caso existam seeders:
+
+```bash
+php artisan db:seed
+```
+
+Ou:
+
+```bash
+php artisan migrate --seed
+```
+
+## 7. Configuração do Armazenamento
+
+Os arquivos da biblioteca serão armazenados utilizando o sistema de armazenamento do Laravel.
+
+Após configurar o armazenamento, execute:
+
+```bash
+php artisan storage:link
+```
+
+Os arquivos oficiais devem ser armazenados de forma que os usuários possam realizar o download sem possuir permissão para modificar ou excluir os arquivos.
+
+## 8. Migrations e Seeders
+
+As **migrations** são utilizadas para criar e estruturar as tabelas necessárias ao funcionamento do sistema.
+
+Os **seeders** são utilizados para inserir dados iniciais, como usuários, perfis e outros registros necessários para testes.
+
+Para executar:
+
+```bash
+php artisan migrate --seed
+```
+
+## 9. Usuários de Teste
+
+| Perfil        | E-mail                  | Senha   |
+| ------------- | ----------------------- | ------- |
+| Administrador | `admin@example.com`     | `senha` |
+| Professor     | `professor@example.com` | `senha` |
+
+> Os usuários e credenciais acima devem ser atualizados conforme os seeders utilizados no projeto.
+
+## 10. Decisões Técnicas
+
+### 10.1 Armazenamento dos Arquivos
+
+Os arquivos são armazenados utilizando o sistema de **Storage do Laravel**, mantendo os arquivos separados dos dados registrados no banco de dados.
+
+O banco armazena as informações necessárias para identificar e gerenciar cada material, enquanto o arquivo físico permanece no armazenamento configurado pela aplicação.
+
+### 10.2 Perfis de Usuário
+
+O sistema utiliza diferentes perfis para controlar as funcionalidades disponíveis.
+
+* **Administrador:** responsável pelo gerenciamento dos materiais, usuários e versões.
+* **Professor:** pode consultar e baixar os materiais disponibilizados, sem alterar os arquivos oficiais.
+
+### 10.3 Versionamento
+
+Cada nova atualização de um material é registrada como uma **nova versão**, mantendo as versões anteriores disponíveis no histórico.
+
+Dessa forma, uma atualização não sobrescreve ou elimina o registro da versão anterior.
+
+### 10.4 Autorização
+
+A autorização é utilizada para garantir que cada perfil tenha acesso somente às funcionalidades permitidas.
+
+As permissões são verificadas antes da execução das ações, impedindo que usuários sem autorização alterem, excluam ou gerenciem materiais e recursos administrativos.
+
+## 11. Execução do Projeto
+
+Para iniciar o ambiente de desenvolvimento:
+
+```bash
+php artisan serve
+```
+
+Em outro terminal:
+
+```bash
+npm run dev
+```
+
+A aplicação estará disponível no endereço configurado pelo servidor Laravel.
