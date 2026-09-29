@@ -122,7 +122,7 @@ Depois, execute:
 php artisan migrate
 ```
 
-Caso existam seeders:
+Para Popular o Banco, seeders:
 
 ```bash
 php artisan db:seed
@@ -160,12 +160,11 @@ php artisan migrate --seed
 
 ## 9. Usuários de Teste
 
-| Perfil        | E-mail                  | Senha   |
-| ------------- | ----------------------- | ------- |
-| Administrador | `admin@example.com`     | `senha` |
-| Professor     | `professor@example.com` | `senha` |
-
-> Os usuários e credenciais acima devem ser atualizados conforme os seeders utilizados no projeto.
+| Perfil        | E-mail                  | Senha      |
+| ------------- | ----------------------- | ---------- |
+| Administrador | `admin@example.com`     | `password` |
+| Gestão        | `gestao@example.com`    | `password` |
+| Professor     | `professor@example.com` | `password` |
 
 ## 10. Decisões Técnicas
 
@@ -179,7 +178,7 @@ O banco armazena as informações necessárias para identificar e gerenciar cada
 
 O sistema utiliza diferentes perfis para controlar as funcionalidades disponíveis.
 
-* **Administrador:** responsável pelo gerenciamento dos materiais, usuários e versões.
+* **Gestão:** responsável pelo gerenciamento dos materiais, usuários e versões.
 * **Professor:** pode consultar e baixar os materiais disponibilizados, sem alterar os arquivos oficiais.
 
 ### 10.3 Versionamento
