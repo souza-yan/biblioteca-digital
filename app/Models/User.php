@@ -86,4 +86,13 @@ class User extends Authenticatable
     {
         return $this->role === Role::TEACHER;
     }
-};
+
+    public function assignableRoles(): array
+    {
+        return match ($this->role) {
+            Role::ADMIN => Role::cases(),
+            Role::STAFF => [Role::TEACHER],
+            default     => [],
+        };
+    }
+}

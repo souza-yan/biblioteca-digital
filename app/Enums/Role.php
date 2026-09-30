@@ -8,7 +8,6 @@ enum Role: string
     case STAFF = 'staff';
     case TEACHER = 'teacher';
 
-    // Extra: nome amigável para mostrar no select do frontend
     public function label(): string
     {
         return match ($this) {
