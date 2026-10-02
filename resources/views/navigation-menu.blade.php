@@ -1,4 +1,5 @@
 <nav x-data="{ open: false }" class="bg-white border-b border-gray-100">
+    @php($currentUser = auth()->user())
     <!-- Primary Navigation Menu -->
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between h-16">
@@ -16,6 +17,18 @@
                         {{ __('Dashboard') }}
                     </x-nav-link>
                 </div>
+
+                @if ($currentUser->isAdmin() || $currentUser->isStaff())
+                    <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
+                        <x-nav-link href="{{ route('painel.users') }}" :active="request()->routeIs('painel.users')">Usuários</x-nav-link>
+                        <x-nav-link href="{{ route('painel.categories') }}" :active="request()->routeIs('painel.categories')">Categorias</x-nav-link>
+                        <x-nav-link href="{{ route('painel.materials') }}" :active="request()->routeIs('painel.materials*')">Materiais</x-nav-link>
+                    </div>
+                @elseif ($currentUser->isTeacher())
+                    <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
+                        <x-nav-link href="{{ route('painel.library') }}" :active="request()->routeIs('painel.library*')">Biblioteca</x-nav-link>
+                    </div>
+                @endif
 
                 {{-- TEST COMPONENTS --}}
                 <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
@@ -149,6 +162,14 @@
             <x-responsive-nav-link href="{{ route('dashboard') }}" :active="request()->routeIs('dashboard')">
                 {{ __('Dashboard') }}
             </x-responsive-nav-link>
+
+            @if ($currentUser->isAdmin() || $currentUser->isStaff())
+                <x-responsive-nav-link href="{{ route('painel.users') }}" :active="request()->routeIs('painel.users')">Usuários</x-responsive-nav-link>
+                <x-responsive-nav-link href="{{ route('painel.categories') }}" :active="request()->routeIs('painel.categories')">Categorias</x-responsive-nav-link>
+                <x-responsive-nav-link href="{{ route('painel.materials') }}" :active="request()->routeIs('painel.materials*')">Materiais</x-responsive-nav-link>
+            @elseif ($currentUser->isTeacher())
+                <x-responsive-nav-link href="{{ route('painel.library') }}" :active="request()->routeIs('painel.library*')">Biblioteca</x-responsive-nav-link>
+            @endif
         </div>
 
         <!-- Responsive Settings Options -->

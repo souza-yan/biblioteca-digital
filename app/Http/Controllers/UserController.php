@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Actions\User\CreateUser;
+use App\Actions\User\ToggleUserActive;
+use App\Actions\User\UpdateUser;
 use App\Enums\Role;
 use App\Http\Requests\StoreUserRequest;
 use App\Http\Requests\UpdateUserRequest;
@@ -22,35 +25,27 @@ class UserController extends Controller
         return response()->json($users);
     }
 
-    public function store(StoreUserRequest $request)
+    public function store(StoreUserRequest $request, CreateUser $createUser)
     {
-        $user = User::create($request->validated());
+        $user = $createUser->handle($request->validated());
 
         return response()->json($user, 201);
     }
 
-    public function update(UpdateUserRequest $request, User $user)
+    public function update(UpdateUserRequest $request, User $user, UpdateUser $updateUser)
     {
         Gate::authorize('manage', $user);
 
-        $data = $request->validated();
-
-        if (empty($data['password'])) {
-            unset($data['password']); // não sobrescreve a senha com vazio
-        }
-
-        $user->update($data);
+        $user = $updateUser->handle($user, $request->validated());
 
         return response()->json($user);
     }
 
-    public function toggleActive(Request $request, User $user)
+    public function toggleActive(Request $request, User $user, ToggleUserActive $toggleUserActive)
     {
         Gate::authorize('manage', $user);
 
-        abort_if($user->is($request->user()), 422, 'Você não pode desativar a si mesmo.');
-
-        $user->update(['is_active' => ! $user->is_active]);
+        $user = $toggleUserActive->handle($request->user(), $user);
 
         return response()->json($user);
     }
