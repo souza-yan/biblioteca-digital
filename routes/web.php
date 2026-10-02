@@ -15,10 +15,6 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-Route::get('/test-ui', function () {
-    return view('test-ui');
-})->name('test-ui');
-
 Route::middleware([
     'auth:sanctum',
     config('jetstream.auth_session'),

@@ -30,12 +30,6 @@
                     </div>
                 @endif
 
-                {{-- TEST COMPONENTS --}}
-                <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
-                    <x-nav-link href="{{ route('test-ui') }}" :active="request()->routeIs('test-ui')">
-                        {{ __('Teste Components') }}
-                    </x-nav-link>
-                </div>
             </div>
 
             <div class="hidden sm:flex sm:items-center sm:ms-6">
