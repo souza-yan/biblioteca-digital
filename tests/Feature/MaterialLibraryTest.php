@@ -5,6 +5,7 @@ use App\Livewire\Materials\MaterialDetail;
 use App\Livewire\Materials\MaterialLibrary;
 use App\Models\Category;
 use App\Models\Material;
+use App\Models\MaterialVersion;
 use App\Models\User;
 use Livewire\Livewire;
 
@@ -49,16 +50,18 @@ it('filters the teacher library by search and category', function () {
         ->assertDontSee($other->title);
 });
 
-it('shows published material details and a disabled download control to teachers', function () {
+it('shows published material details and an enabled download link to teachers', function () {
     $teacher = User::factory()->teacher()->create();
     $material = Material::factory()->published()->create();
+    $version = MaterialVersion::factory()->for($material)->create();
+    $material->update(['current_version_id' => $version->getKey()]);
     $this->actingAs($teacher);
 
     $this->get(route('painel.library.show', $material))
         ->assertOk()
         ->assertSee($material->title)
         ->assertSee('Baixar')
-        ->assertSee('disabled', false);
+        ->assertSee(route('downloads.show', $material), false);
 
     Livewire::test(MaterialDetail::class, ['material' => $material])
         ->assertSee($material->title);

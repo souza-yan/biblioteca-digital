@@ -42,6 +42,11 @@ class MaterialPolicy
             || ($user->isTeacher() && $material->status === MaterialStatus::PUBLISHED);
     }
 
+    public function favorite(User $user, Material $material): bool
+    {
+        return $user->isTeacher() && $this->view($user, $material);
+    }
+
     public function archive(User $user, Material $material): bool
     {
         return $user->isAdmin() || $user->isStaff();

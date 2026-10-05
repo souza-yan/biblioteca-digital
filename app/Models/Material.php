@@ -81,14 +81,15 @@ class Material extends Model
      */
     public function favoritedBy(): BelongsToMany
     {
-        return $this->belongsToMany(User::class, 'favorites');
+        return $this->belongsToMany(User::class, 'favorites')
+            ->withPivot('created_at');
     }
 
     /**
-     * @return HasMany<Model, $this>
+     * @return HasMany<Download, $this>
      */
     public function downloads(): HasMany
     {
-        return $this->hasMany('App\\Models\\Download');
+        return $this->hasMany(Download::class);
     }
 }

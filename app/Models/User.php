@@ -3,14 +3,16 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Enums\Role;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Fortify\TwoFactorAuthenticatable;
 use Laravel\Jetstream\HasProfilePhoto;
 use Laravel\Sanctum\HasApiTokens;
-use App\Enums\Role;
 
 class User extends Authenticatable
 {
@@ -92,7 +94,24 @@ class User extends Authenticatable
         return match ($this->role) {
             Role::ADMIN => Role::cases(),
             Role::STAFF => [Role::TEACHER],
-            default     => [],
+            default => [],
         };
+    }
+
+    /**
+     * @return HasMany<Download, $this>
+     */
+    public function downloads(): HasMany
+    {
+        return $this->hasMany(Download::class);
+    }
+
+    /**
+     * @return BelongsToMany<Material, $this>
+     */
+    public function favorites(): BelongsToMany
+    {
+        return $this->belongsToMany(Material::class, 'favorites')
+            ->withPivot('created_at');
     }
 }

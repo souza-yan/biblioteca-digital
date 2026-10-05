@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Materials;
 
+use App\Actions\Favorite\ToggleFavorite;
 use App\Actions\Material\ArchiveMaterial;
 use App\Actions\Material\PublishMaterial;
 use App\Actions\MaterialVersion\CreateMaterialVersion;
@@ -14,6 +15,7 @@ use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\Layout;
+use Livewire\Attributes\Locked;
 use Livewire\Component;
 use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 use Livewire\WithFileUploads;
@@ -24,6 +26,7 @@ class MaterialDetail extends Component
 
     public MaterialVersionForm $versionForm;
 
+    #[Locked]
     public int $materialId;
 
     public function mount(Material $material): void
@@ -52,6 +55,17 @@ class MaterialDetail extends Component
         Gate::authorize('archive', $material);
 
         $archiveMaterial->handle($material);
+    }
+
+    public function toggleFavorite(ToggleFavorite $toggleFavorite): void
+    {
+        $material = Material::query()->findOrFail($this->materialId);
+        Gate::authorize('favorite', $material);
+
+        $actor = Auth::user();
+        abort_unless($actor instanceof User, 403);
+
+        $toggleFavorite->handle($actor, $material);
     }
 
     public function saveVersion(CreateMaterialVersion $createMaterialVersion): void
@@ -98,6 +112,9 @@ class MaterialDetail extends Component
         $material = $this->findViewableMaterial();
         $actor = Auth::user();
         $canManageVersions = $actor instanceof User && ($actor->isAdmin() || $actor->isStaff());
+        $isFavorited = $actor instanceof User
+            && $actor->isTeacher()
+            && $actor->favorites()->whereKey($material->getKey())->exists();
         $versions = collect();
 
         if ($canManageVersions) {
@@ -111,6 +128,7 @@ class MaterialDetail extends Component
         return view('livewire.materials.material-detail', [
             'material' => $material,
             'isTeacher' => $actor instanceof User && $actor->isTeacher(),
+            'isFavorited' => $isFavorited,
             'canManageVersions' => $canManageVersions,
             'versions' => $versions,
         ]);

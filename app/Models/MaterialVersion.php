@@ -6,6 +6,7 @@ use Database\Factories\MaterialVersionFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class MaterialVersion extends Model
 {
@@ -51,5 +52,13 @@ class MaterialVersion extends Model
     public function publisher(): BelongsTo
     {
         return $this->belongsTo(User::class, 'published_by');
+    }
+
+    /**
+     * @return HasMany<Download, $this>
+     */
+    public function downloads(): HasMany
+    {
+        return $this->hasMany(Download::class);
     }
 }

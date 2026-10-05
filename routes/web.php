@@ -1,10 +1,12 @@
 <?php
 
 use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\DownloadController;
 use App\Http\Controllers\MaterialController;
 use App\Http\Controllers\MaterialVersionController;
 use App\Http\Controllers\UserController;
 use App\Livewire\Categories\CategoryManager;
+use App\Livewire\Materials\FavoriteLibrary;
 use App\Livewire\Materials\MaterialDetail;
 use App\Livewire\Materials\MaterialLibrary;
 use App\Livewire\Materials\MaterialManager;
@@ -26,6 +28,11 @@ Route::middleware([
         return view('dashboard');
     })->name('dashboard');
 
+    Route::get('/materiais/{material}/download', [DownloadController::class, 'show'])
+        ->name('downloads.show');
+    Route::get('/materiais/{material}/versoes/{version}/download', [DownloadController::class, 'version'])
+        ->name('downloads.version');
+
     Route::get('/painel/usuarios', UserManager::class)
         ->middleware('role:admin,staff')
         ->name('painel.users');
@@ -42,6 +49,7 @@ Route::middleware([
     Route::middleware('role:teacher')->group(function () {
         Route::get('/painel/biblioteca', MaterialLibrary::class)->name('painel.library');
         Route::get('/painel/biblioteca/{material}', MaterialDetail::class)->name('painel.library.show');
+        Route::get('/painel/favoritos', FavoriteLibrary::class)->name('painel.favorites');
     });
 
     Route::middleware('role:admin,staff')

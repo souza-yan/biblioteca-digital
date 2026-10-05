@@ -27,6 +27,7 @@
                 @elseif ($currentUser->isTeacher())
                     <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
                         <x-nav-link href="{{ route('painel.library') }}" :active="request()->routeIs('painel.library*')">Biblioteca</x-nav-link>
+                        <x-nav-link href="{{ route('painel.favorites') }}" :active="request()->routeIs('painel.favorites')">Favoritos</x-nav-link>
                     </div>
                 @endif
 
@@ -163,6 +164,7 @@
                 <x-responsive-nav-link href="{{ route('painel.materials') }}" :active="request()->routeIs('painel.materials*')">Materiais</x-responsive-nav-link>
             @elseif ($currentUser->isTeacher())
                 <x-responsive-nav-link href="{{ route('painel.library') }}" :active="request()->routeIs('painel.library*')">Biblioteca</x-responsive-nav-link>
+                <x-responsive-nav-link href="{{ route('painel.favorites') }}" :active="request()->routeIs('painel.favorites')">Favoritos</x-responsive-nav-link>
             @endif
         </div>
 

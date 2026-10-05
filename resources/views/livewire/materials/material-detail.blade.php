@@ -14,10 +14,20 @@
                     <h1 class="mt-2 text-2xl font-semibold text-gray-900">{{ $material->title }}</h1>
                     <p class="mt-2 text-sm text-gray-600">Por {{ $material->author }}</p>
                 </div>
-                @if ($isTeacher)
-                    {{-- TODO: apontar para a rota de download protegida quando ela existir. --}}
-                    <x-ts-button color="slate" disabled>Baixar</x-ts-button>
-                @else
+                <div class="flex flex-wrap gap-2">
+                    @if ($isTeacher)
+                        <x-ts-button
+                            :color="$isFavorited ? 'yellow' : 'slate'"
+                            wire:click="toggleFavorite"
+                        >
+                            {{ $isFavorited ? '★ Favorito' : '☆ Favoritar' }}
+                        </x-ts-button>
+                    @endif
+                    @if ($material->currentVersion)
+                        <x-ts-button color="slate" href="{{ route('downloads.show', $material) }}">Baixar</x-ts-button>
+                    @endif
+                </div>
+                @if (! $isTeacher)
                     <div class="flex gap-2">
                         @if ($material->status !== \App\Enums\MaterialStatus::PUBLISHED)
                             <x-ts-button color="green" wire:click="publish">Publicar</x-ts-button>
@@ -70,6 +80,7 @@
                                 <th scope="col" class="px-4 py-3 text-left text-xs font-semibold uppercase text-gray-600">Nota</th>
                                 <th scope="col" class="px-4 py-3 text-left text-xs font-semibold uppercase text-gray-600">Publicado por</th>
                                 <th scope="col" class="px-4 py-3 text-left text-xs font-semibold uppercase text-gray-600">Data</th>
+                                <th scope="col" class="px-4 py-3 text-right text-xs font-semibold uppercase text-gray-600">Ação</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-100">
@@ -82,10 +93,13 @@
                                     <td class="px-4 py-3 text-sm text-gray-600">{{ $version->change_note ?: '—' }}</td>
                                     <td class="px-4 py-3 text-sm text-gray-600">{{ $version->publisher?->name ?? '—' }}</td>
                                     <td class="whitespace-nowrap px-4 py-3 text-sm text-gray-600">{{ $version->created_at?->format('d/m/Y H:i') }}</td>
+                                    <td class="px-4 py-3 text-right text-sm">
+                                        <x-ts-button color="slate" href="{{ route('downloads.version', [$material, $version]) }}">Baixar</x-ts-button>
+                                    </td>
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="7" class="px-4 py-6 text-center text-sm text-gray-500">Nenhuma versão enviada.</td>
+                                    <td colspan="8" class="px-4 py-6 text-center text-sm text-gray-500">Nenhuma versão enviada.</td>
                                 </tr>
                             @endforelse
                         </tbody>
