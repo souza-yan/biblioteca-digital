@@ -1,155 +1,137 @@
 <?php
 
 use App\Enums\MaterialStatus;
+use App\Livewire\Materials\MaterialDetail;
+use App\Livewire\Materials\MaterialLibrary;
+use App\Livewire\Materials\MaterialManager;
 use App\Models\Category;
 use App\Models\Material;
 use App\Models\MaterialVersion;
 use App\Models\User;
 use Illuminate\Support\Facades\Gate;
+use Livewire\Livewire;
 
-it('shows teachers only published materials in the index', function () {
-    Material::factory()->draft()->create(['title' => 'Material em rascunho']);
-    Material::factory()->published()->create(['title' => 'Material publicado']);
-    Material::factory()->archived()->create(['title' => 'Material arquivado']);
+it('shows teachers only published materials in the library', function () {
+    $published = Material::factory()->published()->create(['title' => 'Material publicado']);
+    $draft = Material::factory()->draft()->create(['title' => 'Material em rascunho']);
+    $archived = Material::factory()->archived()->create(['title' => 'Material arquivado']);
+    $this->actingAs(User::factory()->teacher()->create());
 
-    $this->actingAs(User::factory()->teacher()->create())
-        ->getJson('/materials')
-        ->assertOk()
-        ->assertJsonCount(1, 'data')
-        ->assertJsonPath('data.0.title', 'Material publicado')
-        ->assertJsonMissing(['title' => 'Material em rascunho'])
-        ->assertJsonMissing(['title' => 'Material arquivado']);
+    Livewire::test(MaterialLibrary::class)
+        ->assertSee($published->title)
+        ->assertDontSee($draft->title)
+        ->assertDontSee($archived->title);
 });
 
-it('returns 403 when a teacher requests a draft material', function () {
+it('forbids teachers from opening draft material details', function () {
     $material = Material::factory()->draft()->create();
+    $this->actingAs(User::factory()->teacher()->create());
 
-    $this->actingAs(User::factory()->teacher()->create())
-        ->getJson("/materials/{$material->id}")
-        ->assertForbidden();
+    $this->get(route('painel.library.show', $material))->assertForbidden();
+    Livewire::test(MaterialDetail::class, ['material' => $material])->assertForbidden();
 });
 
-it('allows staff to create materials using the authenticated user as creator', function () {
+it('allows staff to create a material owned by the authenticated user', function () {
     $staff = User::factory()->staff()->create();
-    $otherUser = User::factory()->admin()->create();
     $category = Category::factory()->create();
+    $this->actingAs($staff);
 
-    $this->actingAs($staff)
-        ->postJson('/materials', [
-            'title' => 'Apostila de Ciências',
-            'description' => 'Material introdutório.',
-            'category_id' => $category->id,
-            'type' => 'pdf',
-            'author' => 'Equipe Pedagógica',
-            'created_by' => $otherUser->id,
-        ])
-        ->assertCreated()
-        ->assertJsonPath('status', MaterialStatus::DRAFT->value)
-        ->assertJsonPath('created_by', $staff->id);
+    Livewire::test(MaterialManager::class)
+        ->call('openCreate')
+        ->set('form.title', 'Apostila de Ciências')
+        ->set('form.description', 'Material introdutório.')
+        ->set('form.category_id', (string) $category->getKey())
+        ->set('form.type', 'pdf')
+        ->set('form.author', 'Equipe Pedagógica')
+        ->call('save')
+        ->assertHasNoErrors();
 
     $this->assertDatabaseHas('materials', [
         'title' => 'Apostila de Ciências',
-        'category_id' => $category->id,
-        'created_by' => $staff->id,
+        'category_id' => $category->getKey(),
+        'created_by' => $staff->getKey(),
         'status' => MaterialStatus::DRAFT->value,
     ]);
 });
 
-it('returns 403 when a teacher tries to create a material', function () {
-    $category = Category::factory()->create();
+it('forbids teachers from material management', function () {
+    $this->actingAs(User::factory()->teacher()->create());
 
-    $this->actingAs(User::factory()->teacher()->create())
-        ->postJson('/materials', [
-            'title' => 'Apostila',
-            'category_id' => $category->id,
-            'type' => 'pdf',
-            'author' => 'Equipe Pedagógica',
-        ])
-        ->assertForbidden();
+    $this->get(route('painel.materials'))->assertForbidden();
+    Livewire::test(MaterialManager::class)->assertForbidden();
 });
 
-it('publishes a material and records published_at', function () {
-    $material = Material::factory()->draft()->create();
-    $version = MaterialVersion::factory()->for($material)->create();
-    $material->update(['current_version_id' => $version->getKey()]);
-
-    $response = $this->actingAs(User::factory()->staff()->create())
-        ->patchJson("/materials/{$material->id}/publish")
-        ->assertOk()
-        ->assertJsonPath('status', MaterialStatus::PUBLISHED->value);
-
-    expect($response->json('published_at'))->not->toBeNull();
-    expect($material->fresh()->published_at)->not->toBeNull();
-    $this->assertDatabaseHas('materials', [
-        'id' => $material->id,
-        'status' => MaterialStatus::PUBLISHED->value,
-    ]);
-});
-
-it('returns 422 when staff publishes a material without a current version', function () {
-    $material = Material::factory()->draft()->create();
-
-    $this->actingAs(User::factory()->staff()->create())
-        ->patchJson("/materials/{$material->id}/publish")
-        ->assertUnprocessable();
-
-    expect($material->fresh()->status)->toBe(MaterialStatus::DRAFT);
-});
-
-it('archives a material and records archived_at', function () {
-    $material = Material::factory()->draft()->create();
-
-    $response = $this->actingAs(User::factory()->staff()->create())
-        ->patchJson("/materials/{$material->id}/archive")
-        ->assertOk()
-        ->assertJsonPath('status', MaterialStatus::ARCHIVED->value);
-
-    expect($response->json('archived_at'))->not->toBeNull();
-    expect($material->fresh()->archived_at)->not->toBeNull();
-    $this->assertDatabaseHas('materials', [
-        'id' => $material->id,
-        'status' => MaterialStatus::ARCHIVED->value,
-    ]);
-});
-
-it('returns 422 when category_id does not identify an active category', function () {
+it('publishes materials with a current version and records the timestamp', function () {
     $staff = User::factory()->staff()->create();
+    $material = Material::factory()->draft()->create();
+    $version = MaterialVersion::factory()->for($material)->create([
+        'published_by' => $staff->getKey(),
+    ]);
+    $material->update(['current_version_id' => $version->getKey()]);
+    $this->actingAs($staff);
 
-    $this->actingAs($staff)
-        ->postJson('/materials', [
-            'title' => 'Apostila',
-            'category_id' => 999999,
-            'type' => 'pdf',
-            'author' => 'Equipe Pedagógica',
-        ])
-        ->assertUnprocessable()
-        ->assertJsonValidationErrors('category_id');
+    Livewire::test(MaterialManager::class)
+        ->call('publish', $material->getKey())
+        ->assertHasNoErrors();
+
+    expect($material->fresh()->status)->toBe(MaterialStatus::PUBLISHED);
+    expect($material->fresh()->published_at)->not->toBeNull();
 });
 
-it('returns 422 when category_id references an inactive category', function () {
-    $category = Category::factory()->inactive()->create();
+it('rejects publishing without a current version and allows archiving', function () {
+    $staff = User::factory()->staff()->create();
+    $withoutVersion = Material::factory()->draft()->create();
+    $toArchive = Material::factory()->draft()->create();
+    $this->actingAs($staff);
 
-    $this->actingAs(User::factory()->staff()->create())
-        ->postJson('/materials', [
-            'title' => 'Apostila',
-            'category_id' => $category->id,
-            'type' => 'pdf',
-            'author' => 'Equipe Pedagógica',
-        ])
-        ->assertUnprocessable()
-        ->assertJsonValidationErrors('category_id');
+    Livewire::test(MaterialManager::class)
+        ->call('publish', $withoutVersion->getKey())
+        ->assertHasErrors('publish')
+        ->call('archive', $toArchive->getKey())
+        ->assertHasNoErrors();
+
+    expect($withoutVersion->fresh()->status)->toBe(MaterialStatus::DRAFT);
+    expect($toArchive->fresh()->status)->toBe(MaterialStatus::ARCHIVED);
+    expect($toArchive->fresh()->archived_at)->not->toBeNull();
 });
 
-it('resolves materials through a category relationship', function () {
+it('rejects a missing or inactive category in the material form', function () {
+    $staff = User::factory()->staff()->create();
+    $inactiveCategory = Category::factory()->inactive()->create();
+    $this->actingAs($staff);
+
+    Livewire::test(MaterialManager::class)
+        ->call('openCreate')
+        ->set('form.title', 'Material sem categoria ativa')
+        ->set('form.category_id', (string) $inactiveCategory->getKey())
+        ->set('form.type', 'pdf')
+        ->set('form.author', 'Equipe Pedagógica')
+        ->call('save')
+        ->assertHasErrors('form.category_id');
+
+    Livewire::test(MaterialManager::class)
+        ->call('openCreate')
+        ->set('form.title', 'Material sem categoria existente')
+        ->set('form.category_id', '999999')
+        ->set('form.type', 'pdf')
+        ->set('form.author', 'Equipe Pedagógica')
+        ->call('save')
+        ->assertHasErrors('form.category_id');
+
+    $this->assertDatabaseMissing('materials', ['title' => 'Material sem categoria ativa']);
+    $this->assertDatabaseMissing('materials', ['title' => 'Material sem categoria existente']);
+});
+
+it('resolves materials through their category relationship', function () {
     $category = Category::factory()->create();
     $material = Material::factory()->for($category)->create();
 
     expect($category->materials()->whereKey($material->getKey())->exists())->toBeTrue();
 });
 
-test('teachers can view and download only published materials', function (MaterialStatus $status, bool $canAccess) {
+it('allows teachers to view and download only published materials', function (MaterialStatus $status, bool $canAccess) {
     $teacher = User::factory()->teacher()->create();
-    $material = Material::make(['status' => $status]);
+    $material = Material::factory()->make(['status' => $status]);
 
     expect(Gate::forUser($teacher)->allows('view', $material))->toBe($canAccess)
         ->and(Gate::forUser($teacher)->allows('download', $material))->toBe($canAccess);
@@ -159,7 +141,7 @@ test('teachers can view and download only published materials', function (Materi
     'archived' => [MaterialStatus::ARCHIVED, false],
 ]);
 
-test('only admins and staff can manage materials', function (string $role, bool $canManage) {
+it('allows only admins and staff to manage materials', function (string $role, bool $canManage) {
     $user = match ($role) {
         'admin' => User::factory()->admin()->create(),
         'staff' => User::factory()->staff()->create(),
@@ -176,11 +158,3 @@ test('only admins and staff can manage materials', function (string $role, bool 
     'staff' => ['staff', true],
     'teacher' => ['teacher', false],
 ]);
-
-it('returns 403 when a teacher tries to publish a material', function () {
-    $material = Material::factory()->draft()->create();
-
-    $this->actingAs(User::factory()->teacher()->create())
-        ->patchJson("/materials/{$material->id}/publish")
-        ->assertForbidden();
-});

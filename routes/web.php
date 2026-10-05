@@ -1,10 +1,7 @@
 <?php
 
-use App\Http\Controllers\CategoryController;
+use App\Actions\Dashboard\BuildDashboard;
 use App\Http\Controllers\DownloadController;
-use App\Http\Controllers\MaterialController;
-use App\Http\Controllers\MaterialVersionController;
-use App\Http\Controllers\UserController;
 use App\Livewire\Activity\ActivityLogIndex;
 use App\Livewire\Categories\CategoryManager;
 use App\Livewire\Materials\FavoriteLibrary;
@@ -12,6 +9,7 @@ use App\Livewire\Materials\MaterialDetail;
 use App\Livewire\Materials\MaterialLibrary;
 use App\Livewire\Materials\MaterialManager;
 use App\Livewire\Users\UserManager;
+use App\Models\User;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -25,8 +23,11 @@ Route::middleware([
     'active',
 ])->group(function () {
 
-    Route::get('/dashboard', function () {
-        return view('dashboard');
+    Route::get('/dashboard', function (BuildDashboard $buildDashboard) {
+        $actor = request()->user();
+        abort_unless($actor instanceof User, 403);
+
+        return view('dashboard', $buildDashboard->handle($actor));
     })->name('dashboard');
 
     Route::get('/materiais/{material}/download', [DownloadController::class, 'show'])
@@ -57,50 +58,4 @@ Route::middleware([
         Route::get('/painel/favoritos', FavoriteLibrary::class)->name('painel.favorites');
     });
 
-    Route::middleware('role:admin,staff')
-        ->prefix('users')
-        ->name('users.')
-        ->group(function () {
-            Route::get('/', [UserController::class, 'index'])->name('index');
-            Route::post('/', [UserController::class, 'store'])->name('store');
-            Route::put('/{user}', [UserController::class, 'update'])->name('update');
-            Route::patch('/{user}/toggle-active', [UserController::class, 'toggleActive'])->name('toggle-active');
-        });
-
-    Route::prefix('categories')
-        ->name('categories.')
-        ->group(function () {
-            Route::get('/', [CategoryController::class, 'index'])->name('index');
-
-            Route::middleware('role:admin,staff')->group(function () {
-                Route::post('/', [CategoryController::class, 'store'])->name('store');
-                Route::put('/{category}', [CategoryController::class, 'update'])->name('update');
-                Route::patch('/{category}/toggle-active', [CategoryController::class, 'toggleActive'])
-                    ->name('toggle-active');
-            });
-        });
-
-    Route::prefix('materials')
-        ->name('materials.')
-        ->group(function () {
-            Route::middleware('role:admin,staff,teacher')->group(function () {
-                Route::get('/', [MaterialController::class, 'index'])->name('index');
-                Route::get('/{material}', [MaterialController::class, 'show'])->name('show');
-            });
-
-            Route::middleware('role:admin,staff')->group(function () {
-                Route::post('/', [MaterialController::class, 'store'])->name('store');
-                Route::put('/{material}', [MaterialController::class, 'update'])->name('update');
-                Route::patch('/{material}/publish', [MaterialController::class, 'publish'])->name('publish');
-                Route::patch('/{material}/archive', [MaterialController::class, 'archive'])->name('archive');
-            });
-        });
-
-    Route::prefix('materials/{material}/versions')
-        ->name('materials.versions.')
-        ->middleware('role:admin,staff')
-        ->group(function () {
-            Route::get('/', [MaterialVersionController::class, 'index'])->name('index');
-            Route::post('/', [MaterialVersionController::class, 'store'])->name('store');
-        });
 });

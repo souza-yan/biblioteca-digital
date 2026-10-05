@@ -80,6 +80,7 @@ class MaterialLibrary extends Component
         }
 
         $categories = Category::query()
+            ->where('is_active', true)
             ->whereHas('materials', fn (Builder $query): Builder => $query->where('status', MaterialStatus::PUBLISHED))
             ->orderBy('name')
             ->get();

@@ -1,36 +1,39 @@
 <?php
 
+use App\Livewire\Categories\CategoryManager;
+use App\Livewire\Materials\MaterialLibrary;
 use App\Models\Category;
+use App\Models\Material;
 use App\Models\User;
 use Illuminate\Support\Facades\Gate;
+use Livewire\Livewire;
 
-it('shows only active categories to teachers', function () {
-    Category::factory()->create([
-        'name' => 'Categoria ativa',
-        'slug' => 'categoria-ativa',
-    ]);
-    Category::factory()->inactive()->create([
-        'name' => 'Categoria inativa',
-        'slug' => 'categoria-inativa',
-    ]);
+it('shows teachers active categories that have published materials only', function () {
+    $activeCategory = Category::factory()->create(['name' => 'Categoria ativa']);
+    $inactiveCategory = Category::factory()->inactive()->create(['name' => 'Categoria inativa']);
+    Material::factory()->published()->for($activeCategory)->create();
+    Material::factory()->published()->for($inactiveCategory)->create();
 
-    $this->actingAs(User::factory()->teacher()->create())
-        ->getJson('/categories')
-        ->assertOk()
-        ->assertJsonCount(1, 'data')
-        ->assertJsonPath('data.0.slug', 'categoria-ativa')
-        ->assertJsonMissing(['slug' => 'categoria-inativa']);
+    $this->actingAs(User::factory()->teacher()->create());
+
+    Livewire::test(MaterialLibrary::class)
+        ->assertViewHas(
+            'categories',
+            fn ($categories): bool => $categories->contains('id', $activeCategory->getKey())
+                && ! $categories->contains('id', $inactiveCategory->getKey()),
+        );
 });
 
 it('allows staff to create a category with a generated slug', function () {
-    $this->actingAs(User::factory()->staff()->create())
-        ->postJson('/categories', [
-            'name' => 'Matemática Básica',
-            'description' => 'Conteúdos introdutórios.',
-        ])
-        ->assertCreated()
-        ->assertJsonPath('slug', 'matematica-basica')
-        ->assertJsonPath('is_active', true);
+    $this->actingAs(User::factory()->staff()->create());
+
+    Livewire::test(CategoryManager::class)
+        ->call('openCreate')
+        ->set('form.name', 'Matemática Básica')
+        ->set('form.slug', '')
+        ->set('form.description', 'Conteúdos introdutórios.')
+        ->call('save')
+        ->assertHasNoErrors();
 
     $this->assertDatabaseHas('categories', [
         'name' => 'Matemática Básica',
@@ -39,68 +42,50 @@ it('allows staff to create a category with a generated slug', function () {
     ]);
 });
 
-it('returns 403 when a teacher tries to create a category', function () {
-    $this->actingAs(User::factory()->teacher()->create())
-        ->postJson('/categories', ['name' => 'História'])
-        ->assertForbidden();
+it('forbids teachers from category management', function () {
+    $this->actingAs(User::factory()->teacher()->create());
+
+    $this->get(route('painel.categories'))->assertForbidden();
+    Livewire::test(CategoryManager::class)->assertForbidden();
 });
 
-it('returns 422 when a category slug is duplicated', function () {
+it('rejects duplicate category slugs without persisting a category', function () {
     Category::factory()->create(['slug' => 'slug-em-uso']);
+    $this->actingAs(User::factory()->staff()->create());
 
-    $this->actingAs(User::factory()->staff()->create())
-        ->postJson('/categories', [
-            'name' => 'Outra categoria',
-            'slug' => 'slug-em-uso',
-        ])
-        ->assertUnprocessable()
-        ->assertJsonValidationErrors('slug')
-        ->assertJsonPath('errors.slug.0', 'O slug informado já está em uso.');
+    Livewire::test(CategoryManager::class)
+        ->call('openCreate')
+        ->set('form.name', 'Outra categoria')
+        ->set('form.slug', 'slug-em-uso')
+        ->call('save')
+        ->assertHasErrors('form.slug');
+
+    $this->assertDatabaseMissing('categories', ['name' => 'Outra categoria']);
 });
 
-it('allows staff to update and toggle a category', function () {
+it('allows staff to update and deactivate a category', function () {
+    $staff = User::factory()->staff()->create();
     $category = Category::factory()->create([
         'name' => 'Ciências',
         'slug' => 'ciencias',
     ]);
-    $staff = User::factory()->staff()->create();
+    $this->actingAs($staff);
 
-    $this->actingAs($staff)
-        ->putJson("/categories/{$category->id}", ['name' => 'Ciências Naturais'])
-        ->assertOk()
-        ->assertJsonPath('slug', 'ciencias-naturais');
+    Livewire::test(CategoryManager::class)
+        ->call('editCategory', $category->getKey())
+        ->set('form.name', 'Ciências Naturais')
+        ->set('form.slug', '')
+        ->call('save')
+        ->assertHasNoErrors()
+        ->call('toggleActive', $category->getKey())
+        ->assertHasNoErrors();
 
     $this->assertDatabaseHas('categories', [
-        'id' => $category->id,
+        'id' => $category->getKey(),
         'name' => 'Ciências Naturais',
         'slug' => 'ciencias-naturais',
-    ]);
-
-    $this->actingAs($staff)
-        ->patchJson("/categories/{$category->id}/toggle-active")
-        ->assertOk()
-        ->assertJsonPath('is_active', false);
-
-    $this->assertDatabaseHas('categories', [
-        'id' => $category->id,
         'is_active' => false,
     ]);
-});
-
-it('returns 403 when a teacher tries to update a category', function () {
-    $category = Category::factory()->create();
-
-    $this->actingAs(User::factory()->teacher()->create())
-        ->putJson("/categories/{$category->id}", ['name' => 'Alterada'])
-        ->assertForbidden();
-});
-
-it('returns 403 when a teacher tries to toggle a category', function () {
-    $category = Category::factory()->create();
-
-    $this->actingAs(User::factory()->teacher()->create())
-        ->patchJson("/categories/{$category->id}/toggle-active")
-        ->assertForbidden();
 });
 
 it('grants category management only to admins and staff', function (string $role, bool $canManage) {

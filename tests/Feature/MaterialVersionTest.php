@@ -1,39 +1,31 @@
 <?php
 
+use App\Livewire\Materials\MaterialDetail;
 use App\Models\Material;
 use App\Models\MaterialVersion;
 use App\Models\User;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Storage;
+use Livewire\Livewire;
 
 it('stores a staff upload privately as the first material version', function () {
     Storage::fake('local');
     $material = Material::factory()->create();
     $staff = User::factory()->staff()->create();
-    $otherUser = User::factory()->admin()->create();
+    $this->actingAs($staff);
 
-    $response = $this->actingAs($staff)
-        ->postJson("/materials/{$material->id}/versions", [
-            'file' => UploadedFile::fake()->create('apostila.pdf', 100, 'application/pdf'),
-            'change_note' => 'Primeira versão.',
-            'published_by' => $otherUser->getKey(),
-        ])
-        ->assertCreated()
-        ->assertJsonPath('version_number', 1)
-        ->assertJsonPath('original_name', 'apostila.pdf')
-        ->assertJsonPath('published_by', $staff->getKey());
+    Livewire::test(MaterialDetail::class, ['material' => $material])
+        ->set('versionForm.file', UploadedFile::fake()->create('apostila.pdf', 100, 'application/pdf'))
+        ->set('versionForm.change_note', 'Primeira versão.')
+        ->call('saveVersion')
+        ->assertHasNoErrors();
 
     $version = MaterialVersion::query()->firstOrFail();
 
-    expect($version->file_path)->toStartWith("materials/{$material->id}/versions/");
+    expect($version->version_number)->toBe(1);
+    expect($version->published_by)->toBe($staff->getKey());
     expect(Storage::disk('local')->exists($version->file_path))->toBeTrue();
-    $this->assertDatabaseHas('material_versions', [
-        'id' => $version->getKey(),
-        'material_id' => $material->getKey(),
-        'version_number' => 1,
-        'published_by' => $staff->getKey(),
-    ]);
     $this->assertDatabaseHas('materials', [
         'id' => $material->getKey(),
         'current_version_id' => $version->getKey(),
@@ -43,95 +35,94 @@ it('stores a staff upload privately as the first material version', function () 
 it('increments versions and preserves older files when staff uploads again', function () {
     Storage::fake('local');
     $material = Material::factory()->create();
-    $staff = User::factory()->staff()->create();
+    $this->actingAs(User::factory()->staff()->create());
 
-    $firstResponse = $this->actingAs($staff)
-        ->postJson("/materials/{$material->id}/versions", [
-            'file' => UploadedFile::fake()->create('apostila-1.pdf', 100, 'application/pdf'),
-        ])
-        ->assertCreated()
-        ->assertJsonPath('version_number', 1);
-    $firstPath = (string) $firstResponse->json('file_path');
+    $component = Livewire::test(MaterialDetail::class, ['material' => $material])
+        ->set('versionForm.file', UploadedFile::fake()->create('apostila-1.pdf', 100, 'application/pdf'))
+        ->call('saveVersion')
+        ->assertHasNoErrors();
+    $firstVersion = MaterialVersion::query()->where('version_number', 1)->firstOrFail();
 
-    $secondResponse = $this->postJson("/materials/{$material->id}/versions", [
-        'file' => UploadedFile::fake()->create('apostila-2.pdf', 120, 'application/pdf'),
-    ])
-        ->assertCreated()
-        ->assertJsonPath('version_number', 2);
-    $secondPath = (string) $secondResponse->json('file_path');
-    $currentVersionId = $secondResponse->json('id');
+    $component
+        ->set('versionForm.file', UploadedFile::fake()->create('apostila-2.pdf', 120, 'application/pdf'))
+        ->call('saveVersion')
+        ->assertHasNoErrors();
+    $secondVersion = MaterialVersion::query()->where('version_number', 2)->firstOrFail();
 
-    expect(Storage::disk('local')->exists($firstPath))->toBeTrue();
-    expect(Storage::disk('local')->exists($secondPath))->toBeTrue();
-    $this->assertDatabaseHas('material_versions', [
-        'material_id' => $material->getKey(),
-        'version_number' => 1,
-        'file_path' => $firstPath,
-    ]);
-    $this->assertDatabaseHas('material_versions', [
-        'id' => $currentVersionId,
-        'material_id' => $material->getKey(),
-        'version_number' => 2,
-        'file_path' => $secondPath,
-    ]);
+    expect(Storage::disk('local')->exists($firstVersion->file_path))->toBeTrue();
+    expect(Storage::disk('local')->exists($secondVersion->file_path))->toBeTrue();
     $this->assertDatabaseHas('materials', [
         'id' => $material->getKey(),
-        'current_version_id' => $currentVersionId,
+        'current_version_id' => $secondVersion->getKey(),
     ]);
+});
 
-    $this->getJson("/materials/{$material->id}/versions")
+it('shows version history to staff and administrators but not teachers', function (string $role) {
+    $material = Material::factory()->create();
+    $version = MaterialVersion::factory()->for($material)->create([
+        'original_name' => 'versao-privada.pdf',
+    ]);
+    $actor = $role === 'admin'
+        ? User::factory()->admin()->create()
+        : User::factory()->staff()->create();
+    $this->actingAs($actor);
+
+    $this->get(route('painel.materials.show', $material))
         ->assertOk()
-        ->assertJsonCount(2, 'data')
-        ->assertJsonPath('data.0.version_number', 2);
-});
+        ->assertSee('Versões')
+        ->assertSee($version->original_name)
+        ->assertSee(route('downloads.version', [$material, $version]), false)
+        ->assertDontSee($version->file_path);
+})->with(['admin', 'staff']);
 
-it('returns 403 when a teacher tries to access material versions', function () {
-    $material = Material::factory()->create();
+it('does not expose version history or permit uploads to teachers', function () {
+    $material = Material::factory()->published()->create();
+    $version = MaterialVersion::factory()->for($material)->create([
+        'original_name' => 'versao-privada.pdf',
+    ]);
+    $this->actingAs(User::factory()->teacher()->create());
 
-    $this->actingAs(User::factory()->teacher()->create())
-        ->getJson("/materials/{$material->id}/versions")
+    $this->get(route('painel.materials.show', $material))->assertForbidden();
+    $this->get(route('painel.library.show', $material))
+        ->assertOk()
+        ->assertDontSee('Versões')
+        ->assertDontSee($version->original_name);
+
+    Livewire::test(MaterialDetail::class, ['material' => $material])
+        ->call('saveVersion')
         ->assertForbidden();
 });
 
-it('returns 403 when a teacher tries to upload a material version', function () {
-    $material = Material::factory()->create();
-
-    $this->actingAs(User::factory()->teacher()->create())
-        ->postJson("/materials/{$material->id}/versions", [])
-        ->assertForbidden();
-});
-
-it('returns 422 and does not store a file with a disallowed format', function () {
+it('rejects invalid version files and does not store them', function () {
     Storage::fake('local');
     $material = Material::factory()->create();
+    $this->actingAs(User::factory()->staff()->create());
 
-    $this->actingAs(User::factory()->staff()->create())
-        ->postJson("/materials/{$material->id}/versions", [
-            'file' => UploadedFile::fake()->create('script.txt', 10, 'text/plain'),
-        ])
-        ->assertUnprocessable()
-        ->assertJsonValidationErrors('file');
+    Livewire::test(MaterialDetail::class, ['material' => $material])
+        ->set('versionForm.file', UploadedFile::fake()->create('script.txt', 10, 'text/plain'))
+        ->call('saveVersion')
+        ->assertHasErrors('versionForm.file');
 
-    expect(Storage::disk('local')->allFiles())->toBe([]);
     $this->assertDatabaseMissing('material_versions', ['material_id' => $material->getKey()]);
+    expect(Storage::disk('local')->allFiles())->toBe([]);
 });
 
-it('uses the configured maximum upload size', function () {
+it('rejects version files above the configured upload maximum', function () {
     Storage::fake('local');
     config()->set('materials.upload.max_size_kilobytes', 1);
     $material = Material::factory()->create();
+    $this->actingAs(User::factory()->staff()->create());
 
-    $this->actingAs(User::factory()->staff()->create())
-        ->postJson("/materials/{$material->id}/versions", [
-            'file' => UploadedFile::fake()->create('apostila.pdf', 2, 'application/pdf'),
-        ])
-        ->assertUnprocessable()
-        ->assertJsonValidationErrors('file');
+    Livewire::test(MaterialDetail::class, ['material' => $material])
+        ->set('versionForm.file', UploadedFile::fake()->create('apostila.pdf', 2, 'application/pdf'))
+        ->call('saveVersion')
+        ->assertHasErrors('versionForm.file');
 
+    $this->assertDatabaseMissing('material_versions', ['material_id' => $material->getKey()]);
     expect(Storage::disk('local')->allFiles())->toBe([]);
 });
 
-test('only admins and staff can list or create material versions', function (string $role, bool $allowed) {
+it('allows only admins and staff to list or create material versions', function (string $role, bool $allowed) {
     $user = match ($role) {
         'admin' => User::factory()->admin()->create(),
         'staff' => User::factory()->staff()->create(),

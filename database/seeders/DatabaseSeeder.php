@@ -2,8 +2,12 @@
 
 namespace Database\Seeders;
 
+use App\Enums\ActivityAction;
+use App\Enums\MaterialStatus;
 use App\Enums\Role;
+use App\Models\ActivityLog;
 use App\Models\Category;
+use App\Models\Download;
 use App\Models\Material;
 use App\Models\MaterialVersion;
 use App\Models\User;
@@ -11,6 +15,7 @@ use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use LogicException;
 
 class DatabaseSeeder extends Seeder
 {
@@ -50,6 +55,8 @@ class DatabaseSeeder extends Seeder
                 }
             }
         }
+
+        $this->seedLibraryActivity($seededUsers);
     }
 
     /** Categoria => [título, tipo, autor, status] */
@@ -155,5 +162,72 @@ class DatabaseSeeder extends Seeder
         ]);
 
         $material->forceFill(['current_version_id' => $version->id])->save();
+    }
+
+    /**
+     * @param  array<string, User>  $seededUsers
+     */
+    private function seedLibraryActivity(array $seededUsers): void
+    {
+        $materials = Material::query()
+            ->where('status', MaterialStatus::PUBLISHED)
+            ->whereIn('title', [
+                'Introdução ao Arduino Uno',
+                'Piscando o primeiro LED',
+                'Fundamentos de Robótica Educacional',
+            ])
+            ->with('currentVersion')
+            ->get()
+            ->keyBy('title');
+
+        $teacher = $seededUsers['professor@example.com'];
+        $secondTeacher = $seededUsers['professor2@example.com'];
+        $staff = $seededUsers['gestao@example.com'];
+        $admin = $seededUsers['admin@example.com'];
+
+        foreach ([
+            [$teacher, 'Introdução ao Arduino Uno'],
+            [$teacher, 'Piscando o primeiro LED'],
+            [$secondTeacher, 'Fundamentos de Robótica Educacional'],
+        ] as [$downloader, $title]) {
+            $material = $materials->get($title);
+
+            if ($material === null || $material->currentVersion === null) {
+                throw new LogicException("O material de exemplo \"{$title}\" precisa de uma versão atual.");
+            }
+
+            $downloader->favorites()->syncWithoutDetaching([$material->getKey()]);
+
+            Download::query()->firstOrCreate(
+                [
+                    'user_id' => $downloader->getKey(),
+                    'material_id' => $material->getKey(),
+                    'material_version_id' => $material->currentVersion->getKey(),
+                ],
+                ['downloaded_at' => now()->subDays(2)]
+            );
+        }
+
+        foreach ([
+            [$admin, ActivityAction::USER_CREATED, 'Usuário de exemplo criado.', null],
+            [$staff, ActivityAction::CATEGORY_CREATED, 'Categoria de exemplo criada.', null],
+            [$staff, ActivityAction::MATERIAL_CREATED, 'Material de exemplo criado.', $materials->get('Introdução ao Arduino Uno')],
+            [$teacher, ActivityAction::MATERIAL_DOWNLOADED, 'Material de exemplo baixado.', $materials->get('Introdução ao Arduino Uno')],
+        ] as [$actor, $action, $description, $material]) {
+            $activity = ActivityLog::query()
+                ->where('user_id', $actor->getKey())
+                ->where('action', $action)
+                ->where('description', $description)
+                ->where('material_id', $material?->getKey());
+
+            if (! $activity->exists()) {
+                ActivityLog::query()->create([
+                    'user_id' => $actor->getKey(),
+                    'material_id' => $material?->getKey(),
+                    'action' => $action,
+                    'description' => $description,
+                ]);
+            }
+        }
     }
 }
