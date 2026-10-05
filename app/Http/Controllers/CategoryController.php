@@ -30,7 +30,7 @@ class CategoryController extends Controller
     {
         Gate::authorize('create', Category::class);
 
-        $category = $createCategory->handle($request->validated());
+        $category = $createCategory->handle($request->user(), $request->validated());
 
         return response()->json($category, 201);
     }
@@ -42,7 +42,7 @@ class CategoryController extends Controller
     ): JsonResponse {
         Gate::authorize('update', $category);
 
-        $category = $updateCategory->handle($category, $request->validated());
+        $category = $updateCategory->handle($request->user(), $category, $request->validated());
 
         return response()->json($category);
     }
@@ -54,7 +54,7 @@ class CategoryController extends Controller
     ): JsonResponse {
         Gate::authorize('toggleActive', $category);
 
-        $category = $toggleCategoryActive->handle($category);
+        $category = $toggleCategoryActive->handle($request->user(), $category);
 
         return response()->json($category);
     }

@@ -2,6 +2,8 @@
 
 namespace App\Actions\MaterialVersion;
 
+use App\Actions\Activity\LogActivity;
+use App\Enums\ActivityAction;
 use App\Models\Material;
 use App\Models\MaterialVersion;
 use App\Models\User;
@@ -13,6 +15,8 @@ use Throwable;
 
 class CreateMaterialVersion
 {
+    public function __construct(private LogActivity $logActivity) {}
+
     public function handle(
         Material $material,
         User $actor,
@@ -55,6 +59,13 @@ class CreateMaterialVersion
 
                 $lockedMaterial->current_version_id = $version->getKey();
                 $lockedMaterial->save();
+
+                $this->logActivity->handle(
+                    $actor,
+                    ActivityAction::VERSION_CREATED,
+                    'Nova versão criada para o material.',
+                    $lockedMaterial,
+                );
 
                 return $version;
             });

@@ -23,6 +23,7 @@
                         <x-nav-link href="{{ route('painel.users') }}" :active="request()->routeIs('painel.users')">Usuários</x-nav-link>
                         <x-nav-link href="{{ route('painel.categories') }}" :active="request()->routeIs('painel.categories')">Categorias</x-nav-link>
                         <x-nav-link href="{{ route('painel.materials') }}" :active="request()->routeIs('painel.materials*')">Materiais</x-nav-link>
+                        <x-nav-link href="{{ route('painel.activities') }}" :active="request()->routeIs('painel.activities')">Atividades</x-nav-link>
                     </div>
                 @elseif ($currentUser->isTeacher())
                     <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
@@ -162,6 +163,7 @@
                 <x-responsive-nav-link href="{{ route('painel.users') }}" :active="request()->routeIs('painel.users')">Usuários</x-responsive-nav-link>
                 <x-responsive-nav-link href="{{ route('painel.categories') }}" :active="request()->routeIs('painel.categories')">Categorias</x-responsive-nav-link>
                 <x-responsive-nav-link href="{{ route('painel.materials') }}" :active="request()->routeIs('painel.materials*')">Materiais</x-responsive-nav-link>
+                <x-responsive-nav-link href="{{ route('painel.activities') }}" :active="request()->routeIs('painel.activities')">Atividades</x-responsive-nav-link>
             @elseif ($currentUser->isTeacher())
                 <x-responsive-nav-link href="{{ route('painel.library') }}" :active="request()->routeIs('painel.library*')">Biblioteca</x-responsive-nav-link>
                 <x-responsive-nav-link href="{{ route('painel.favorites') }}" :active="request()->routeIs('painel.favorites')">Favoritos</x-responsive-nav-link>

@@ -107,6 +107,14 @@ class User extends Authenticatable
     }
 
     /**
+     * @return HasMany<ActivityLog, $this>
+     */
+    public function activityLogs(): HasMany
+    {
+        return $this->hasMany(ActivityLog::class);
+    }
+
+    /**
      * @return BelongsToMany<Material, $this>
      */
     public function favorites(): BelongsToMany

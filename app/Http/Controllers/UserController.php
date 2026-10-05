@@ -27,7 +27,7 @@ class UserController extends Controller
 
     public function store(StoreUserRequest $request, CreateUser $createUser)
     {
-        $user = $createUser->handle($request->validated());
+        $user = $createUser->handle($request->user(), $request->validated());
 
         return response()->json($user, 201);
     }
@@ -36,7 +36,7 @@ class UserController extends Controller
     {
         Gate::authorize('manage', $user);
 
-        $user = $updateUser->handle($user, $request->validated());
+        $user = $updateUser->handle($request->user(), $user, $request->validated());
 
         return response()->json($user);
     }

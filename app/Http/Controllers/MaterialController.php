@@ -55,25 +55,25 @@ class MaterialController extends Controller
     ): JsonResponse {
         Gate::authorize('update', $material);
 
-        $material = $updateMaterial->handle($material, $request->validated());
+        $material = $updateMaterial->handle($request->user(), $material, $request->validated());
 
         return response()->json($material);
     }
 
-    public function publish(Material $material, PublishMaterial $publishMaterial): JsonResponse
+    public function publish(Request $request, Material $material, PublishMaterial $publishMaterial): JsonResponse
     {
         Gate::authorize('publish', $material);
 
-        $material = $publishMaterial->handle($material);
+        $material = $publishMaterial->handle($request->user(), $material);
 
         return response()->json($material);
     }
 
-    public function archive(Material $material, ArchiveMaterial $archiveMaterial): JsonResponse
+    public function archive(Request $request, Material $material, ArchiveMaterial $archiveMaterial): JsonResponse
     {
         Gate::authorize('archive', $material);
 
-        $material = $archiveMaterial->handle($material);
+        $material = $archiveMaterial->handle($request->user(), $material);
 
         return response()->json($material);
     }

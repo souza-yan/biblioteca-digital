@@ -5,6 +5,7 @@ use App\Http\Controllers\DownloadController;
 use App\Http\Controllers\MaterialController;
 use App\Http\Controllers\MaterialVersionController;
 use App\Http\Controllers\UserController;
+use App\Livewire\Activity\ActivityLogIndex;
 use App\Livewire\Categories\CategoryManager;
 use App\Livewire\Materials\FavoriteLibrary;
 use App\Livewire\Materials\MaterialDetail;
@@ -40,6 +41,10 @@ Route::middleware([
     Route::get('/painel/categorias', CategoryManager::class)
         ->middleware('role:admin,staff')
         ->name('painel.categories');
+
+    Route::get('/painel/atividades', ActivityLogIndex::class)
+        ->middleware('role:admin,staff')
+        ->name('painel.activities');
 
     Route::middleware('role:admin,staff')->group(function () {
         Route::get('/painel/materiais', MaterialManager::class)->name('painel.materials');

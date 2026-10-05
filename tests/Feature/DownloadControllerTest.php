@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\ActivityAction;
 use App\Enums\MaterialStatus;
 use App\Livewire\Materials\MaterialDetail;
 use App\Models\Material;
@@ -25,6 +26,11 @@ it('allows a teacher to download a published material and records its current ve
         'material_id' => $material->getKey(),
         'material_version_id' => $version->getKey(),
     ]);
+    $this->assertDatabaseHas('activity_logs', [
+        'user_id' => auth()->id(),
+        'material_id' => $material->getKey(),
+        'action' => ActivityAction::MATERIAL_DOWNLOADED->value,
+    ]);
 });
 
 it('records every repeated download', function () {
@@ -39,6 +45,7 @@ it('records every repeated download', function () {
     $this->actingAs($teacher)->get(route('downloads.show', $material))->assertDownload();
 
     $this->assertDatabaseCount('downloads', 2);
+    $this->assertDatabaseCount('activity_logs', 2);
 });
 
 it('forbids teachers from downloading draft or archived materials without recording them', function (MaterialStatus $status) {
@@ -49,6 +56,7 @@ it('forbids teachers from downloading draft or archived materials without record
         ->assertForbidden();
 
     $this->assertDatabaseCount('downloads', 0);
+    $this->assertDatabaseCount('activity_logs', 0);
 })->with([
     'draft' => MaterialStatus::DRAFT,
     'archived' => MaterialStatus::ARCHIVED,
@@ -66,6 +74,7 @@ it('returns 404 without recording a download when the file is missing', function
         ->assertJsonPath('message', 'Arquivo não encontrado.');
 
     $this->assertDatabaseCount('downloads', 0);
+    $this->assertDatabaseCount('activity_logs', 0);
 });
 
 it('returns 404 without recording a download when no current version exists', function () {

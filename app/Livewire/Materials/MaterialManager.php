@@ -104,7 +104,7 @@ class MaterialManager extends Component
         if ($material === null) {
             $createMaterial->handle($actor, $attributes);
         } else {
-            $updateMaterial->handle($material, $attributes);
+            $updateMaterial->handle($actor, $material, $attributes);
         }
 
         $this->resetForm();
@@ -114,6 +114,7 @@ class MaterialManager extends Component
 
     public function publish(int $materialId, PublishMaterial $publishMaterial): void
     {
+        $actor = $this->authorizeManager();
         $material = $this->findManagedMaterial($materialId, 'publish');
 
         if (! $material->currentVersion()->exists()) {
@@ -122,15 +123,16 @@ class MaterialManager extends Component
             return;
         }
 
-        $publishMaterial->handle($material);
+        $publishMaterial->handle($actor, $material);
         $this->resetPage();
     }
 
     public function archive(int $materialId, ArchiveMaterial $archiveMaterial): void
     {
+        $actor = $this->authorizeManager();
         $material = $this->findManagedMaterial($materialId, 'archive');
 
-        $archiveMaterial->handle($material);
+        $archiveMaterial->handle($actor, $material);
     }
 
     #[Layout('layouts.app')]

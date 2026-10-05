@@ -37,6 +37,9 @@ class MaterialDetail extends Component
 
     public function publish(PublishMaterial $publishMaterial): void
     {
+        $actor = Auth::user();
+        abort_unless($actor instanceof User, 403);
+
         $material = $this->findViewableMaterial();
         Gate::authorize('publish', $material);
 
@@ -46,15 +49,18 @@ class MaterialDetail extends Component
             return;
         }
 
-        $publishMaterial->handle($material);
+        $publishMaterial->handle($actor, $material);
     }
 
     public function archive(ArchiveMaterial $archiveMaterial): void
     {
+        $actor = Auth::user();
+        abort_unless($actor instanceof User, 403);
+
         $material = $this->findViewableMaterial();
         Gate::authorize('archive', $material);
 
-        $archiveMaterial->handle($material);
+        $archiveMaterial->handle($actor, $material);
     }
 
     public function toggleFavorite(ToggleFavorite $toggleFavorite): void

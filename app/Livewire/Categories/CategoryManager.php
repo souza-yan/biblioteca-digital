@@ -7,8 +7,10 @@ use App\Actions\Category\ToggleCategoryActive;
 use App\Actions\Category\UpdateCategory;
 use App\Livewire\Forms\CategoryForm;
 use App\Models\Category;
+use App\Models\User;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
@@ -67,6 +69,7 @@ class CategoryManager extends Component
 
     public function save(CreateCategory $createCategory, UpdateCategory $updateCategory): void
     {
+        $actor = $this->authorizeManager();
         $category = $this->editingCategoryId === null
             ? null
             : $this->findManagedCategory($this->editingCategoryId, 'update');
@@ -80,9 +83,9 @@ class CategoryManager extends Component
         $attributes = $this->form->validate();
 
         if ($category === null) {
-            $createCategory->handle($attributes);
+            $createCategory->handle($actor, $attributes);
         } else {
-            $updateCategory->handle($category, $attributes);
+            $updateCategory->handle($actor, $category, $attributes);
         }
 
         $this->resetForm();
@@ -92,9 +95,10 @@ class CategoryManager extends Component
 
     public function toggleActive(int $categoryId, ToggleCategoryActive $toggleCategoryActive): void
     {
+        $actor = $this->authorizeManager();
         $category = $this->findManagedCategory($categoryId, 'toggleActive');
 
-        $toggleCategoryActive->handle($category);
+        $toggleCategoryActive->handle($actor, $category);
     }
 
     #[Layout('layouts.app')]
@@ -130,10 +134,15 @@ class CategoryManager extends Component
         return $category;
     }
 
-    private function authorizeManager(): void
+    private function authorizeManager(): User
     {
         Gate::authorize('viewAny', Category::class);
         Gate::authorize('create', Category::class);
+
+        $actor = Auth::user();
+        abort_unless($actor instanceof User, 403);
+
+        return $actor;
     }
 
     private function resetForm(): void

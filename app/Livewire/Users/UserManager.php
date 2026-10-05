@@ -72,7 +72,7 @@ class UserManager extends Component
 
     public function save(CreateUser $createUser, UpdateUser $updateUser): void
     {
-        $this->authorizeManager();
+        $actor = $this->authorizeManager();
         $user = $this->editingUserId === null
             ? null
             : $this->findManagedUser($this->editingUserId);
@@ -81,9 +81,9 @@ class UserManager extends Component
         $attributes = $this->form->validate();
 
         if ($user === null) {
-            $createUser->handle($attributes);
+            $createUser->handle($actor, $attributes);
         } else {
-            $updateUser->handle($user, $attributes);
+            $updateUser->handle($actor, $user, $attributes);
         }
 
         $this->resetForm();
