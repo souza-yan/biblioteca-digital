@@ -50,6 +50,21 @@ it('filters the teacher library by search and category', function () {
         ->assertDontSee($other->title);
 });
 
+it('opens the selected category from the teacher category library as a filtered materials list', function () {
+    $teacher = User::factory()->teacher()->create();
+    $category = Category::factory()->create();
+    $matching = Material::factory()->published()->for($category)->create([
+        'title' => 'Material da categoria selecionada',
+    ]);
+    $other = Material::factory()->published()->create(['title' => 'Material de outra categoria']);
+    $this->actingAs($teacher);
+
+    $this->get(route('painel.library', ['categoryFilter' => $category->getKey()]))
+        ->assertOk()
+        ->assertSee($matching->title)
+        ->assertDontSee($other->title);
+});
+
 it('shows published material details and an enabled download link to teachers', function () {
     $teacher = User::factory()->teacher()->create();
     $material = Material::factory()->published()->create();

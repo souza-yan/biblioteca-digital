@@ -3,6 +3,7 @@
 use App\Actions\Dashboard\BuildDashboard;
 use App\Http\Controllers\DownloadController;
 use App\Livewire\Activity\ActivityLogIndex;
+use App\Livewire\Categories\CategoryLibrary;
 use App\Livewire\Categories\CategoryManager;
 use App\Livewire\Materials\FavoriteLibrary;
 use App\Livewire\Materials\MaterialDetail;
@@ -53,6 +54,7 @@ Route::middleware([
     });
 
     Route::middleware('role:teacher')->group(function () {
+        Route::get('/painel/biblioteca/categorias', CategoryLibrary::class)->name('painel.library.categories');
         Route::get('/painel/biblioteca', MaterialLibrary::class)->name('painel.library');
         Route::get('/painel/biblioteca/{material}', MaterialDetail::class)->name('painel.library.show');
         Route::get('/painel/favoritos', FavoriteLibrary::class)->name('painel.favorites');

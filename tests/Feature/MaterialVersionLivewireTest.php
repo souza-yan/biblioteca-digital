@@ -98,12 +98,14 @@ it('shows management links only to admins and staff and library to teachers', fu
         ->assertSee('Usuários')
         ->assertSee('Categorias')
         ->assertSee('Materiais')
-        ->assertDontSee('Biblioteca');
+        ->assertDontSee(route('painel.library'), false);
 
     $teacher = User::factory()->teacher()->create();
     $this->actingAs($teacher)
         ->get('/painel/biblioteca')
         ->assertSee('Biblioteca')
+        ->assertSee(route('painel.library'), false)
+        ->assertSee(route('painel.library.categories'), false)
         ->assertDontSee('Usuários')
         ->assertDontSee(route('painel.materials'), false)
         ->assertDontSee(route('painel.categories'), false);

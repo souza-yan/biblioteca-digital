@@ -1,5 +1,6 @@
 <?php
 
+use App\Livewire\Categories\CategoryLibrary;
 use App\Livewire\Categories\CategoryManager;
 use App\Livewire\Materials\MaterialLibrary;
 use App\Models\Category;
@@ -22,6 +23,65 @@ it('shows teachers active categories that have published materials only', functi
             fn ($categories): bool => $categories->contains('id', $activeCategory->getKey())
                 && ! $categories->contains('id', $inactiveCategory->getKey()),
         );
+});
+
+it('opens a read-only category library for teachers with links to published materials', function () {
+    $teacher = User::factory()->teacher()->create();
+    $activeCategory = Category::factory()->create([
+        'name' => 'Robótica Criativa',
+        'slug' => 'robotica-criativa',
+        'description' => 'Projetos e ideias.',
+    ]);
+    $emptyCategory = Category::factory()->create(['name' => 'Categoria sem materiais']);
+    $inactiveCategory = Category::factory()->inactive()->create(['name' => 'Categoria inativa']);
+    Material::factory()->published()->for($activeCategory)->create();
+    Material::factory()->draft()->for($activeCategory)->create();
+    Material::factory()->published()->for($inactiveCategory)->create();
+    $this->actingAs($teacher);
+
+    $this->get(route('painel.library.categories'))
+        ->assertOk()
+        ->assertSee('Robótica Criativa')
+        ->assertSee('robotica-criativa')
+        ->assertSee('material publicado')
+        ->assertSee(route('painel.library', ['categoryFilter' => $activeCategory->getKey()]), false)
+        ->assertDontSee('Categoria sem materiais')
+        ->assertDontSee('Categoria inativa')
+        ->assertDontSee('Nova categoria')
+        ->assertDontSee('Editar');
+
+    Livewire::test(CategoryLibrary::class)
+        ->assertSee('Robótica Criativa')
+        ->assertDontSee('Nova categoria')
+        ->assertDontSee('Editar')
+        ->assertDontSee('Desativar');
+});
+
+it('searches the teacher category library by name, slug, or description', function () {
+    $teacher = User::factory()->teacher()->create();
+    $match = Category::factory()->create([
+        'name' => 'Robótica Criativa',
+        'slug' => 'robotica-criativa',
+        'description' => 'Projetos de laboratório.',
+    ]);
+    $other = Category::factory()->create(['name' => 'Matemática']);
+    Material::factory()->published()->for($match)->create();
+    Material::factory()->published()->for($other)->create();
+    $this->actingAs($teacher);
+
+    Livewire::test(CategoryLibrary::class)
+        ->set('search', 'laboratório')
+        ->assertSee($match->name)
+        ->assertDontSee($other->name)
+        ->set('search', 'robotica-criativa')
+        ->assertSee($match->name)
+        ->assertDontSee($other->name);
+});
+
+it('forbids staff from the teacher category library route', function () {
+    $this->actingAs(User::factory()->staff()->create())
+        ->get(route('painel.library.categories'))
+        ->assertForbidden();
 });
 
 it('allows staff to create a category with a generated slug', function () {

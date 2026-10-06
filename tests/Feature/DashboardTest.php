@@ -81,10 +81,25 @@ it('shows admins and staff totals and the latest ten activities', function (stri
         ->assertOk()
         ->assertSee('Usuários ativos')
         ->assertSee('2')
-        ->assertSee('Materiais: Rascunho')
-        ->assertSee('Materiais: Publicado')
-        ->assertSee('Materiais: Arquivado')
-        ->assertSee('Downloads nos últimos 30 dias')
+        ->assertSee('Materiais por status')
+        ->assertSee('Rascunho')
+        ->assertSee('Publicado')
+        ->assertSee('Arquivado')
+        ->assertSee('Nos últimos 30 dias')
         ->assertSee('Atividade 11')
         ->assertDontSee('Atividade antiga');
 })->with(['admin', 'staff']);
+
+it('shows teacher navigation without management links or administrative metrics', function () {
+    $teacher = User::factory()->teacher()->create();
+
+    $this->actingAs($teacher)
+        ->get(route('dashboard'))
+        ->assertOk()
+        ->assertSee('Explorar categorias')
+        ->assertSee(route('painel.library.categories'), false)
+        ->assertSee('Meus favoritos')
+        ->assertDontSee('Usuários ativos')
+        ->assertDontSee('Atividades recentes')
+        ->assertDontSee('Gerenciar materiais');
+});
