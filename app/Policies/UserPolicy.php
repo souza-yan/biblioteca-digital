@@ -11,6 +11,11 @@ class UserPolicy
         return $actor->isAdmin() || $actor->isStaff();
     }
 
+    public function changeRole(User $actor, User $target): bool
+    {
+        return $actor->isAdmin() && ! $actor->is($target);
+    }
+
     public function manage(User $actor, User $target): bool
     {
         // Admin mexe em qualquer um

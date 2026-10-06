@@ -91,6 +91,10 @@ class UserManager extends Component
         if ($user === null) {
             $createUser->handle($actor, $attributes);
         } else {
+            if ($attributes['role'] !== $user->role->value) {
+                Gate::authorize('changeRole', $user);
+            }
+
             $updateUser->handle($actor, $user, $attributes);
         }
 
@@ -129,6 +133,10 @@ class UserManager extends Component
             ->orderBy('name')
             ->paginate(15);
 
+        $editingUser = $this->editingUserId === null
+            ? null
+            : $users->firstWhere('id', $this->editingUserId);
+
         foreach ($users as $user) {
             Gate::authorize('manage', $user);
         }
@@ -144,6 +152,7 @@ class UserManager extends Component
             'users' => $users,
             'roleOptions' => $roleOptions,
             'actor' => $actor,
+            'editingUser' => $editingUser,
         ]);
     }
 

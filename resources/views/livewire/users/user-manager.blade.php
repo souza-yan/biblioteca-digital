@@ -114,8 +114,14 @@
                             placeholder="Selecione um cargo"
                             :options="$roleOptions"
                             select="label:label|value:value"
+                            :disabled="$editingUser?->is($actor) ?? false"
                             required
                         />
+                        @if ($editingUser?->is($actor))
+                            @cannot('changeRole', $editingUser)
+                                <p class="text-sm text-gray-600">Você não pode alterar o seu próprio cargo.</p>
+                            @endcannot
+                        @endif
                         <x-ts-input
                             wire:model="form.password"
                             label="Senha"
