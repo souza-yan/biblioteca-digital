@@ -7,13 +7,13 @@ use App\Actions\Material\CreateMaterial;
 use App\Actions\Material\PublishMaterial;
 use App\Actions\Material\UpdateMaterial;
 use App\Enums\MaterialStatus;
+use App\Livewire\Concerns\InteractsWithCurrentUser;
 use App\Livewire\Forms\MaterialForm;
 use App\Models\Category;
 use App\Models\Material;
 use App\Models\User;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
@@ -21,6 +21,7 @@ use Livewire\WithPagination;
 
 class MaterialManager extends Component
 {
+    use InteractsWithCurrentUser;
     use WithPagination;
 
     public MaterialForm $form;
@@ -29,7 +30,7 @@ class MaterialManager extends Component
 
     public string $statusFilter = '';
 
-    public string $categoryFilter = '';
+    public ?string $categoryFilter = '';
 
     public bool $showForm = false;
 
@@ -176,9 +177,7 @@ class MaterialManager extends Component
 
     private function authorizeManager(): User
     {
-        $actor = Auth::user();
-
-        abort_unless($actor instanceof User, 403);
+        $actor = $this->currentUser();
 
         Gate::authorize('create', Material::class);
 

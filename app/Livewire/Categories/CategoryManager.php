@@ -5,12 +5,12 @@ namespace App\Livewire\Categories;
 use App\Actions\Category\CreateCategory;
 use App\Actions\Category\ToggleCategoryActive;
 use App\Actions\Category\UpdateCategory;
+use App\Livewire\Concerns\InteractsWithCurrentUser;
 use App\Livewire\Forms\CategoryForm;
 use App\Models\Category;
 use App\Models\User;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
@@ -18,6 +18,7 @@ use Livewire\WithPagination;
 
 class CategoryManager extends Component
 {
+    use InteractsWithCurrentUser;
     use WithPagination;
 
     public CategoryForm $form;
@@ -139,8 +140,7 @@ class CategoryManager extends Component
         Gate::authorize('viewAny', Category::class);
         Gate::authorize('create', Category::class);
 
-        $actor = Auth::user();
-        abort_unless($actor instanceof User, 403);
+        $actor = $this->currentUser();
 
         return $actor;
     }

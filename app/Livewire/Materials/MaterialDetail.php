@@ -6,13 +6,12 @@ use App\Actions\Favorite\ToggleFavorite;
 use App\Actions\Material\ArchiveMaterial;
 use App\Actions\Material\PublishMaterial;
 use App\Actions\MaterialVersion\CreateMaterialVersion;
+use App\Livewire\Concerns\InteractsWithCurrentUser;
 use App\Livewire\Forms\MaterialVersionForm;
 use App\Models\Material;
 use App\Models\MaterialVersion;
-use App\Models\User;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\UploadedFile;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Locked;
@@ -22,6 +21,7 @@ use Livewire\WithFileUploads;
 
 class MaterialDetail extends Component
 {
+    use InteractsWithCurrentUser;
     use WithFileUploads;
 
     public MaterialVersionForm $versionForm;
@@ -37,8 +37,7 @@ class MaterialDetail extends Component
 
     public function publish(PublishMaterial $publishMaterial): void
     {
-        $actor = Auth::user();
-        abort_unless($actor instanceof User, 403);
+        $actor = $this->currentUser();
 
         $material = $this->findViewableMaterial();
         Gate::authorize('publish', $material);
@@ -54,8 +53,7 @@ class MaterialDetail extends Component
 
     public function archive(ArchiveMaterial $archiveMaterial): void
     {
-        $actor = Auth::user();
-        abort_unless($actor instanceof User, 403);
+        $actor = $this->currentUser();
 
         $material = $this->findViewableMaterial();
         Gate::authorize('archive', $material);
@@ -68,16 +66,14 @@ class MaterialDetail extends Component
         $material = Material::query()->findOrFail($this->materialId);
         Gate::authorize('favorite', $material);
 
-        $actor = Auth::user();
-        abort_unless($actor instanceof User, 403);
+        $actor = $this->currentUser();
 
         $toggleFavorite->handle($actor, $material);
     }
 
     public function saveVersion(CreateMaterialVersion $createMaterialVersion): void
     {
-        $actor = Auth::user();
-        abort_unless($actor instanceof User, 403);
+        $actor = $this->currentUser();
 
         $material = $this->findViewableMaterial();
         Gate::authorize('create', [MaterialVersion::class, $material]);
@@ -116,10 +112,9 @@ class MaterialDetail extends Component
     public function render(): View
     {
         $material = $this->findViewableMaterial();
-        $actor = Auth::user();
-        $canManageVersions = $actor instanceof User && ($actor->isAdmin() || $actor->isStaff());
-        $isFavorited = $actor instanceof User
-            && $actor->isTeacher()
+        $actor = $this->currentUser();
+        $canManageVersions = $actor->isAdmin() || $actor->isStaff();
+        $isFavorited = $actor->isTeacher()
             && $actor->favorites()->whereKey($material->getKey())->exists();
         $versions = collect();
 
@@ -133,7 +128,7 @@ class MaterialDetail extends Component
 
         return view('livewire.materials.material-detail', [
             'material' => $material,
-            'isTeacher' => $actor instanceof User && $actor->isTeacher(),
+            'isTeacher' => $actor->isTeacher(),
             'isFavorited' => $isFavorited,
             'canManageVersions' => $canManageVersions,
             'versions' => $versions,

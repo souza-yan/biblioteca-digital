@@ -3,14 +3,15 @@
 namespace App\Livewire\Forms;
 
 use App\Enums\Role;
-use App\Models\User;
-use Illuminate\Support\Facades\Auth;
+use App\Livewire\Concerns\InteractsWithCurrentUser;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
 use Livewire\Form;
 
 class UserForm extends Form
 {
+    use InteractsWithCurrentUser;
+
     public ?int $userId = null;
 
     public string $name = '';
@@ -28,12 +29,7 @@ class UserForm extends Form
      */
     public function rules(): array
     {
-        $authenticatedUser = Auth::user();
-
-        abort_unless($authenticatedUser instanceof User, 403);
-
-        /** @var User $actor */
-        $actor = $authenticatedUser;
+        $actor = $this->currentUser();
 
         return [
             'name' => ['required', 'string', 'max:255'],

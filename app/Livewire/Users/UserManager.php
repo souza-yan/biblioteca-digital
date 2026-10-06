@@ -6,11 +6,11 @@ use App\Actions\User\CreateUser;
 use App\Actions\User\ToggleUserActive;
 use App\Actions\User\UpdateUser;
 use App\Enums\Role;
+use App\Livewire\Concerns\InteractsWithCurrentUser;
 use App\Livewire\Forms\UserForm;
 use App\Models\User;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Layout;
@@ -19,6 +19,7 @@ use Livewire\WithPagination;
 
 class UserManager extends Component
 {
+    use InteractsWithCurrentUser;
     use WithPagination;
 
     public UserForm $form;
@@ -150,10 +151,10 @@ class UserManager extends Component
 
     private function authorizeManager(): User
     {
-        $actor = Auth::user();
+        $actor = $this->currentUser();
 
         abort_unless(
-            $actor instanceof User && ($actor->isAdmin() || $actor->isStaff()),
+            $actor->isAdmin() || $actor->isStaff(),
             403,
         );
 
