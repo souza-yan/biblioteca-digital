@@ -24,8 +24,6 @@ use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Livewire;
-use Mockery;
-use RuntimeException;
 
 it('records all supported user, category, material and version actions with their actor', function () {
     Storage::fake('local');

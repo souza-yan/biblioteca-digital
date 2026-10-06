@@ -3,10 +3,12 @@
 namespace App\Livewire\Forms;
 
 use Illuminate\Validation\Rule;
+use Livewire\Attributes\Locked;
 use Livewire\Form;
 
 class MaterialForm extends Form
 {
+    #[Locked]
     public ?int $materialId = null;
 
     public string $title = '';

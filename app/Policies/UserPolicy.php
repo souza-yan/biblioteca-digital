@@ -6,6 +6,11 @@ use App\Models\User;
 
 class UserPolicy
 {
+    public function create(User $actor): bool
+    {
+        return $actor->isAdmin() || $actor->isStaff();
+    }
+
     public function manage(User $actor, User $target): bool
     {
         // Admin mexe em qualquer um

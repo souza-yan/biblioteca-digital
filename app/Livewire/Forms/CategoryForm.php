@@ -4,10 +4,12 @@ namespace App\Livewire\Forms;
 
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
+use Livewire\Attributes\Locked;
 use Livewire\Form;
 
 class CategoryForm extends Form
 {
+    #[Locked]
     public ?int $categoryId = null;
 
     public string $name = '';

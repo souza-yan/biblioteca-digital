@@ -6,7 +6,21 @@ use App\Models\MaterialVersion;
 use App\Models\User;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
+use Livewire\Features\SupportLockedProperties\CannotUpdateLockedPropertyException;
 use Livewire\Livewire;
+
+it('prevents clients from changing the material detail target id', function () {
+    $staff = User::factory()->staff()->create();
+    $material = Material::factory()->create();
+    $otherMaterial = Material::factory()->create();
+    $this->actingAs($staff);
+
+    $component = Livewire::test(MaterialDetail::class, ['material' => $material])
+        ->assertSet('materialId', $material->getKey());
+
+    expect(fn () => $component->set('materialId', $otherMaterial->getKey()))
+        ->toThrow(CannotUpdateLockedPropertyException::class);
+});
 
 it('allows staff to upload sequential versions and updates the current version', function () {
     Storage::fake('local');

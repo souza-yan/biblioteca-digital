@@ -6,12 +6,14 @@ use App\Enums\Role;
 use App\Livewire\Concerns\InteractsWithCurrentUser;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
+use Livewire\Attributes\Locked;
 use Livewire\Form;
 
 class UserForm extends Form
 {
     use InteractsWithCurrentUser;
 
+    #[Locked]
     public ?int $userId = null;
 
     public string $name = '';

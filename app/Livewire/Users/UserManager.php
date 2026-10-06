@@ -14,6 +14,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Layout;
+use Livewire\Attributes\Locked;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -28,6 +29,7 @@ class UserManager extends Component
 
     public bool $showForm = false;
 
+    #[Locked]
     public ?int $editingUserId = null;
 
     public function mount(): void
@@ -44,6 +46,7 @@ class UserManager extends Component
     public function openCreate(): void
     {
         $this->authorizeManager();
+        Gate::authorize('create', User::class);
         $this->resetForm();
         $this->showForm = true;
     }
@@ -77,6 +80,10 @@ class UserManager extends Component
         $user = $this->editingUserId === null
             ? null
             : $this->findManagedUser($this->editingUserId);
+
+        if ($user === null) {
+            Gate::authorize('create', User::class);
+        }
 
         $this->form->userId = $user?->getKey();
         $attributes = $this->form->validate();

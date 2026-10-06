@@ -6,6 +6,7 @@ use App\Models\Category;
 use App\Models\Material;
 use App\Models\MaterialVersion;
 use App\Models\User;
+use Livewire\Features\SupportLockedProperties\CannotUpdateLockedPropertyException;
 use Livewire\Livewire;
 
 it('allows admins and staff to create materials with the authenticated creator', function (string $role) {
@@ -96,6 +97,31 @@ it('updates a material using an active category', function () {
         'category_id' => $category->getKey(),
     ]);
 });
+
+it('prevents clients from changing the material manager target id', function (string $property) {
+    $staff = User::factory()->staff()->create();
+    $material = Material::factory()->create(['title' => 'Material original']);
+    $otherMaterial = Material::factory()->create(['title' => 'Outro material']);
+    $this->actingAs($staff);
+
+    $component = Livewire::test(MaterialManager::class)
+        ->call('editMaterial', $material->getKey())
+        ->assertSet('editingMaterialId', $material->getKey())
+        ->assertSet('form.materialId', $material->getKey());
+
+    expect(fn () => $component->set($property, $otherMaterial->getKey()))
+        ->toThrow(CannotUpdateLockedPropertyException::class);
+
+    $component->call('save')->assertHasNoErrors();
+
+    $this->assertDatabaseHas('materials', [
+        'id' => $otherMaterial->getKey(),
+        'title' => 'Outro material',
+    ]);
+})->with([
+    'component id' => 'editingMaterialId',
+    'form id' => 'form.materialId',
+]);
 
 it('shows the missing current version error when publishing and allows archive', function () {
     $staff = User::factory()->staff()->create();

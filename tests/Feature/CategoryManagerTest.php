@@ -3,6 +3,7 @@
 use App\Livewire\Categories\CategoryManager;
 use App\Models\Category;
 use App\Models\User;
+use Livewire\Features\SupportLockedProperties\CannotUpdateLockedPropertyException;
 use Livewire\Livewire;
 
 it('allows admins and staff to create categories with generated unique slugs', function (string $role) {
@@ -79,6 +80,31 @@ it('updates and toggles categories without deleting them', function () {
     ]);
     $this->assertModelExists($category->fresh());
 });
+
+it('prevents clients from changing the category manager target id', function (string $property) {
+    $staff = User::factory()->staff()->create();
+    $category = Category::factory()->create(['name' => 'Categoria original']);
+    $otherCategory = Category::factory()->create(['name' => 'Outra categoria']);
+    $this->actingAs($staff);
+
+    $component = Livewire::test(CategoryManager::class)
+        ->call('editCategory', $category->getKey())
+        ->assertSet('editingCategoryId', $category->getKey())
+        ->assertSet('form.categoryId', $category->getKey());
+
+    expect(fn () => $component->set($property, $otherCategory->getKey()))
+        ->toThrow(CannotUpdateLockedPropertyException::class);
+
+    $component->call('save')->assertHasNoErrors();
+
+    $this->assertDatabaseHas('categories', [
+        'id' => $otherCategory->getKey(),
+        'name' => 'Outra categoria',
+    ]);
+})->with([
+    'component id' => 'editingCategoryId',
+    'form id' => 'form.categoryId',
+]);
 
 it('searches categories by name or slug', function () {
     $staff = User::factory()->staff()->create();

@@ -13,6 +13,7 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\Layout;
+use Livewire\Attributes\Locked;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -27,6 +28,7 @@ class CategoryManager extends Component
 
     public bool $showForm = false;
 
+    #[Locked]
     public ?int $editingCategoryId = null;
 
     public function mount(): void
