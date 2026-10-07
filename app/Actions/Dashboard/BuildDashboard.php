@@ -43,7 +43,7 @@ class BuildDashboard
                     ->where('status', MaterialStatus::PUBLISHED)
                     ->orderByDesc('published_at')
                     ->orderByDesc('id')
-                    ->limit(5)
+                    ->limit(3)
                     ->get(),
                 'favoriteMaterials' => $actor->favorites()
                     ->with('category')
@@ -92,7 +92,7 @@ class BuildDashboard
                 ->with(['user', 'material'])
                 ->orderByDesc('created_at')
                 ->orderByDesc('id')
-                ->limit(10)
+                ->limit(3)
                 ->get(),
             'categoryCounts' => [
                 'total' => (int) $categoryTotals->total,

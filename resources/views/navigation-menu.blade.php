@@ -1,105 +1,86 @@
-@php
-    $currentUser = auth()->user();
-    $isManagement = $currentUser->isAdmin() || $currentUser->isStaff();
-    $navigationItems = [
-        [
-            'label' => 'Início',
-            'route' => 'dashboard',
-            'active' => request()->routeIs('dashboard'),
-            'icon' => 'home',
-        ],
-    ];
-
-    if ($isManagement) {
+<div>
+    @php
+        $currentUser = auth()->user();
+        $isManagement = $currentUser->isAdmin() || $currentUser->isStaff();
         $navigationItems = [
-            ...$navigationItems,
             [
-                'label' => 'Materiais',
-                'route' => 'painel.materials',
-                'active' => request()->routeIs('painel.materials*'),
-                'icon' => 'book',
-            ],
-            [
-                'label' => 'Categorias',
-                'route' => 'painel.categories',
-                'active' => request()->routeIs('painel.categories'),
-                'icon' => 'folder',
-            ],
-            [
-                'label' => 'Usuários',
-                'route' => 'painel.users',
-                'active' => request()->routeIs('painel.users'),
-                'icon' => 'users',
-            ],
-            [
-                'label' => 'Atividades',
-                'route' => 'painel.activities',
-                'active' => request()->routeIs('painel.activities'),
-                'icon' => 'activity',
+                'label' => 'Início',
+                'route' => 'dashboard',
+                'active' => request()->routeIs('dashboard'),
+                'icon' => 'home',
             ],
         ];
-    } else {
-        $navigationItems = [
-            ...$navigationItems,
-            [
-                'label' => 'Materiais',
-                'route' => 'painel.library',
-                'active' => request()->routeIs('painel.library')
-                    || request()->routeIs('painel.library.show'),
-                'icon' => 'book',
-            ],
-            [
-                'label' => 'Categorias',
-                'route' => 'painel.library.categories',
-                'active' => request()->routeIs('painel.library.categories'),
-                'icon' => 'folder',
-            ],
-            [
-                'label' => 'Favoritos',
-                'route' => 'painel.favorites',
-                'active' => request()->routeIs('painel.favorites'),
-                'icon' => 'heart',
-            ],
-        ];
-    }
 
-    $searchRoute = $isManagement ? 'painel.materials' : 'painel.library';
-    $roleLabel = $currentUser->isStaff() ? 'Equipe de Informática Educativa' : $currentUser->role->label();
-@endphp
+        if ($isManagement) {
+            $navigationItems = [
+                ...$navigationItems,
+                [
+                    'label' => 'Materiais',
+                    'route' => 'painel.materials',
+                    'active' => request()->routeIs('painel.materials*'),
+                    'icon' => 'book',
+                ],
+                [
+                    'label' => 'Categorias',
+                    'route' => 'painel.categories',
+                    'active' => request()->routeIs('painel.categories'),
+                    'icon' => 'folder',
+                ],
+                [
+                    'label' => 'Usuários',
+                    'route' => 'painel.users',
+                    'active' => request()->routeIs('painel.users'),
+                    'icon' => 'users',
+                ],
+                [
+                    'label' => 'Atividades',
+                    'route' => 'painel.activities',
+                    'active' => request()->routeIs('painel.activities'),
+                    'icon' => 'activity',
+                ],
+            ];
+        } else {
+            $navigationItems = [
+                ...$navigationItems,
+                [
+                    'label' => 'Materiais',
+                    'route' => 'painel.library',
+                    'active' => request()->routeIs('painel.library') || request()->routeIs('painel.library.show'),
+                    'icon' => 'book',
+                ],
+                [
+                    'label' => 'Categorias',
+                    'route' => 'painel.library.categories',
+                    'active' => request()->routeIs('painel.library.categories'),
+                    'icon' => 'folder',
+                ],
+                [
+                    'label' => 'Favoritos',
+                    'route' => 'painel.favorites',
+                    'active' => request()->routeIs('painel.favorites'),
+                    'icon' => 'heart',
+                ],
+            ];
+        }
 
-<div x-data="{ menuOpen: false }">
-    <header class="fixed inset-x-0 top-0 z-40 h-16 border-b border-slate-200 bg-white">
+        $searchRoute = $isManagement ? 'painel.materials' : 'painel.library';
+        $roleLabel = $currentUser->isStaff() ? 'Equipe de Informática Educativa' : $currentUser->role->label();
+
+        // Fade dos textos da sidebar (um lugar só para ajustar o tempo).
+        // Recolhendo: some rápido (100ms). Expandindo: espera 200ms e aparece em 200ms,
+        // ou seja, termina junto com a barra de 400ms.
+        $labelFade = "sidebarCollapsed ? 'opacity-0 duration-100' : 'opacity-100 delay-200 duration-200'";
+    @endphp
+
+    {{-- HEADER --}}
+    <header class="border-b border-slate-200 bg-white"
+        style="position: fixed; top: 0; right: 0; left: 16rem; z-index: 40; height: 4rem; transition: left 400ms"
+        x-bind:style="sidebarCollapsed
+            ?
+            'position: fixed; top: 0; right: 0; left: 5rem; z-index: 40; height: 4rem; transition: left 400ms' :
+            'position: fixed; top: 0; right: 0; left: 16rem; z-index: 40; height: 4rem; transition: left 400ms'">
         <div class="flex h-full items-center justify-between gap-3 px-4 sm:px-6">
-            <div class="flex min-w-0 items-center gap-3">
-                <button type="button"
-                    class="inline-flex size-10 shrink-0 items-center justify-center rounded-lg text-slate-600 hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-600 lg:hidden"
-                    x-on:click="menuOpen = !menuOpen" aria-label="Abrir menu de navegação" aria-controls="app-sidebar"
-                    x-bind:aria-expanded="menuOpen">
-                    <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
-                        aria-hidden="true">
-                        <path stroke-linecap="round" d="M4 6h16M4 12h16M4 18h16" />
-                    </svg>
-                </button>
-
-                <a href="{{ route('dashboard') }}" class="flex min-w-0 items-center gap-3">
-                    <span class="flex size-10 shrink-0 items-center justify-center rounded-xl bg-blue-900 text-white">
-                        <svg class="size-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"
-                            aria-hidden="true">
-                            <path stroke-linecap="round" stroke-linejoin="round"
-                                d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v16H6.5A2.5 2.5 0 0 0 4 21.5v-16Z" />
-                            <path stroke-linecap="round" stroke-linejoin="round"
-                                d="M4 18.5A2.5 2.5 0 0 1 6.5 16H20M8 7h8M8 10h5" />
-                        </svg>
-                    </span>
-                    <span class="hidden min-w-0 sm:block">
-                        <span class="block truncate text-base font-bold leading-tight text-blue-950">Biblioteca
-                            Digital</span>
-                        <span class="block truncate text-sm text-slate-500">de Robótica</span>
-                    </span>
-                </a>
-
-                </span>
-            </div>
+            <div class="flex min-w-0 items-center gap-3"></div>
 
             <a href="{{ route($searchRoute) }}"
                 class="hidden h-11 w-full max-w-md items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 px-3 text-left text-base text-slate-500 transition hover:border-blue-300 hover:bg-white sm:flex"
@@ -140,23 +121,47 @@
         </div>
     </header>
 
-    <div x-cloak x-show="menuOpen" x-transition.opacity class="fixed inset-0 z-40 bg-slate-950/40 lg:hidden"
-        x-on:click="menuOpen = false" aria-hidden="true"></div>
-
-    <aside id="app-sidebar"
-        class="fixed inset-y-0 left-0 z-50 flex w-64 flex-col border-r border-slate-200 bg-white pt-16 transition-transform duration-200 lg:z-30 lg:translate-x-0"
-        x-bind:class="menuOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'"
+    {{-- SIDEBAR: sempre fixa à esquerda, acima do header e até o fim da tela.
+         overflow-hidden corta os textos enquanto a barra encolhe. --}}
+    <aside id="app-sidebar" class="flex flex-col overflow-hidden border-r border-slate-200 bg-white"
+        style="position: fixed; left: 0; top: 0; bottom: 0; z-index: 50; width: 16rem; transition: width 400ms"
+        x-bind:style="sidebarCollapsed
+            ?
+            'position: fixed; left: 0; top: 0; bottom: 0; z-index: 50; width: 5rem; transition: width 400ms' :
+            'position: fixed; left: 0; top: 0; bottom: 0; z-index: 50; width: 16rem; transition: width 400ms'"
         aria-label="Navegação principal">
-        <div class="flex-1 overflow-y-auto px-3 py-6">
-            <p class="px-3 pb-3 text-sm font-bold uppercase tracking-[0.14em] text-slate-400">Menu principal</p>
+
+        {{-- Topo da sidebar: sanduíche dentro dela.
+             px-5 (20px) + botão de 40px + 20px = 80px: o ícone já fica centralizado na barra recolhida. --}}
+        <div class="flex shrink-0 items-center border-b border-slate-100 px-5" style="height: 4rem">
+            <button type="button"
+                class="inline-flex size-10 shrink-0 items-center justify-center rounded-xl text-slate-600 transition hover:bg-blue-50 hover:text-blue-900 focus:outline-none focus:ring-2 focus:ring-blue-600"
+                x-on:click="sidebarCollapsed = !sidebarCollapsed" x-bind:aria-expanded="!sidebarCollapsed"
+                aria-label="Recolher ou expandir barra lateral" title="Recolher ou expandir barra lateral">
+                <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                    aria-hidden="true">
+                    <path stroke-linecap="round" d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+            </button>
+
+            <div class="ml-3 shrink-0 whitespace-nowrap transition-opacity" x-bind:class="{!! $labelFade !!}">
+                <p class="text-sm font-bold text-blue-950">Biblioteca de Robótica</p>
+            </div>
+        </div>
+
+        {{-- Navegação (só essa parte rola, se a lista crescer).
+             Links com px-[18px]: 12px do container + 18px + 10px (meio do ícone) = 40px, centro dos 80px. --}}
+        <div class="min-h-0 flex-1 overflow-y-auto overflow-x-hidden px-3 py-6">
+
             <nav class="space-y-1">
                 @foreach ($navigationItems as $item)
-                    <a href="{{ route($item['route']) }}" @class([
-                        'group flex items-center gap-3 rounded-xl px-3 py-3 text-base font-medium transition',
-                        'bg-blue-900 text-white shadow-sm' => $item['active'],
-                        'text-slate-600 hover:bg-blue-50 hover:text-blue-900' => !$item['active'],
-                    ])
-                        @if ($item['active']) aria-current="page" @endif x-on:click="menuOpen = false">
+                    <a href="{{ route($item['route']) }}" title="{{ $item['label'] }}"
+                        style="padding-left: 18px; padding-right: 18px" @class([
+                            'group flex items-center gap-3 rounded-xl py-3 text-base font-medium transition',
+                            'bg-blue-900 text-white shadow-sm' => $item['active'],
+                            'text-slate-600 hover:bg-blue-50 hover:text-blue-900' => !$item['active'],
+                        ])
+                        @if ($item['active']) aria-current="page" @endif>
                         <svg @class([
                             'size-5 shrink-0',
                             'text-blue-100' => $item['active'],
@@ -182,7 +187,7 @@
 
                                 @case('users')
                                     <path stroke-linecap="round" stroke-linejoin="round"
-                                        d="M16 20v-1.5a3.5 3.5 0 0 0-3.5-3.5h-5A3.5 3.5 0 0 0 4 18.5V20m6-8a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm6-7.7a4 4 0 0 1 0 7.4m4 8.3v-1.5a3.5 3.5 0 0 0-2.5-3.35" />
+                                        d="M16 20v-1.5a3.5 3.5 0 0 0-3.5-3.5h-5A3.5 3.5 0 0 0 4 18.5V20m6-8a4 4 0 1 0-0-8 4 4 0 0 0 0 8Zm6-7.7a4 4 0 0 1 0 7.4m4 8.3v-1.5a3.5 3.5 0 0 0-2.5-3.35" />
                                 @break
 
                                 @case('activity')
@@ -195,50 +200,70 @@
                                 @break
                             @endswitch
                         </svg>
-                        <span>{{ $item['label'] }}</span>
+
+                        <span class="shrink-0 whitespace-nowrap transition-opacity"
+                            x-bind:class="{!! $labelFade !!}">
+                            {{ $item['label'] }}
+                        </span>
                     </a>
                 @endforeach
             </nav>
 
+            {{-- Conta --}}
             <div class="mt-7 border-t border-slate-100 pt-5">
-                <p class="px-3 pb-3 text-sm font-bold uppercase tracking-[0.14em] text-slate-400">Conta</p>
-                <a href="{{ route('profile.show') }}" @class([
-                    'flex items-center gap-3 rounded-xl px-3 py-3 text-base font-medium transition',
-                    'bg-blue-50 text-blue-900' => request()->routeIs('profile.show'),
-                    'text-slate-600 hover:bg-blue-50 hover:text-blue-900' => !request()->routeIs(
-                        'profile.show'),
-                ])>
-                    <svg class="size-5 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+
+                <p class="whitespace-nowrap px-3 pb-3 text-sm font-bold uppercase tracking-[0.14em] text-slate-400 transition-opacity"
+                    x-bind:class="{!! $labelFade !!}">
+                    Conta
+                </p>
+
+                <a href="{{ route('profile.show') }}" title="Meu perfil"
+                    style="padding-left: 18px; padding-right: 18px" @class([
+                        'group flex items-center gap-3 rounded-xl py-3 text-base font-medium transition',
+                        'bg-blue-50 text-blue-900' => request()->routeIs('profile.show'),
+                        'text-slate-600 hover:bg-blue-50 hover:text-blue-900' => !request()->routeIs(
+                            'profile.show'),
+                    ])>
+                    <svg class="size-5 shrink-0 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                         stroke-width="1.7" aria-hidden="true">
                         <circle cx="12" cy="8" r="3.5" />
                         <path stroke-linecap="round" stroke-linejoin="round" d="M5 21v-1.5a7 7 0 0 1 14 0V21H5Z" />
                     </svg>
-                    Meu perfil
+
+                    <span class="shrink-0 whitespace-nowrap transition-opacity"
+                        x-bind:class="{!! $labelFade !!}">Meu perfil</span>
                 </a>
+
+                {{-- Sair: no header ele some em telas pequenas, então fica aqui também --}}
+                <form method="POST" action="{{ route('logout') }}" class="mt-1 sm:hidden">
+                    @csrf
+                    <button type="submit" title="Sair" style="padding-left: 18px; padding-right: 18px"
+                        class="flex w-full items-center gap-3 rounded-xl py-3 text-base font-medium text-slate-600 transition hover:bg-blue-50 hover:text-blue-900">
+                        <svg class="size-5 shrink-0 text-slate-400" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="1.7" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3M10 17l5-5-5-5M15 12H4" />
+                        </svg>
+                        <span class="shrink-0 whitespace-nowrap transition-opacity"
+                            x-bind:class="{!! $labelFade !!}">Sair</span>
+                    </button>
+                </form>
             </div>
         </div>
 
-        <div class="border-t border-slate-100 p-4">
-            <div class="overflow-hidden rounded-xl border border-blue-100 bg-blue-50 p-3">
-                <div class="flex items-center gap-2.5">
-                    <span
-                        class="flex size-8 shrink-0 items-center justify-center rounded-lg bg-white text-blue-900 shadow-sm">
-                        <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="1.7" aria-hidden="true">
-                            <path stroke-linecap="round" stroke-linejoin="round"
-                                d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v16H6.5A2.5 2.5 0 0 0 4 21.5v-16Z" />
-                            <path stroke-linecap="round" d="M4 18.5A2.5 2.5 0 0 1 6.5 16H20M8 7h8M8 10h5" />
-                        </svg>
-                    </span>
-                    <div class="min-w-0">
-                        <p class="truncate text-sm font-bold text-blue-950">Biblioteca Digital</p>
-                        <p class="text-sm leading-5 text-blue-800">Educação, tecnologia e inovação para um futuro
-                            melhor.</p>
-                    </div>
-                </div>
-                <div class="mt-3 h-1.5 rounded-full bg-blue-100">
-                    <div class="h-full w-1/3 rounded-full bg-amber-400"></div>
-                </div>
+        {{-- Rodapé (some com fade quando recolhida) --}}
+        <div class="shrink-0 border-t border-slate-100 p-4 transition-opacity" x-bind:class="{!! $labelFade !!}">
+            <div class="flex items-center gap-2.5 overflow-hidden rounded-xl border border-blue-100 bg-blue-50 p-3">
+                <span
+                    class="flex size-8 shrink-0 items-center justify-center rounded-lg bg-white text-blue-900 shadow-sm">
+                    <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
+                        aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v16H6.5A2.5 2.5 0 0 0 4 21.5v-16Z" />
+                        <path stroke-linecap="round" d="M4 18.5A2.5 2.5 0 0 1 6.5 16H20M8 7h8M8 10h5" />
+                    </svg>
+                </span>
+                <p class="min-w-0 truncate whitespace-nowrap text-sm font-bold text-blue-950">Biblioteca Digital</p>
             </div>
         </div>
     </aside>
