@@ -21,14 +21,21 @@ class MaterialForm extends Form
 
     public string $author = '';
 
+    public mixed $file = null;
+
+    public string $change_note = '';
+
+    public string $initialStatus = 'draft';
+
     /**
      * @return array<string, array<int, mixed>>
      */
     public function rules(): array
     {
-        $required = $this->materialId === null ? ['required'] : ['sometimes', 'required'];
+        $creating = $this->materialId === null;
+        $required = $creating ? ['required'] : ['sometimes', 'required'];
 
-        return [
+        $rules = [
             'title' => [...$required, 'string', 'max:255'],
             'description' => ['nullable', 'string'],
             'category_id' => [
@@ -39,6 +46,19 @@ class MaterialForm extends Form
             'type' => [...$required, 'string', 'max:255'],
             'author' => [...$required, 'string', 'max:255'],
         ];
+
+        if ($creating) {
+            $rules['file'] = [
+                'required',
+                'file',
+                'mimes:'.implode(',', config('materials.upload.allowed_mimes')),
+                'max:'.config('materials.upload.max_size_kilobytes'),
+            ];
+            $rules['change_note'] = ['nullable', 'string'];
+            $rules['initialStatus'] = ['required', 'string', Rule::in(['draft', 'published'])];
+        }
+
+        return $rules;
     }
 
     /**
@@ -60,6 +80,13 @@ class MaterialForm extends Form
             'author.required' => 'O autor do material é obrigatório.',
             'author.string' => 'O autor do material deve ser um texto.',
             'author.max' => 'O autor do material não pode ultrapassar 255 caracteres.',
+            'file.required' => 'O arquivo do material é obrigatório.',
+            'file.file' => 'O arquivo enviado é inválido.',
+            'file.mimes' => 'O formato do arquivo não é permitido.',
+            'file.max' => 'O arquivo excede o tamanho máximo permitido.',
+            'change_note.string' => 'A nota da versão deve ser um texto.',
+            'initialStatus.required' => 'Selecione o status inicial do material.',
+            'initialStatus.in' => 'O status inicial selecionado é inválido.',
         ];
     }
 }

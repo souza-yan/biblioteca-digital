@@ -22,6 +22,8 @@ class MaterialLibrary extends Component
 
     public string $search = '';
 
+    public string $sortOrder = 'title';
+
     #[Url]
     public string|int|null $categoryFilter = null;
 
@@ -39,6 +41,17 @@ class MaterialLibrary extends Component
     public function updatedCategoryFilter(): void
     {
         $this->authorizeLibrary();
+        $this->resetPage();
+    }
+
+    public function updatedSortOrder(): void
+    {
+        $this->authorizeLibrary();
+
+        if (! array_key_exists($this->sortOrder, $this->sortOptions())) {
+            $this->sortOrder = 'title';
+        }
+
         $this->resetPage();
     }
 
@@ -70,15 +83,26 @@ class MaterialLibrary extends Component
                 $query->where(function (Builder $query): void {
                     $query
                         ->where('title', 'like', '%'.$this->search.'%')
-                        ->orWhere('author', 'like', '%'.$this->search.'%');
+                        ->orWhere('author', 'like', '%'.$this->search.'%')
+                        ->orWhere('description', 'like', '%'.$this->search.'%');
                 });
             })
             ->when(
                 $this->categoryFilter,
                 fn (Builder $query): Builder => $query->where('category_id', $this->categoryFilter)
             )
-            ->orderBy('title')
-            ->paginate(15);
+            ->when(
+                $this->sortOrder === 'most_downloaded',
+                fn (Builder $query): Builder => $query->withCount('downloads'),
+            );
+
+        $materials = match ($this->sortOrder) {
+            'recent' => $materials->orderByDesc('published_at')->orderByDesc('id'),
+            'author' => $materials->orderBy('author')->orderBy('title'),
+            'most_downloaded' => $materials->orderByDesc('downloads_count')->orderBy('title'),
+            default => $materials->orderBy('title'),
+        };
+        $materials = $materials->paginate(15);
 
         foreach ($materials as $material) {
             Gate::authorize('view', $material);
@@ -94,7 +118,21 @@ class MaterialLibrary extends Component
             'materials' => $materials,
             'categories' => $categories,
             'isTeacher' => $user->isTeacher(),
+            'sortOptions' => $this->sortOptions(),
         ]);
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    private function sortOptions(): array
+    {
+        return [
+            'title' => 'Título A-Z',
+            'recent' => 'Mais recentes',
+            'author' => 'Autor',
+            'most_downloaded' => 'Mais baixados',
+        ];
     }
 
     private function authorizeLibrary(): void

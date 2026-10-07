@@ -5,8 +5,8 @@
             <h1 class="mt-1 text-2xl font-semibold text-gray-900">Materiais publicados</h1>
         </div>
 
-        <div class="mb-5 grid grid-cols-1 gap-4 md:grid-cols-2">
-            <x-ts-input wire:model.live.debounce.300ms="search" label="Buscar material" placeholder="Título ou autor" />
+        <div class="mb-5 grid grid-cols-1 gap-4 md:grid-cols-3">
+            <x-ts-input wire:model.live.debounce.300ms="search" label="Buscar material" placeholder="Título, autor ou descrição" />
             <x-ts-select.styled
                 wire:model.live="categoryFilter"
                 label="Categoria"
@@ -14,6 +14,14 @@
                 :options="$categories->map(fn ($category) => ['label' => $category->name, 'value' => $category->id])->all()"
                 select="label:label|value:value"
             />
+            <label class="block text-sm font-medium text-gray-700">
+                Ordenar por
+                <select wire:model.live="sortOrder" class="mt-1 block w-full rounded-md border-gray-300 text-sm shadow-sm">
+                    @foreach ($sortOptions as $value => $label)
+                        <option value="{{ $value }}">{{ $label }}</option>
+                    @endforeach
+                </select>
+            </label>
         </div>
 
         <div class="overflow-x-auto rounded-md border border-gray-200 bg-white shadow-sm">

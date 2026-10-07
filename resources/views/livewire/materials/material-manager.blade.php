@@ -17,8 +17,7 @@
             <x-ts-select.styled
                 wire:model.live="statusFilter"
                 label="Status"
-                placeholder="Todos os status"
-                :options="collect($statuses)->map(fn ($status) => ['label' => $status->label(), 'value' => $status->value])->all()"
+                :options="$statusOptions"
                 select="label:label|value:value"
             />
             <x-ts-select.styled
@@ -96,9 +95,67 @@
                         />
                         <x-ts-input wire:model="form.type" label="Tipo" placeholder="Ex.: PDF" />
                         <x-ts-input wire:model="form.author" label="Autor" />
+
+                        @if ($editingMaterialId === null)
+                            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                                <x-ts-select.styled
+                                    wire:model="form.initialStatus"
+                                    label="Status inicial"
+                                    :options="collect($creationStatuses)->map(fn ($status) => ['label' => $status->label(), 'value' => $status->value])->all()"
+                                    select="label:label|value:value"
+                                    required
+                                />
+                                <div class="flex items-end">
+                                    <div class="w-full rounded-md border border-blue-100 bg-blue-50 px-4 py-3 text-sm text-blue-900">
+                                        <span class="font-semibold">Versão 1</span>
+                                        <span class="mt-1 block text-xs text-blue-700">Definida automaticamente pelo sistema.</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <x-ts-input wire:model="form.change_note" label="Nota da versão (opcional)" />
+
+                            <div>
+                                <label for="material-file" class="mb-1 block text-sm font-medium text-gray-700">Arquivo</label>
+                                <input
+                                    id="material-file"
+                                    type="file"
+                                    wire:model="form.file"
+                                    accept="{{ implode(',', array_map(fn ($mime) => '.'.$mime, config('materials.upload.allowed_mimes'))) }}"
+                                    required
+                                    class="block w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-700 file:mr-4 file:rounded file:border-0 file:bg-blue-50 file:px-3 file:py-2 file:text-sm file:font-semibold file:text-blue-700"
+                                >
+                                @error('form.file')
+                                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                @enderror
+                                <div wire:loading wire:target="form.file" class="mt-2 text-sm font-medium text-blue-700">
+                                    Enviando arquivo...
+                                </div>
+                                @if ($form->file instanceof \Livewire\Features\SupportFileUploads\TemporaryUploadedFile)
+                                    <dl class="mt-3 grid grid-cols-1 gap-2 rounded-md bg-gray-50 p-3 text-sm sm:grid-cols-3">
+                                        <div class="min-w-0">
+                                            <dt class="font-medium text-gray-500">Nome</dt>
+                                            <dd class="truncate text-gray-900">{{ $form->file->getClientOriginalName() }}</dd>
+                                        </div>
+                                        <div>
+                                            <dt class="font-medium text-gray-500">Tamanho</dt>
+                                            <dd class="text-gray-900">{{ number_format($form->file->getSize() / 1024, 1, ',', '.') }} KB</dd>
+                                        </div>
+                                        <div class="min-w-0">
+                                            <dt class="font-medium text-gray-500">Tipo detectado</dt>
+                                            <dd class="break-all text-gray-900">{{ $form->file->getMimeType() ?? 'Não identificado' }}</dd>
+                                        </div>
+                                    </dl>
+                                @endif
+                            </div>
+                        @endif
+
                         <div class="flex justify-end gap-3 border-t border-gray-100 pt-4">
                             <x-ts-button color="slate" type="button" wire:click="closeForm">Cancelar</x-ts-button>
-                            <x-ts-button color="blue" type="submit">Salvar material</x-ts-button>
+                            <x-ts-button color="blue" type="submit" wire:loading.attr="disabled" wire:target="save">
+                                <span wire:loading.remove wire:target="save">Salvar material</span>
+                                <span wire:loading wire:target="save">Salvando...</span>
+                            </x-ts-button>
                         </div>
                     </form>
                 </section>

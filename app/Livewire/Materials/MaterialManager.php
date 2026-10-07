@@ -3,7 +3,7 @@
 namespace App\Livewire\Materials;
 
 use App\Actions\Material\ArchiveMaterial;
-use App\Actions\Material\CreateMaterial;
+use App\Actions\Material\CreateMaterialWithVersion;
 use App\Actions\Material\PublishMaterial;
 use App\Actions\Material\UpdateMaterial;
 use App\Enums\MaterialStatus;
@@ -14,22 +14,26 @@ use App\Models\Material;
 use App\Models\User;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Locked;
 use Livewire\Component;
+use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
+use Livewire\WithFileUploads;
 use Livewire\WithPagination;
 
 class MaterialManager extends Component
 {
     use InteractsWithCurrentUser;
+    use WithFileUploads;
     use WithPagination;
 
     public MaterialForm $form;
 
-    public string $search = '';
+    public ?string $search = '';
 
-    public string $statusFilter = '';
+    public ?string $statusFilter = '';
 
     public ?string $categoryFilter = '';
 
@@ -90,29 +94,56 @@ class MaterialManager extends Component
         $this->showForm = true;
     }
 
-    public function save(CreateMaterial $createMaterial, UpdateMaterial $updateMaterial): void
+    public function save(CreateMaterialWithVersion $createMaterialWithVersion, UpdateMaterial $updateMaterial): void
     {
         $actor = $this->authorizeManager();
         $material = $this->editingMaterialId === null
             ? null
             : $this->findManagedMaterial($this->editingMaterialId, 'update');
+        $temporaryFile = $this->form->file;
 
         if ($material === null) {
             Gate::authorize('create', Material::class);
         }
 
-        $this->form->materialId = $material?->getKey();
-        $attributes = $this->form->validate();
+        try {
+            $this->form->materialId = $material?->getKey();
+            $attributes = $this->form->validate();
 
-        if ($material === null) {
-            $createMaterial->handle($actor, $attributes);
-        } else {
-            $updateMaterial->handle($actor, $material, $attributes);
+            if ($material === null) {
+                $uploadedFile = $attributes['file'] ?? null;
+
+                if (! $uploadedFile instanceof UploadedFile) {
+                    $this->addError('form.file', 'O arquivo enviado é inválido.');
+
+                    return;
+                }
+
+                $initialStatus = MaterialStatus::from($attributes['initialStatus']);
+                $changeNote = $attributes['change_note'] ?: null;
+                unset($attributes['file'], $attributes['change_note'], $attributes['initialStatus']);
+
+                $createMaterialWithVersion->handle(
+                    $actor,
+                    $attributes,
+                    $uploadedFile,
+                    $changeNote,
+                    $initialStatus,
+                );
+            } else {
+                $updateMaterial->handle($actor, $material, $attributes);
+            }
+
+            $this->resetForm();
+            $this->showForm = false;
+            $this->resetPage();
+        } finally {
+            if ($temporaryFile instanceof TemporaryUploadedFile) {
+                $temporaryFile->delete();
+            }
+
+            $this->form->file = null;
         }
-
-        $this->resetForm();
-        $this->showForm = false;
-        $this->resetPage();
     }
 
     public function publish(int $materialId, PublishMaterial $publishMaterial): void
@@ -143,16 +174,20 @@ class MaterialManager extends Component
     {
         $this->authorizeManager();
 
+        $status = filled($this->statusFilter)
+            ? MaterialStatus::tryFrom($this->statusFilter)
+            : null;
+
         $materials = Material::query()
             ->with(['category', 'currentVersion'])
-            ->when($this->search !== '', function (Builder $query): void {
+            ->when(filled($this->search), function (Builder $query): void {
                 $query->where(function (Builder $query): void {
-                    $query->where('title', 'like', '%'.$this->search.'%')
-                        ->orWhere('author', 'like', '%'.$this->search.'%');
+                    $query->where('title', 'like', '%' . $this->search . '%')
+                        ->orWhere('author', 'like', '%' . $this->search . '%');
                 });
             })
-            ->when(MaterialStatus::tryFrom($this->statusFilter), fn (Builder $query, MaterialStatus $status): Builder => $query->where('status', $status->value))
-            ->when($this->categoryFilter !== '', fn (Builder $query): Builder => $query->where('category_id', $this->categoryFilter))
+            ->when($status, fn(Builder $query, MaterialStatus $s): Builder => $query->where('status', $s->value))
+            ->when(filled($this->categoryFilter), fn(Builder $query): Builder => $query->where('category_id', $this->categoryFilter))
             ->orderBy('title')
             ->paginate(15);
 
@@ -164,7 +199,17 @@ class MaterialManager extends Component
             'materials' => $materials,
             'categories' => Category::query()->orderBy('name')->get(),
             'activeCategories' => Category::query()->where('is_active', true)->orderBy('name')->get(),
-            'statuses' => MaterialStatus::cases(),
+            'statusOptions' => [
+                ['label' => 'Todos os status', 'value' => ''],
+                ...array_map(
+                    fn(MaterialStatus $status): array => [
+                        'label' => $status->label(),
+                        'value' => $status->value,
+                    ],
+                    MaterialStatus::cases(),
+                ),
+            ],
+            'creationStatuses' => [MaterialStatus::DRAFT, MaterialStatus::PUBLISHED],
         ]);
     }
 

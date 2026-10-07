@@ -176,9 +176,9 @@
             </section>
         @endif
 
-        <div class="grid grid-cols-1 gap-6 xl:grid-cols-12">
+        <div class="grid min-w-0 grid-cols-1 gap-6 xl:grid-cols-12">
             @if ($isTeacher)
-                <section class="space-y-4 xl:col-span-7" aria-labelledby="recent-materials-title">
+                <section class="min-w-0 space-y-4 xl:col-span-7" aria-labelledby="recent-materials-title">
                     <div class="flex items-end justify-between gap-4">
                         <div>
                             <p class="text-sm font-semibold uppercase tracking-[0.14em] text-blue-700">Descubra
@@ -193,7 +193,7 @@
 
                     <div class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
                         @forelse ($publishedMaterials as $material)
-                            <a href="{{ route('painel.library.show', $material) }}"
+                            <a href="{{ route('painel.library.show', ['material' => $material->getKey()]) }}"
                                 class="group flex items-center gap-4 border-b border-slate-100 p-4 transition last:border-b-0 hover:bg-blue-50/50 sm:p-5">
                                 <span
                                     class="flex size-14 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-blue-100 to-sky-50 text-blue-800 ring-1 ring-blue-100">
@@ -240,7 +240,7 @@
                     </div>
                 </section>
 
-                <section class="space-y-4 xl:col-span-5" aria-labelledby="favorites-title">
+                <section class="min-w-0 space-y-4 xl:col-span-5" aria-labelledby="favorites-title">
                     <div class="flex items-end justify-between gap-4">
                         <div>
                             <p class="text-sm font-semibold uppercase tracking-[0.14em] text-rose-600">Salvos por você
@@ -254,7 +254,7 @@
 
                     <div class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
                         @forelse ($favoriteMaterials as $material)
-                            <a href="{{ route('painel.library.show', $material) }}"
+                            <a href="{{ route('painel.library.show', ['material' => $material->getKey()]) }}"
                                 class="group flex items-center gap-3 border-b border-slate-100 py-3 first:pt-0 last:border-b-0 last:pb-0">
                                 <span
                                     class="flex size-10 shrink-0 items-center justify-center rounded-xl bg-rose-50 text-rose-600">
@@ -286,6 +286,30 @@
                                     class="mt-4 inline-flex text-sm font-semibold text-blue-700 hover:text-blue-900">Explorar
                                     materiais <span class="ml-1" aria-hidden="true">→</span></a>
                             </div>
+                        @endforelse
+                    </div>
+                </section>
+
+                <section class="col-span-full w-full min-w-0 space-y-4" aria-labelledby="recently-accessed-title">
+                    <div class="flex items-end justify-between gap-4">
+                        <div>
+                            <p class="text-sm font-semibold uppercase tracking-[0.14em] text-blue-700">Continue de onde parou</p>
+                            <h2 id="recently-accessed-title" class="mt-1 text-xl font-bold text-slate-900">Últimos materiais acessados ou baixados</h2>
+                        </div>
+                    </div>
+
+                    <div class="w-full min-w-0 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+                        @forelse ($recentlyAccessedMaterials as $material)
+                            <a href="{{ route('painel.library.show', ['material' => $material->getKey()]) }}"
+                                class="group flex w-full min-w-0 items-center justify-between gap-4 border-b border-slate-100 p-4 transition last:border-b-0 hover:bg-blue-50/50 sm:p-5">
+                                <span class="min-w-0 flex-1">
+                                    <span class="block truncate text-base font-semibold text-slate-800 group-hover:text-blue-900">{{ $material->title }}</span>
+                                    <span class="mt-1 block truncate text-sm text-slate-500">{{ $material->category->name }} · {{ $material->type }}</span>
+                                </span>
+                                <span class="shrink-0 whitespace-nowrap text-sm font-semibold text-blue-700">Abrir material <span aria-hidden="true">→</span></span>
+                            </a>
+                        @empty
+                            <p class="px-6 py-10 text-center text-sm text-slate-500">Você ainda não acessou materiais publicados.</p>
                         @endforelse
                     </div>
                 </section>
@@ -387,6 +411,68 @@
                 </section>
             @endif
         </div>
+
+        @unless ($isTeacher)
+            <section aria-label="Categorias e materiais populares" class="grid grid-cols-1 gap-6 lg:grid-cols-2">
+                <article class="space-y-4 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+                    <div>
+                        <p class="text-sm font-semibold uppercase tracking-[0.14em] text-blue-700">Organização</p>
+                        <h2 class="mt-1 text-xl font-bold text-slate-900">Categorias</h2>
+                    </div>
+                    <div class="grid grid-cols-3 gap-3">
+                        <div class="rounded-xl bg-slate-50 p-4">
+                            <p class="text-sm text-slate-500">Total</p>
+                            <p class="mt-1 text-2xl font-bold text-blue-950">{{ number_format($categoryCounts['total'], 0, ',', '.') }}</p>
+                        </div>
+                        <div class="rounded-xl bg-emerald-50 p-4">
+                            <p class="text-sm text-emerald-700">Ativas</p>
+                            <p class="mt-1 text-2xl font-bold text-emerald-800">{{ number_format($categoryCounts['active'], 0, ',', '.') }}</p>
+                        </div>
+                        <div class="rounded-xl bg-slate-100 p-4">
+                            <p class="text-sm text-slate-500">Inativas</p>
+                            <p class="mt-1 text-2xl font-bold text-slate-700">{{ number_format($categoryCounts['inactive'], 0, ',', '.') }}</p>
+                        </div>
+                    </div>
+                    <a href="{{ route('painel.categories') }}" class="inline-flex text-sm font-semibold text-blue-700 hover:text-blue-900">
+                        Gerenciar categorias <span class="ml-1" aria-hidden="true">→</span>
+                    </a>
+                </article>
+
+                <article class="space-y-4 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+                    <div class="flex flex-wrap items-end justify-between gap-3">
+                        <div>
+                            <p class="text-sm font-semibold uppercase tracking-[0.14em] text-amber-700">Popularidade</p>
+                            <h2 class="mt-1 text-xl font-bold text-slate-900">Materiais mais baixados</h2>
+                        </div>
+                        <form method="GET" action="{{ route('dashboard') }}">
+                            <label for="download-period" class="sr-only">Período dos downloads</label>
+                            <select id="download-period" name="downloadPeriod" onchange="this.form.submit()"
+                                class="rounded-md border-slate-300 text-sm shadow-sm">
+                                @foreach ($downloadPeriodOptions as $value => $label)
+                                    <option value="{{ $value }}" @selected($downloadPeriod === $value)>{{ $label }}</option>
+                                @endforeach
+                            </select>
+                        </form>
+                    </div>
+                    <div class="divide-y divide-slate-100">
+                        @forelse ($topDownloadedMaterials as $material)
+                            <a href="{{ route('painel.materials.show', ['material' => $material->getKey()]) }}"
+                                class="flex items-center justify-between gap-4 py-3 first:pt-0 last:pb-0">
+                                <span class="min-w-0">
+                                    <span class="block truncate text-sm font-semibold text-slate-800">{{ $material->title }}</span>
+                                    <span class="mt-1 block truncate text-sm text-slate-500">{{ $material->category->name }}</span>
+                                </span>
+                                <span class="shrink-0 rounded-full bg-amber-50 px-3 py-1 text-sm font-semibold text-amber-800">
+                                    {{ number_format($material->downloads_count, 0, ',', '.') }} downloads
+                                </span>
+                            </a>
+                        @empty
+                            <p class="py-8 text-center text-sm text-slate-500">Nenhum material baixado neste período.</p>
+                        @endforelse
+                    </div>
+                </article>
+            </section>
+        @endunless
 
         <section aria-labelledby="quick-links-title">
             <div class="mb-4">

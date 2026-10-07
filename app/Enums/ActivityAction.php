@@ -16,6 +16,9 @@ enum ActivityAction: string
     case MATERIAL_ARCHIVED = 'material.archived';
     case VERSION_CREATED = 'version.created';
     case MATERIAL_DOWNLOADED = 'material.downloaded';
+    case MATERIAL_PREVIEWED = 'material.previewed';
+    case AUTH_LOGIN = 'auth.login';
+    case AUTH_LOGOUT = 'auth.logout';
 
     public function label(): string
     {
@@ -32,6 +35,9 @@ enum ActivityAction: string
             self::MATERIAL_ARCHIVED => 'Material arquivado',
             self::VERSION_CREATED => 'Versão criada',
             self::MATERIAL_DOWNLOADED => 'Material baixado',
+            self::MATERIAL_PREVIEWED => 'Prévia do material consultada',
+            self::AUTH_LOGIN => 'Login realizado',
+            self::AUTH_LOGOUT => 'Logout realizado',
         };
     }
 }

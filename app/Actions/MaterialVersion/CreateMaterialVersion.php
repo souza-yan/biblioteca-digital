@@ -37,6 +37,12 @@ class CreateMaterialVersion
                     ->lockForUpdate()
                     ->findOrFail($material->getKey());
 
+                $mimeType = $uploadedFile->getMimeType();
+
+                if (! is_string($mimeType)) {
+                    throw new RuntimeException('Não foi possível identificar o tipo do arquivo enviado.');
+                }
+
                 $versionNumber = ((int) $lockedMaterial->versions()->max('version_number')) + 1;
                 $storedFilePath = $uploadedFile->store(
                     "materials/{$lockedMaterial->getKey()}/versions",
@@ -51,7 +57,7 @@ class CreateMaterialVersion
                     'version_number' => $versionNumber,
                     'file_path' => $storedFilePath,
                     'original_name' => $uploadedFile->getClientOriginalName(),
-                    'mime_type' => $uploadedFile->getMimeType() ?? $uploadedFile->getClientMimeType(),
+                    'mime_type' => $mimeType,
                     'size' => (int) $uploadedFile->getSize(),
                     'change_note' => $changeNote,
                     'published_by' => $actor->getKey(),

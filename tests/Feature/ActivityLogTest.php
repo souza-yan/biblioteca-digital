@@ -171,15 +171,17 @@ it('allows admins and staff to view all activity logs and forbids teachers', fun
 
     $this->get(route('painel.activities'))
         ->assertOk()
-        ->assertSee('Atividade global')
-        ->assertSee('Atividades');
+        ->assertSee('Atividades')
+        ->assertSee('Downloads')
+        ->assertSee('Cadastros e alterações')
+        ->assertSee('Acessos');
 })->with([
     'admin' => 'admin',
     'staff' => 'staff',
     'teacher' => 'teacher',
 ]);
 
-it('filters activity logs by user, action, material and date period', function () {
+it('filters change activity logs by user, action and date period', function () {
     $admin = User::factory()->admin()->create();
     $actor = User::factory()->staff()->create();
     $otherActor = User::factory()->staff()->create();
@@ -230,23 +232,15 @@ it('filters activity logs by user, action, material and date period', function (
     $this->actingAs($admin);
 
     Livewire::test(ActivityLogIndex::class)
-        ->set('userFilter', (string) $actor->getKey())
-        ->set('actionFilter', ActivityAction::USER_CREATED->value)
-        ->set('materialFilter', '')
-        ->set('fromDate', '2026-09-20')
-        ->set('untilDate', '2026-09-20')
+        ->set('activeTab', 'changes')
+        ->set('changesUserFilter', (string) $actor->getKey())
+        ->set('changesActionFilter', ActivityAction::USER_CREATED->value)
+        ->set('changesFromDate', '2026-09-20')
+        ->set('changesUntilDate', '2026-09-20')
         ->assertSee('Correspondência filtrada')
         ->assertDontSee('Ação diferente')
         ->assertDontSee('Usuário diferente')
         ->assertDontSee('Fora do período');
-
-    Livewire::test(ActivityLogIndex::class)
-        ->set('materialFilter', (string) $material->getKey())
-        ->set('actionFilter', ActivityAction::MATERIAL_UPDATED->value)
-        ->set('fromDate', '2026-09-20')
-        ->set('untilDate', '2026-09-20')
-        ->assertSee('Material correspondente')
-        ->assertDontSee('Outro material filtrável');
 });
 
 it('shows the activity navigation link only to admins and staff', function () {

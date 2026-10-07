@@ -2,6 +2,7 @@
 
 use App\Actions\Dashboard\BuildDashboard;
 use App\Http\Controllers\DownloadController;
+use App\Http\Controllers\PreviewController;
 use App\Livewire\Activity\ActivityLogIndex;
 use App\Livewire\Categories\CategoryLibrary;
 use App\Livewire\Categories\CategoryManager;
@@ -27,14 +28,20 @@ Route::middleware([
     Route::get('/dashboard', function (BuildDashboard $buildDashboard) {
         $actor = request()->user();
         abort_unless($actor instanceof User, 403);
+        $requestedDownloadPeriod = request()->query('downloadPeriod', '30');
+        $downloadPeriod = is_string($requestedDownloadPeriod) ? $requestedDownloadPeriod : '';
 
-        return view('dashboard', $buildDashboard->handle($actor));
+        return view('dashboard', $buildDashboard->handle($actor, $downloadPeriod));
     })->name('dashboard');
 
     Route::get('/materiais/{material}/download', [DownloadController::class, 'show'])
         ->name('downloads.show');
     Route::get('/materiais/{material}/versoes/{version}/download', [DownloadController::class, 'version'])
         ->name('downloads.version');
+    Route::get('/materiais/{material}/preview', [PreviewController::class, 'show'])
+        ->name('previews.show');
+    Route::get('/materiais/{material}/versoes/{version}/preview', [PreviewController::class, 'version'])
+        ->name('previews.version');
 
     Route::get('/painel/usuarios', UserManager::class)
         ->middleware('role:admin,staff')

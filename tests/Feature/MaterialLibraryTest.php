@@ -4,6 +4,7 @@ use App\Enums\MaterialStatus;
 use App\Livewire\Materials\MaterialDetail;
 use App\Livewire\Materials\MaterialLibrary;
 use App\Models\Category;
+use App\Models\Download;
 use App\Models\Material;
 use App\Models\MaterialVersion;
 use App\Models\User;
@@ -49,6 +50,76 @@ it('filters the teacher library by search and category', function () {
         ->assertSee($matching->title)
         ->assertDontSee($other->title);
 });
+
+it('searches published materials by description without exposing unpublished materials', function () {
+    $teacher = User::factory()->teacher()->create();
+    $published = Material::factory()->published()->create([
+        'title' => 'Título sem correspondência',
+        'description' => 'Descrição especial sobre sensores magnéticos',
+        'author' => 'Autora',
+    ]);
+    $draft = Material::factory()->draft()->create([
+        'title' => 'Rascunho oculto',
+        'description' => 'Descrição especial sobre sensores magnéticos',
+    ]);
+    $archived = Material::factory()->archived()->create([
+        'title' => 'Arquivado oculto',
+        'description' => 'Descrição especial sobre sensores magnéticos',
+    ]);
+    $this->actingAs($teacher);
+
+    Livewire::test(MaterialLibrary::class)
+        ->set('search', 'sensores magnéticos')
+        ->assertSee($published->title)
+        ->assertDontSee($draft->title)
+        ->assertDontSee($archived->title);
+});
+
+it('falls back to title ordering for an invalid library sort option', function () {
+    $teacher = User::factory()->teacher()->create();
+    Material::factory()->published()->create(['title' => 'Zebra']);
+    Material::factory()->published()->create(['title' => 'Abacaxi']);
+    $this->actingAs($teacher);
+
+    Livewire::test(MaterialLibrary::class)
+        ->set('sortOrder', 'created_by')
+        ->assertSet('sortOrder', 'title')
+        ->assertViewHas('materials', function ($materials): bool {
+            return $materials->getCollection()->pluck('title')->values()->all() === ['Abacaxi', 'Zebra'];
+        });
+});
+
+it('supports each fixed library sort option', function (string $sortOrder, array $expectedTitles) {
+    $teacher = User::factory()->teacher()->create();
+    $alpha = Material::factory()->published()->create([
+        'title' => 'Alpha',
+        'author' => 'Zelda',
+        'created_at' => now()->subDays(2),
+    ]);
+    $beta = Material::factory()->published()->create([
+        'title' => 'Beta',
+        'author' => 'Alice',
+        'created_at' => now(),
+    ]);
+    $version = MaterialVersion::factory()->for($alpha)->create();
+    $alpha->update(['current_version_id' => $version->getKey()]);
+    Download::factory()->count(2)->create([
+        'material_id' => $alpha->getKey(),
+        'material_version_id' => $version->getKey(),
+    ]);
+
+    Livewire::actingAs($teacher)
+        ->test(MaterialLibrary::class)
+        ->set('sortOrder', $sortOrder)
+        ->assertViewHas('materials', function ($materials) use ($expectedTitles): bool {
+            return $materials->getCollection()->pluck('title')->values()->all() === $expectedTitles;
+        });
+})->with([
+    'title A-Z' => ['title', ['Alpha', 'Beta']],
+    'most recent' => ['recent', ['Beta', 'Alpha']],
+    'author' => ['author', ['Beta', 'Alpha']],
+    'most downloaded' => ['most_downloaded', ['Alpha', 'Beta']],
+]);
 
 it('opens the selected category from the teacher category library as a filtered materials list', function () {
     $teacher = User::factory()->teacher()->create();

@@ -8,7 +8,9 @@ use App\Models\Category;
 use App\Models\Material;
 use App\Models\MaterialVersion;
 use App\Models\User;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Storage;
 use Livewire\Livewire;
 
 it('shows teachers only published materials in the library', function () {
@@ -32,6 +34,7 @@ it('forbids teachers from opening draft material details', function () {
 });
 
 it('allows staff to create a material owned by the authenticated user', function () {
+    Storage::fake('local');
     $staff = User::factory()->staff()->create();
     $category = Category::factory()->create();
     $this->actingAs($staff);
@@ -43,6 +46,7 @@ it('allows staff to create a material owned by the authenticated user', function
         ->set('form.category_id', (string) $category->getKey())
         ->set('form.type', 'pdf')
         ->set('form.author', 'Equipe Pedagógica')
+        ->set('form.file', UploadedFile::fake()->create('material.pdf', 100, 'application/pdf'))
         ->call('save')
         ->assertHasNoErrors();
 

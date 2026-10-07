@@ -63,6 +63,13 @@
                     </div>
                 @endif
             </dl>
+
+            @if ($material->currentVersion)
+                @include('livewire.materials.partials.file-preview', [
+                    'version' => $material->currentVersion,
+                    'previewUrl' => route('previews.show', $material),
+                ])
+            @endif
         </article>
 
         @if ($canManageVersions)
@@ -94,6 +101,13 @@
                                     <td class="px-4 py-3 text-sm text-gray-600">{{ $version->publisher?->name ?? '—' }}</td>
                                     <td class="whitespace-nowrap px-4 py-3 text-sm text-gray-600">{{ $version->created_at?->format('d/m/Y H:i') }}</td>
                                     <td class="px-4 py-3 text-right text-sm">
+                                        <details class="mb-2 text-left">
+                                            <summary class="cursor-pointer text-sm font-medium text-blue-700 hover:underline">Ver prévia</summary>
+                                            @include('livewire.materials.partials.file-preview', [
+                                                'version' => $version,
+                                                'previewUrl' => route('previews.version', [$material, $version]),
+                                            ])
+                                        </details>
                                         <x-ts-button color="slate" href="{{ route('downloads.version', [$material, $version]) }}">Baixar</x-ts-button>
                                     </td>
                                 </tr>
