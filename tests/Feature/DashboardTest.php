@@ -188,6 +188,7 @@ it('shows category counts and top downloaded materials to admins and staff', fun
         ->assertSee('Materiais mais baixados')
         ->assertSee('Mais baixado')
         ->assertSee('Segundo mais baixado')
+        ->assertSee(route('painel.materials.most-downloaded', ['downloadPeriod' => '30']), false)
         ->assertViewHas('categoryCounts', [
             'total' => 2,
             'active' => 1,

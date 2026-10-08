@@ -9,7 +9,6 @@ use App\Models\Category;
 use App\Models\Download;
 use App\Models\Material;
 use App\Models\User;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Database\Query\JoinClause;
 use Illuminate\Support\Collection;
@@ -17,6 +16,8 @@ use Illuminate\Support\Facades\DB;
 
 class BuildDashboard
 {
+    public function __construct(private BuildMaterialDownloadRanking $buildMaterialDownloadRanking) {}
+
     /**
      * @return array{
      *     isTeacher: bool,
@@ -55,14 +56,8 @@ class BuildDashboard
             ];
         }
 
-        $downloadPeriodOptions = [
-            '30' => 'Últimos 30 dias',
-            '90' => 'Últimos 90 dias',
-            'total' => 'Todo o período',
-        ];
-        $downloadPeriod = array_key_exists($requestedDownloadPeriod, $downloadPeriodOptions)
-            ? $requestedDownloadPeriod
-            : '30';
+        $downloadPeriodOptions = $this->buildMaterialDownloadRanking->periodOptions();
+        $downloadPeriod = $this->buildMaterialDownloadRanking->normalizePeriod($requestedDownloadPeriod);
 
         $statusCounts = Material::query()
             ->selectRaw('status, count(*) as total')
@@ -73,10 +68,6 @@ class BuildDashboard
             ->selectRaw('count(*) as total')
             ->selectRaw('sum(case when is_active = ? then 1 else 0 end) as active', [true])
             ->first();
-
-        $downloadCutoff = $downloadPeriod === 'total'
-            ? null
-            : now()->subDays((int) $downloadPeriod);
 
         return [
             'isTeacher' => false,
@@ -99,17 +90,9 @@ class BuildDashboard
                 'active' => (int) $categoryTotals->active,
                 'inactive' => (int) $categoryTotals->total - (int) $categoryTotals->active,
             ],
-            'topDownloadedMaterials' => Material::query()
-                ->with('category')
-                ->withCount([
-                    'downloads as downloads_count' => fn (Builder $query): Builder => $downloadCutoff === null
-                        ? $query
-                        : $query->where('downloaded_at', '>=', $downloadCutoff),
-                ])
-                ->having('downloads_count', '>', 0)
-                ->orderByDesc('downloads_count')
-                ->orderBy('title')
-                ->limit(5)
+            'topDownloadedMaterials' => $this->buildMaterialDownloadRanking
+                ->handle($downloadPeriod)
+                ->limit(3)
                 ->get(),
             'downloadPeriod' => $downloadPeriod,
             'downloadPeriodOptions' => $downloadPeriodOptions,

@@ -1,10 +1,8 @@
 <div>
     <div class="mx-auto w-full max-w-screen-2xl space-y-6 px-4 py-6 sm:px-6 lg:space-y-8 lg:px-8 lg:py-8">
         <section
-            class="relative isolate overflow-hidden rounded-2xl bg-blue-950 px-6 py-8 text-white shadow-sm sm:px-9 sm:py-10 lg:px-12 lg:py-12"
+            class="relative isolate overflow-hidden rounded-2xl bg-blue-800 px-6 py-8 text-white shadow-sm sm:px-9 sm:py-10 lg:px-12 lg:py-12"
             aria-labelledby="category-library-title">
-            <div class="absolute left-0 top-0 h-1.5 w-full bg-gradient-to-r from-amber-400 via-sky-400 to-blue-500"
-                aria-hidden="true"></div>
             <p class="text-sm font-bold uppercase tracking-[0.18em] text-blue-200">Biblioteca digital</p>
             <h1 id="category-library-title" class="mt-3 text-3xl font-bold leading-tight tracking-tight sm:text-4xl">
                 Categorias
@@ -23,8 +21,8 @@
                     </h2>
                 </div>
                 <div class="w-full sm:max-w-md">
-                    <x-ts-input
-                        wire:model.live.debounce.300ms="search"
+                    <x-search-field
+                        model="search"
                         label="Pesquisar categorias"
                         placeholder="Nome, descrição ou slug"
                     />
@@ -73,7 +71,7 @@
             </div>
 
             @if ($categories->hasPages())
-                <div>{{ $categories->links() }}</div>
+                <x-pagination :paginator="$categories" />
             @endif
         </section>
     </div>

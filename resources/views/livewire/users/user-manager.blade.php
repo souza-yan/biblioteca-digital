@@ -15,71 +15,60 @@
         </div>
 
         <div class="mb-5 max-w-xl">
-            <x-ts-input
-                wire:model.live.debounce.300ms="search"
+            <x-search-field
+                model="search"
                 label="Buscar por nome ou e-mail"
                 placeholder="Digite um nome ou endereço de e-mail"
             />
         </div>
 
-        <div class="overflow-x-auto rounded-md border border-gray-200 bg-white shadow-sm">
-            <table class="min-w-full divide-y divide-gray-200">
-                <thead class="bg-gray-50">
-                    <tr>
-                        <th scope="col" class="px-5 py-3 text-left text-xs font-semibold uppercase text-gray-600">Nome</th>
-                        <th scope="col" class="px-5 py-3 text-left text-xs font-semibold uppercase text-gray-600">E-mail</th>
-                        <th scope="col" class="px-5 py-3 text-left text-xs font-semibold uppercase text-gray-600">Cargo</th>
-                        <th scope="col" class="px-5 py-3 text-left text-xs font-semibold uppercase text-gray-600">Situação</th>
-                        <th scope="col" class="px-5 py-3 text-right text-xs font-semibold uppercase text-gray-600">Ações</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-gray-100">
-                    @forelse ($users as $user)
-                        <tr wire:key="user-{{ $user->id }}">
-                            <td class="whitespace-nowrap px-5 py-4 text-sm font-medium text-gray-900">{{ $user->name }}</td>
-                            <td class="whitespace-nowrap px-5 py-4 text-sm text-gray-600">{{ $user->email }}</td>
-                            <td class="whitespace-nowrap px-5 py-4 text-sm text-gray-600">{{ $user->role->label() }}</td>
-                            <td class="whitespace-nowrap px-5 py-4 text-sm">
-                                <span @class([
-                                    'inline-flex rounded px-2 py-1 text-xs font-medium',
-                                    'bg-emerald-100 text-emerald-800' => $user->is_active,
-                                    'bg-gray-100 text-gray-700' => ! $user->is_active,
-                                ])>
-                                    {{ $user->is_active ? 'Ativo' : 'Inativo' }}
-                                </span>
-                            </td>
-                            <td class="whitespace-nowrap px-5 py-4 text-right text-sm">
-                                <div class="flex justify-end gap-2">
-                                    <x-ts-button color="slate" wire:click="editUser({{ $user->id }})">
-                                        Editar
-                                    </x-ts-button>
-                                    @if ($user->is($actor))
-                                        <span class="px-2 py-2 text-xs text-gray-500">Conta atual</span>
-                                    @else
-                                        <x-ts-button
-                                            :color="$user->is_active ? 'red' : 'green'"
-                                            wire:click="toggleActive({{ $user->id }})"
-                                        >
-                                            {{ $user->is_active ? 'Desativar' : 'Ativar' }}
-                                        </x-ts-button>
-                                    @endif
-                                </div>
-                            </td>
-                        </tr>
-                    @empty
-                        <tr>
-                            <td colspan="5" class="px-5 py-10 text-center text-sm text-gray-500">
-                                Nenhum usuário encontrado.
-                            </td>
-                        </tr>
-                    @endforelse
-                </tbody>
-            </table>
-        </div>
+        <x-data-table :columns="[
+            ['label' => 'Nome'],
+            ['label' => 'E-mail'],
+            ['label' => 'Cargo'],
+            ['label' => 'Situação'],
+            ['label' => 'Ações', 'align' => 'right'],
+        ]">
+            @forelse ($users as $user)
+                <tr wire:key="user-{{ $user->id }}">
+                    <td class="whitespace-nowrap px-5 py-4 text-sm font-medium text-gray-900">{{ $user->name }}</td>
+                    <td class="whitespace-nowrap px-5 py-4 text-sm text-gray-600">{{ $user->email }}</td>
+                    <td class="whitespace-nowrap px-5 py-4 text-sm text-gray-600">{{ $user->role->label() }}</td>
+                    <td class="whitespace-nowrap px-5 py-4 text-sm">
+                        <span @class([
+                            'inline-flex rounded px-2 py-1 text-xs font-medium',
+                            'bg-emerald-100 text-emerald-800' => $user->is_active,
+                            'bg-gray-100 text-gray-700' => ! $user->is_active,
+                        ])>
+                            {{ $user->is_active ? 'Ativo' : 'Inativo' }}
+                        </span>
+                    </td>
+                    <td class="whitespace-nowrap px-5 py-4 text-right text-sm">
+                        <div class="flex justify-end gap-2">
+                            <x-ts-button color="slate" wire:click="editUser({{ $user->id }})">
+                                Editar
+                            </x-ts-button>
+                            @if ($user->is($actor))
+                                <span class="px-2 py-2 text-xs text-gray-500">Conta atual</span>
+                            @else
+                                <x-ts-button
+                                    :color="$user->is_active ? 'red' : 'green'"
+                                    wire:click="toggleActive({{ $user->id }})"
+                                >
+                                    {{ $user->is_active ? 'Desativar' : 'Ativar' }}
+                                </x-ts-button>
+                            @endif
+                        </div>
+                    </td>
+                </tr>
+            @empty
+                <x-data-table.empty-state :colspan="5">
+                    Nenhum usuário encontrado.
+                </x-data-table.empty-state>
+            @endforelse
+        </x-data-table>
 
-        <div class="mt-4">
-            {{ $users->links() }}
-        </div>
+        <x-pagination :paginator="$users" class="mt-4" />
 
         @if ($showForm)
             <div class="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-gray-900/50 px-4 py-8 sm:items-center">

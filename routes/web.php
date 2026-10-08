@@ -2,6 +2,7 @@
 
 use App\Actions\Dashboard\BuildDashboard;
 use App\Http\Controllers\DownloadController;
+use App\Http\Controllers\MostDownloadedMaterialsController;
 use App\Http\Controllers\PreviewController;
 use App\Livewire\Activity\ActivityLogIndex;
 use App\Livewire\Categories\CategoryLibrary;
@@ -56,6 +57,8 @@ Route::middleware([
         ->name('painel.activities');
 
     Route::middleware('role:admin,staff')->group(function () {
+        Route::get('/painel/materiais-mais-baixados', MostDownloadedMaterialsController::class)
+            ->name('painel.materials.most-downloaded');
         Route::get('/painel/materiais', MaterialManager::class)->name('painel.materials');
         Route::get('/painel/materiais/{material}', MaterialDetail::class)->name('painel.materials.show');
     });

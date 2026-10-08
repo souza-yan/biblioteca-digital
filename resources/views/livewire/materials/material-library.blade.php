@@ -6,7 +6,7 @@
         </div>
 
         <div class="mb-5 grid grid-cols-1 gap-4 md:grid-cols-3">
-            <x-ts-input wire:model.live.debounce.300ms="search" label="Buscar material" placeholder="Título, autor ou descrição" />
+            <x-search-field model="search" label="Buscar material" placeholder="Título, autor ou descrição" />
             <x-ts-select.styled
                 wire:model.live="categoryFilter"
                 label="Categoria"
@@ -24,48 +24,41 @@
             </label>
         </div>
 
-        <div class="overflow-x-auto rounded-md border border-gray-200 bg-white shadow-sm">
-            <table class="min-w-full divide-y divide-gray-200">
-                <thead class="bg-gray-50">
-                    <tr>
-                        <th scope="col" class="px-5 py-3 text-left text-xs font-semibold uppercase text-gray-600">Título</th>
-                        <th scope="col" class="px-5 py-3 text-left text-xs font-semibold uppercase text-gray-600">Categoria</th>
-                        <th scope="col" class="px-5 py-3 text-left text-xs font-semibold uppercase text-gray-600">Autor</th>
-                        <th scope="col" class="px-5 py-3 text-right text-xs font-semibold uppercase text-gray-600">Ação</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-gray-100">
-                    @forelse ($materials as $material)
-                        <tr wire:key="published-material-{{ $material->id }}">
-                            <td class="px-5 py-4 text-sm font-medium text-gray-900">{{ $material->title }}</td>
-                            <td class="px-5 py-4 text-sm text-gray-600">{{ $material->category->name }}</td>
-                            <td class="px-5 py-4 text-sm text-gray-600">{{ $material->author }}</td>
-                            <td class="px-5 py-4 text-right text-sm">
-                                <div class="flex justify-end gap-2">
-                                    @if ($isTeacher)
-                                        <x-ts-button
-                                            :color="$material->is_favorited ? 'yellow' : 'slate'"
-                                            wire:click="toggleFavorite({{ $material->id }})"
-                                        >
-                                            {{ $material->is_favorited ? '★ Favorito' : '☆ Favoritar' }}
-                                        </x-ts-button>
-                                    @endif
-                                    @if ($material->currentVersion)
-                                        <x-ts-button color="slate" href="{{ route('downloads.show', $material) }}">Baixar</x-ts-button>
-                                    @endif
-                                    <x-ts-button color="blue" href="{{ route('painel.library.show', $material) }}">Detalhes</x-ts-button>
-                                </div>
-                            </td>
-                        </tr>
-                    @empty
-                        <tr>
-                            <td colspan="4" class="px-5 py-10 text-center text-sm text-gray-500">Nenhum material publicado encontrado.</td>
-                        </tr>
-                    @endforelse
-                </tbody>
-            </table>
-        </div>
+        <x-data-table :columns="[
+            ['label' => 'Título'],
+            ['label' => 'Categoria'],
+            ['label' => 'Autor'],
+            ['label' => 'Ação', 'align' => 'right'],
+        ]">
+            @forelse ($materials as $material)
+                <tr wire:key="published-material-{{ $material->id }}">
+                    <td class="px-5 py-4 text-sm font-medium text-gray-900">{{ $material->title }}</td>
+                    <td class="px-5 py-4 text-sm text-gray-600">{{ $material->category->name }}</td>
+                    <td class="px-5 py-4 text-sm text-gray-600">{{ $material->author }}</td>
+                    <td class="px-5 py-4 text-right text-sm">
+                        <div class="flex justify-end gap-2">
+                            @if ($isTeacher)
+                                <x-ts-button
+                                    :color="$material->is_favorited ? 'yellow' : 'slate'"
+                                    wire:click="toggleFavorite({{ $material->id }})"
+                                >
+                                    {{ $material->is_favorited ? '★ Favorito' : '☆ Favoritar' }}
+                                </x-ts-button>
+                            @endif
+                            @if ($material->currentVersion)
+                                <x-ts-button color="slate" href="{{ route('downloads.show', $material) }}">Baixar</x-ts-button>
+                            @endif
+                            <x-ts-button color="blue" href="{{ route('painel.library.show', $material) }}">Detalhes</x-ts-button>
+                        </div>
+                    </td>
+                </tr>
+            @empty
+                <x-data-table.empty-state :colspan="4">
+                    Nenhum material publicado encontrado.
+                </x-data-table.empty-state>
+            @endforelse
+        </x-data-table>
 
-        <div class="mt-4">{{ $materials->links() }}</div>
+        <x-pagination :paginator="$materials" class="mt-4" />
     </div>
 </div>

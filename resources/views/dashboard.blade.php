@@ -12,14 +12,19 @@
         @if ($isTeacher)
 
             {{-- Visão Geral --}}
-            <header class="space-y-2">
-                <h1 class="text-3xl font-bold tracking-tight text-blue-900 sm:text-4xl">
-                    Visão Geral
-                </h1>
+            <header class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+                <div class="min-w-0 space-y-2">
+                    <h1 class="text-3xl font-bold tracking-tight text-blue-900 sm:text-4xl">Visão Geral</h1>
+                    <p class="text-base text-slate-500 sm:text-lg">
+                        Acompanhe os principais indicadores da sua biblioteca digital.
+                    </p>
+                </div>
 
-                <p class="text-base text-slate-500 sm:text-lg">
-                    Acompanhe os principais indicadores da sua biblioteca digital.
-                </p>
+                <a href="{{ route('painel.library') }}"
+                    class="inline-flex shrink-0 items-center gap-2 text-base font-semibold text-blue-700 hover:text-blue-900">
+                    Ver biblioteca
+                    <span aria-hidden="true">›</span>
+                </a>
             </header>
 
             {{-- Acesso rápido --}}
@@ -34,116 +39,75 @@
                     </h2>
                 </div>
 
-                <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                @php
+                    $quickLinks = [
+                        [
+                            'href' => route('painel.library'),
+                            'title' => 'Pesquisar materiais',
+                            'text' => 'Encontre por título ou autor',
+                            'box' => 'bg-blue-50 text-blue-600',
+                            'border' => 'border-blue-100',
+                            'icon' =>
+                                '<circle cx="10.8" cy="10.8" r="6.8" /><path stroke-linecap="round" d="m16 16 4.5 4.5" />',
+                        ],
+                        [
+                            'href' => route('painel.library'),
+                            'title' => 'Explorar categorias',
+                            'text' => 'Filtre a biblioteca por categoria',
+                            'box' => 'bg-violet-50 text-violet-600',
+                            'border' => 'border-violet-100',
+                            'icon' =>
+                                '<path stroke-linecap="round" stroke-linejoin="round" d="M3 7.5A1.5 1.5 0 0 1 4.5 6H10l2 2h7.5A1.5 1.5 0 0 1 21 9.5v8a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 17.5v-10Z" />',
+                        ],
+                        [
+                            'href' => route('painel.favorites'),
+                            'title' => 'Meus favoritos',
+                            'text' => 'Acesse seus materiais salvos',
+                            'box' => 'bg-rose-50 text-rose-600',
+                            'border' => 'border-rose-100',
+                            'icon' =>
+                                '<path stroke-linecap="round" stroke-linejoin="round" d="M20.8 8.8c0 4.2-8.8 10.2-8.8 10.2S3.2 13 3.2 8.8A4.3 4.3 0 0 1 12 6.7a4.3 4.3 0 0 1 8.8 2.1Z" />',
+                        ],
+                        [
+                            'href' => route('profile.show'),
+                            'title' => 'Meu perfil',
+                            'text' => 'Consulte seus dados da conta',
+                            'box' => 'bg-amber-50 text-amber-600',
+                            'border' => 'border-amber-100',
+                            'icon' =>
+                                '<circle cx="12" cy="8" r="3.5" /><path stroke-linecap="round" stroke-linejoin="round" d="M5 21v-1.5a7 7 0 0 1 14 0V21H5Z" />',
+                        ],
+                    ];
+                @endphp
 
-                    {{-- Pesquisar materiais --}}
-                    <a href="{{ route('painel.library') }}"
-                        class="group flex items-center gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm transition hover:border-blue-200 hover:bg-blue-50/40">
-                        <span
-                            class="flex size-10 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-700">
-                            <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                stroke-width="1.7" aria-hidden="true">
-                                <circle cx="10.8" cy="10.8" r="6.8" />
-                                <path stroke-linecap="round" d="m16 16 4.5 4.5" />
-                            </svg>
-                        </span>
-
-                        <span class="min-w-0 flex-1">
-                            <span class="block text-base font-semibold text-slate-800">
-                                Pesquisar materiais
+                <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                    @foreach ($quickLinks as $link)
+                        <a href="{{ $link['href'] }}"
+                            class="group flex items-center gap-4 rounded-2xl border {{ $link['border'] }} bg-white p-5 transition hover:bg-blue-50/40 sm:p-6">
+                            <span
+                                class="flex size-14 shrink-0 items-center justify-center rounded-2xl {{ $link['box'] }}">
+                                <svg class="size-7" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="1.7" aria-hidden="true">
+                                    {!! $link['icon'] !!}
+                                </svg>
                             </span>
 
-                            <span class="mt-1 block truncate text-sm text-slate-500">
-                                Encontre por título ou autor
-                            </span>
-                        </span>
+                            <span class="min-w-0 flex-1">
+                                <span class="block text-lg font-semibold text-blue-700">
+                                    {{ $link['title'] }}
+                                </span>
 
-                        <span class="text-lg text-blue-600 transition group-hover:translate-x-0.5" aria-hidden="true">
-                            →
-                        </span>
-                    </a>
-
-                    {{-- Explorar categorias --}}
-                    <a href="{{ route('painel.library') }}"
-                        class="group flex items-center gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm transition hover:border-blue-200 hover:bg-blue-50/40">
-                        <span
-                            class="flex size-10 shrink-0 items-center justify-center rounded-xl bg-violet-50 text-violet-700">
-                            <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                stroke-width="1.7" aria-hidden="true">
-                                <path stroke-linecap="round" stroke-linejoin="round"
-                                    d="M3 7.5A1.5 1.5 0 0 1 4.5 6H10l2 2h7.5A1.5 1.5 0 0 1 21 9.5v8a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 17.5v-10Z" />
-                            </svg>
-                        </span>
-
-                        <span class="min-w-0 flex-1">
-                            <span class="block text-base font-semibold text-slate-800">
-                                Explorar categorias
+                                <span class="mt-1 block text-base text-slate-500">
+                                    {{ $link['text'] }}
+                                </span>
                             </span>
 
-                            <span class="mt-1 block truncate text-sm text-slate-500">
-                                Filtre a biblioteca por categoria
+                            <span class="shrink-0 text-lg text-blue-600 transition group-hover:translate-x-0.5"
+                                aria-hidden="true">
+                                →
                             </span>
-                        </span>
-
-                        <span class="text-lg text-blue-600 transition group-hover:translate-x-0.5" aria-hidden="true">
-                            →
-                        </span>
-                    </a>
-
-                    {{-- Meus favoritos --}}
-                    <a href="{{ route('painel.favorites') }}"
-                        class="group flex items-center gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm transition hover:border-blue-200 hover:bg-blue-50/40">
-                        <span
-                            class="flex size-10 shrink-0 items-center justify-center rounded-xl bg-rose-50 text-rose-600">
-                            <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                stroke-width="1.7" aria-hidden="true">
-                                <path stroke-linecap="round" stroke-linejoin="round"
-                                    d="M20.8 8.8c0 4.2-8.8 10.2-8.8 10.2S3.2 13 3.2 8.8A4.3 4.3 0 0 1 12 6.7a4.3 4.3 0 0 1 8.8 2.1Z" />
-                            </svg>
-                        </span>
-
-                        <span class="min-w-0 flex-1">
-                            <span class="block text-base font-semibold text-slate-800">
-                                Meus favoritos
-                            </span>
-
-                            <span class="mt-1 block truncate text-sm text-slate-500">
-                                Acesse seus materiais salvos
-                            </span>
-                        </span>
-
-                        <span class="text-lg text-blue-600 transition group-hover:translate-x-0.5" aria-hidden="true">
-                            →
-                        </span>
-                    </a>
-
-                    {{-- Meu perfil --}}
-                    <a href="{{ route('profile.show') }}"
-                        class="group flex items-center gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm transition hover:border-blue-200 hover:bg-blue-50/40">
-                        <span
-                            class="flex size-10 shrink-0 items-center justify-center rounded-xl bg-amber-50 text-amber-700">
-                            <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                stroke-width="1.7" aria-hidden="true">
-                                <circle cx="12" cy="8" r="3.5" />
-                                <path stroke-linecap="round" stroke-linejoin="round"
-                                    d="M5 21v-1.5a7 7 0 0 1 14 0V21H5Z" />
-                            </svg>
-                        </span>
-
-                        <span class="min-w-0 flex-1">
-                            <span class="block text-base font-semibold text-slate-800">
-                                Meu perfil
-                            </span>
-
-                            <span class="mt-1 block truncate text-sm text-slate-500">
-                                Consulte seus dados da conta
-                            </span>
-                        </span>
-
-                        <span class="text-lg text-blue-600 transition group-hover:translate-x-0.5" aria-hidden="true">
-                            →
-                        </span>
-                    </a>
+                        </a>
+                    @endforeach
                 </div>
             </section>
 
@@ -151,10 +115,7 @@
             <div class="grid min-w-0 grid-cols-1 gap-6 lg:grid-cols-12">
 
                 {{-- Materiais mais baixados/acessados --}}
-                <section
-                    class="w-full min-w-0 space-y-4 lg:col-span-6"
-                    aria-labelledby="recently-accessed-title"
-                >
+                <section class="w-full min-w-0 space-y-4 lg:col-span-6" aria-labelledby="recently-accessed-title">
                     <div class="flex items-end justify-between gap-4">
                         <div>
                             <p class="text-sm font-semibold uppercase tracking-[0.14em] text-blue-700">
@@ -169,12 +130,11 @@
 
                     <div class="w-full min-w-0 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
                         @forelse ($recentlyAccessedMaterials as $material)
-                            <a
-                                href="{{ route('painel.library.show', ['material' => $material->getKey()]) }}"
-                                class="group flex w-full min-w-0 items-center justify-between gap-4 border-b border-slate-100 p-4 transition last:border-b-0 hover:bg-blue-50/50 sm:p-5"
-                            >
+                            <a href="{{ route('painel.library.show', ['material' => $material->getKey()]) }}"
+                                class="group flex w-full min-w-0 items-center justify-between gap-4 border-b border-slate-100 p-4 transition last:border-b-0 hover:bg-blue-50/50 sm:p-5">
                                 <span class="min-w-0 flex-1">
-                                    <span class="block truncate text-base font-semibold text-slate-800 group-hover:text-blue-900">
+                                    <span
+                                        class="block truncate text-base font-semibold text-slate-800 group-hover:text-blue-900">
                                         {{ $material->title }}
                                     </span>
 
@@ -200,10 +160,7 @@
 
 
                 {{-- Materiais publicados recentemente --}}
-                <section
-                    class="w-full min-w-0 space-y-4 lg:col-span-6"
-                    aria-labelledby="recent-materials-title"
-                >
+                <section class="w-full min-w-0 space-y-4 lg:col-span-6" aria-labelledby="recent-materials-title">
                     <div class="flex items-end justify-between gap-4">
                         <div>
                             <p class="text-sm font-semibold uppercase tracking-[0.14em] text-blue-700">
@@ -215,10 +172,8 @@
                             </h2>
                         </div>
 
-                        <a
-                            href="{{ route('painel.library') }}"
-                            class="shrink-0 text-sm font-semibold text-blue-700 hover:text-blue-900"
-                        >
+                        <a href="{{ route('painel.library') }}"
+                            class="shrink-0 text-sm font-semibold text-blue-700 hover:text-blue-900">
                             Ver biblioteca
                             <span aria-hidden="true">→</span>
                         </a>
@@ -226,30 +181,21 @@
 
                     <div class="w-full min-w-0 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
                         @forelse ($publishedMaterials as $material)
-                            <a
-                                href="{{ route('painel.library.show', ['material' => $material->getKey()]) }}"
-                                class="group flex items-center gap-4 border-b border-slate-100 p-4 transition last:border-b-0 hover:bg-blue-50/50 sm:p-5"
-                            >
-                                <span class="flex size-14 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-blue-100 to-sky-50 text-blue-800 ring-1 ring-blue-100">
-                                    <svg
-                                        class="size-7"
-                                        viewBox="0 0 24 24"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        stroke-width="1.6"
-                                        aria-hidden="true"
-                                    >
+                            <a href="{{ route('painel.library.show', ['material' => $material->getKey()]) }}"
+                                class="group flex items-center gap-4 border-b border-slate-100 p-4 transition last:border-b-0 hover:bg-blue-50/50 sm:p-5">
+                                <span
+                                    class="flex size-14 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-blue-100 to-sky-50 text-blue-800 ring-1 ring-blue-100">
+                                    <svg class="size-7" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                        stroke-width="1.6" aria-hidden="true">
                                         <rect x="3" y="7" width="18" height="13" rx="2" />
-                                        <path
-                                            stroke-linecap="round"
-                                            stroke-linejoin="round"
-                                            d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M8 13h8m-4-3v6"
-                                        />
+                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                            d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M8 13h8m-4-3v6" />
                                     </svg>
                                 </span>
 
                                 <span class="min-w-0 flex-1">
-                                    <span class="block truncate text-base font-semibold text-slate-800 group-hover:text-blue-900">
+                                    <span
+                                        class="block truncate text-base font-semibold text-slate-800 group-hover:text-blue-900">
                                         {{ $material->title }}
                                     </span>
 
@@ -264,42 +210,21 @@
                                     </span>
                                 </span>
 
-                                <svg
-                                    class="size-5 shrink-0 text-slate-300 transition group-hover:translate-x-0.5 group-hover:text-blue-700"
-                                    viewBox="0 0 24 24"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    stroke-width="1.8"
-                                    aria-hidden="true"
-                                >
-                                    <path
-                                        stroke-linecap="round"
-                                        stroke-linejoin="round"
-                                        d="M5 12h14m-6-6 6 6-6 6"
-                                    />
+                                <svg class="size-5 shrink-0 text-slate-300 transition group-hover:translate-x-0.5 group-hover:text-blue-700"
+                                    viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                                    aria-hidden="true">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14m-6-6 6 6-6 6" />
                                 </svg>
                             </a>
                         @empty
                             <div class="px-6 py-12 text-center">
-                                <span class="mx-auto flex size-12 items-center justify-center rounded-2xl bg-slate-100 text-slate-500">
-                                    <svg
-                                        class="size-6"
-                                        viewBox="0 0 24 24"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        stroke-width="1.7"
-                                        aria-hidden="true"
-                                    >
-                                        <path
-                                            stroke-linecap="round"
-                                            stroke-linejoin="round"
-                                            d="M6 3.75h8.5L19 8.25v12H6a2 2 0 0 1-2-2v-12a2 2 0 0 1 2-2Z"
-                                        />
-                                        <path
-                                            stroke-linecap="round"
-                                            stroke-linejoin="round"
-                                            d="M14 4v5h5"
-                                        />
+                                <span
+                                    class="mx-auto flex size-12 items-center justify-center rounded-2xl bg-slate-100 text-slate-500">
+                                    <svg class="size-6" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                        stroke-width="1.7" aria-hidden="true">
+                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                            d="M6 3.75h8.5L19 8.25v12H6a2 2 0 0 1-2-2v-12a2 2 0 0 1 2-2Z" />
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M14 4v5h5" />
                                     </svg>
                                 </span>
 
@@ -381,7 +306,7 @@
                     </span>
 
                     <div class="min-w-0">
-                        <p class="text-base font-semibold text-blue-700">
+                        <p class="text-lg font-semibold text-blue-700">
                             Total de categorias
                         </p>
 
@@ -409,7 +334,7 @@
                     </span>
 
                     <div class="min-w-0">
-                        <p class="text-base font-semibold text-blue-700">
+                        <p class="text-lg font-semibold text-blue-700">
                             Usuários ativos
                         </p>
 
@@ -438,7 +363,7 @@
                             Downloads
                         </p>
 
-                        <p class="mt-1 text-base font-bold tracking-tight text-blue-700 sm:text-5xl">
+                        <p class="mt-1 text-4xl font-bold tracking-tight text-blue-700 sm:text-5xl">
                             {{ number_format($recentDownloadsCount, 0, ',', '.') }}
                         </p>
 
@@ -573,6 +498,13 @@
                                 Distribuição dos downloads no período selecionado.
                             </p>
                         </div>
+
+                        <a href="{{ route('painel.materials.most-downloaded', ['downloadPeriod' => $downloadPeriod]) }}"
+                            class="shrink-0 text-base font-semibold text-blue-700 hover:text-blue-900">
+                            Ver todas
+                            <span aria-hidden="true">›</span>
+                        </a>
+
                     </div>
 
                     <div class="mt-6 space-y-5">

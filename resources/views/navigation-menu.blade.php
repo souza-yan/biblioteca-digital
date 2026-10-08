@@ -82,19 +82,6 @@
         <div class="flex h-full items-center justify-between gap-3 px-4 sm:px-6">
             <div class="flex min-w-0 items-center gap-3"></div>
 
-            <a href="{{ route($searchRoute) }}"
-                class="hidden h-11 w-full max-w-md items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 px-3 text-left text-base text-slate-500 transition hover:border-blue-300 hover:bg-white sm:flex"
-                aria-label="Pesquisar materiais, categorias e autores">
-                <svg class="size-4 shrink-0 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                    stroke-width="1.8" aria-hidden="true">
-                    <circle cx="10.8" cy="10.8" r="6.8" />
-                    <path stroke-linecap="round" d="m16 16 4.5 4.5" />
-                </svg>
-                <span class="truncate">Pesquisar materiais, categorias, autores...</span>
-                <span
-                    class="ml-auto hidden rounded border border-slate-200 bg-white px-2 py-1 text-sm text-slate-400 md:inline">Abrir</span>
-            </a>
-
             <div class="flex shrink-0 items-center gap-2 sm:gap-4">
                 <a href="{{ route('profile.show') }}"
                     class="flex items-center gap-2 rounded-xl p-1.5 text-left transition hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-blue-600"
@@ -123,148 +110,150 @@
 
     {{-- SIDEBAR: sempre fixa à esquerda, acima do header e até o fim da tela.
          overflow-hidden corta os textos enquanto a barra encolhe. --}}
-    <aside id="app-sidebar" class="flex flex-col overflow-hidden border-r border-slate-200 bg-white"
-        style="position: fixed; left: 0; top: 0; bottom: 0; z-index: 50; width: 16rem; transition: width 400ms"
-        x-bind:style="sidebarCollapsed
-            ?
-            'position: fixed; left: 0; top: 0; bottom: 0; z-index: 50; width: 5rem; transition: width 400ms' :
-            'position: fixed; left: 0; top: 0; bottom: 0; z-index: 50; width: 16rem; transition: width 400ms'"
-        aria-label="Navegação principal">
+         <aside id="app-sidebar" class="flex flex-col overflow-hidden border-r border-blue-900 bg-blue-800"
+         style="position: fixed; left: 0; top: 0; bottom: 0; z-index: 50; width: 16rem; transition: width 400ms"
+         x-bind:style="sidebarCollapsed
+             ?
+             'position: fixed; left: 0; top: 0; bottom: 0; z-index: 50; width: 5rem; transition: width 400ms' :
+             'position: fixed; left: 0; top: 0; bottom: 0; z-index: 50; width: 16rem; transition: width 400ms'"
+         aria-label="Navegação principal">
 
-        {{-- Topo da sidebar: sanduíche dentro dela.
-             px-5 (20px) + botão de 40px + 20px = 80px: o ícone já fica centralizado na barra recolhida. --}}
-        <div class="flex shrink-0 items-center border-b border-slate-100 px-5" style="height: 4rem">
-            <button type="button"
-                class="inline-flex size-10 shrink-0 items-center justify-center rounded-xl text-slate-600 transition hover:bg-blue-50 hover:text-blue-900 focus:outline-none focus:ring-2 focus:ring-blue-600"
-                x-on:click="sidebarCollapsed = !sidebarCollapsed" x-bind:aria-expanded="!sidebarCollapsed"
-                aria-label="Recolher ou expandir barra lateral" title="Recolher ou expandir barra lateral">
-                <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
-                    aria-hidden="true">
-                    <path stroke-linecap="round" d="M4 6h16M4 12h16M4 18h16" />
-                </svg>
-            </button>
+         {{-- Topo da sidebar: sanduíche dentro dela.
+              px-5 (20px) + botão de 40px + 20px = 80px: o ícone já fica centralizado na barra recolhida. --}}
+         <div class="flex shrink-0 items-center border-b border-blue-700 px-5" style="height: 4rem">
+             <button type="button"
+                 class="inline-flex size-10 shrink-0 items-center justify-center rounded-xl text-white transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-white"
+                 x-on:click="sidebarCollapsed = !sidebarCollapsed" x-bind:aria-expanded="!sidebarCollapsed"
+                 aria-label="Recolher ou expandir barra lateral" title="Recolher ou expandir barra lateral">
+                 <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                     aria-hidden="true">
+                     <path stroke-linecap="round" d="M4 6h16M4 12h16M4 18h16" />
+                 </svg>
+             </button>
 
-            <div class="ml-3 shrink-0 whitespace-nowrap transition-opacity" x-bind:class="{!! $labelFade !!}">
-                <p class="text-sm font-bold text-blue-950">Biblioteca de Robótica</p>
-            </div>
-        </div>
+             <div class="ml-3 shrink-0 whitespace-nowrap transition-opacity" x-bind:class="{!! $labelFade !!}">
+                 <p class="text-sm font-bold text-white">Biblioteca de Robótica</p>
+             </div>
+         </div>
 
-        {{-- Navegação (só essa parte rola, se a lista crescer).
-             Links com px-[18px]: 12px do container + 18px + 10px (meio do ícone) = 40px, centro dos 80px. --}}
-        <div class="min-h-0 flex-1 overflow-y-auto overflow-x-hidden px-3 py-6">
+         {{-- Navegação (só essa parte rola, se a lista crescer) --}}
+         <div class="min-h-0 flex-1 overflow-y-auto overflow-x-hidden px-3 py-6">
 
-            <nav class="space-y-1">
-                @foreach ($navigationItems as $item)
-                    <a href="{{ route($item['route']) }}" title="{{ $item['label'] }}"
-                        style="padding-left: 18px; padding-right: 18px" @class([
-                            'group flex items-center gap-3 rounded-xl py-3 text-base font-medium transition',
-                            'bg-blue-900 text-white shadow-sm' => $item['active'],
-                            'text-slate-600 hover:bg-blue-50 hover:text-blue-900' => !$item['active'],
-                        ])
-                        @if ($item['active']) aria-current="page" @endif>
-                        <svg @class([
-                            'size-5 shrink-0',
-                            'text-blue-100' => $item['active'],
-                            'text-slate-400 group-hover:text-blue-700' => !$item['active'],
-                        ]) viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="1.7" aria-hidden="true">
-                            @switch($item['icon'])
-                                @case('home')
-                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                        d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1V10Z" />
-                                @break
+             <nav class="space-y-1">
+                 @foreach ($navigationItems as $item)
+                     <a href="{{ route($item['route']) }}" title="{{ $item['label'] }}"
+                         style="padding-left: 18px; padding-right: 18px" @class([
+                             'group flex items-center gap-3 rounded-xl py-3 text-base font-medium transition',
+                             'bg-white text-blue-800 shadow-sm' => $item['active'],
+                             'text-white hover:bg-blue-700' => !$item['active'],
+                         ])
+                         @if ($item['active']) aria-current="page" @endif>
+                         <svg @class([
+                             'size-5 shrink-0 transition-colors',
+                             'text-blue-800' => $item['active'],
+                             'text-white' => !$item['active'],
+                         ]) viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                             stroke-width="1.7" aria-hidden="true">
+                             @switch($item['icon'])
+                                 @case('home')
+                                     <path stroke-linecap="round" stroke-linejoin="round"
+                                         d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1V10Z" />
+                                 @break
 
-                                @case('book')
-                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                        d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v16H6.5A2.5 2.5 0 0 0 4 21.5v-16Z" />
-                                    <path stroke-linecap="round" d="M4 18.5A2.5 2.5 0 0 1 6.5 16H20M8 7h8M8 10h5" />
-                                @break
+                                 @case('book')
+                                     <path stroke-linecap="round" stroke-linejoin="round"
+                                         d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v16H6.5A2.5 2.5 0 0 0 4 21.5v-16Z" />
+                                     <path stroke-linecap="round" d="M4 18.5A2.5 2.5 0 0 1 6.5 16H20M8 7h8M8 10h5" />
+                                 @break
 
-                                @case('folder')
-                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                        d="M3 7.5A1.5 1.5 0 0 1 4.5 6H10l2 2h7.5A1.5 1.5 0 0 1 21 9.5v8a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 17.5v-10Z" />
-                                @break
+                                 @case('folder')
+                                     <path stroke-linecap="round" stroke-linejoin="round"
+                                         d="M3 7.5A1.5 1.5 0 0 1 4.5 6H10l2 2h7.5A1.5 1.5 0 0 1 21 9.5v8a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 17.5v-10Z" />
+                                 @break
 
-                                @case('users')
-                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                        d="M16 20v-1.5a3.5 3.5 0 0 0-3.5-3.5h-5A3.5 3.5 0 0 0 4 18.5V20m6-8a4 4 0 1 0-0-8 4 4 0 0 0 0 8Zm6-7.7a4 4 0 0 1 0 7.4m4 8.3v-1.5a3.5 3.5 0 0 0-2.5-3.35" />
-                                @break
+                                 @case('users')
+                                     <path stroke-linecap="round" stroke-linejoin="round"
+                                         d="M16 20v-1.5a3.5 3.5 0 0 0-3.5-3.5h-5A3.5 3.5 0 0 0 4 18.5V20m6-8a4 4 0 1 0-0-8 4 4 0 0 0 0 8Zm6-7.7a4 4 0 0 1 0 7.4m4 8.3v-1.5a3.5 3.5 0 0 0-2.5-3.35" />
+                                 @break
 
-                                @case('activity')
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 12h4l2.2-6 4.1 12 2.2-6H21" />
-                                @break
+                                 @case('activity')
+                                     <path stroke-linecap="round" stroke-linejoin="round" d="M3 12h4l2.2-6 4.1 12 2.2-6H21" />
+                                 @break
 
-                                @case('heart')
-                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                        d="M20.8 8.8c0 4.2-8.8 10.2-8.8 10.2S3.2 13 3.2 8.8A4.3 4.3 0 0 1 12 6.7a4.3 4.3 0 0 1 8.8 2.1Z" />
-                                @break
-                            @endswitch
-                        </svg>
+                                 @case('heart')
+                                     <path stroke-linecap="round" stroke-linejoin="round"
+                                         d="M20.8 8.8c0 4.2-8.8 10.2-8.8 10.2S3.2 13 3.2 8.8A4.3 4.3 0 0 1 12 6.7a4.3 4.3 0 0 1 8.8 2.1Z" />
+                                 @break
+                             @endswitch
+                         </svg>
 
-                        <span class="shrink-0 whitespace-nowrap transition-opacity"
-                            x-bind:class="{!! $labelFade !!}">
-                            {{ $item['label'] }}
-                        </span>
-                    </a>
-                @endforeach
-            </nav>
+                         <span class="shrink-0 whitespace-nowrap transition-opacity"
+                             x-bind:class="{!! $labelFade !!}">
+                             {{ $item['label'] }}
+                         </span>
+                     </a>
+                 @endforeach
+             </nav>
 
-            {{-- Conta --}}
-            <div class="mt-7 border-t border-slate-100 pt-5">
+             {{-- Conta --}}
+             <div class="mt-7 border-t border-blue-700 pt-5">
 
-                <p class="whitespace-nowrap px-3 pb-3 text-sm font-bold uppercase tracking-[0.14em] text-slate-400 transition-opacity"
-                    x-bind:class="{!! $labelFade !!}">
-                    Conta
-                </p>
+                 <p class="whitespace-nowrap px-3 pb-3 text-sm font-bold uppercase tracking-[0.14em] text-blue-200 transition-opacity"
+                     x-bind:class="{!! $labelFade !!}">
+                     Conta
+                 </p>
 
-                <a href="{{ route('profile.show') }}" title="Meu perfil"
-                    style="padding-left: 18px; padding-right: 18px" @class([
-                        'group flex items-center gap-3 rounded-xl py-3 text-base font-medium transition',
-                        'bg-blue-50 text-blue-900' => request()->routeIs('profile.show'),
-                        'text-slate-600 hover:bg-blue-50 hover:text-blue-900' => !request()->routeIs(
-                            'profile.show'),
-                    ])>
-                    <svg class="size-5 shrink-0 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                        stroke-width="1.7" aria-hidden="true">
-                        <circle cx="12" cy="8" r="3.5" />
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 21v-1.5a7 7 0 0 1 14 0V21H5Z" />
-                    </svg>
+                 <a href="{{ route('profile.show') }}" title="Meu perfil"
+                     style="padding-left: 18px; padding-right: 18px" @class([
+                         'group flex items-center gap-3 rounded-xl py-3 text-base font-medium transition',
+                         'bg-white text-blue-800 shadow-sm' => request()->routeIs('profile.show'),
+                         'text-white hover:bg-blue-700' => !request()->routeIs('profile.show'),
+                     ])>
+                     <svg @class([
+                         'size-5 shrink-0 transition-colors',
+                         'text-blue-800' => request()->routeIs('profile.show'),
+                         'text-white' => !request()->routeIs('profile.show'),
+                     ]) viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                         stroke-width="1.7" aria-hidden="true">
+                         <circle cx="12" cy="8" r="3.5" />
+                         <path stroke-linecap="round" stroke-linejoin="round" d="M5 21v-1.5a7 7 0 0 1 14 0V21H5Z" />
+                     </svg>
 
-                    <span class="shrink-0 whitespace-nowrap transition-opacity"
-                        x-bind:class="{!! $labelFade !!}">Meu perfil</span>
-                </a>
+                     <span class="shrink-0 whitespace-nowrap transition-opacity"
+                         x-bind:class="{!! $labelFade !!}">Meu perfil</span>
+                 </a>
 
-                {{-- Sair: no header ele some em telas pequenas, então fica aqui também --}}
-                <form method="POST" action="{{ route('logout') }}" class="mt-1 sm:hidden">
-                    @csrf
-                    <button type="submit" title="Sair" style="padding-left: 18px; padding-right: 18px"
-                        class="flex w-full items-center gap-3 rounded-xl py-3 text-base font-medium text-slate-600 transition hover:bg-blue-50 hover:text-blue-900">
-                        <svg class="size-5 shrink-0 text-slate-400" viewBox="0 0 24 24" fill="none"
-                            stroke="currentColor" stroke-width="1.7" aria-hidden="true">
-                            <path stroke-linecap="round" stroke-linejoin="round"
-                                d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3M10 17l5-5-5-5M15 12H4" />
-                        </svg>
-                        <span class="shrink-0 whitespace-nowrap transition-opacity"
-                            x-bind:class="{!! $labelFade !!}">Sair</span>
-                    </button>
-                </form>
-            </div>
-        </div>
+                 {{-- Sair: no header ele some em telas pequenas, então fica aqui também --}}
+                 <form method="POST" action="{{ route('logout') }}" class="mt-1 sm:hidden">
+                     @csrf
+                     <button type="submit" title="Sair" style="padding-left: 18px; padding-right: 18px"
+                         class="flex w-full items-center gap-3 rounded-xl py-3 text-base font-medium text-white transition hover:bg-blue-700">
+                         <svg class="size-5 shrink-0 text-white" viewBox="0 0 24 24" fill="none"
+                             stroke="currentColor" stroke-width="1.7" aria-hidden="true">
+                             <path stroke-linecap="round" stroke-linejoin="round"
+                                 d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3M10 17l5-5-5-5M15 12H4" />
+                         </svg>
+                         <span class="shrink-0 whitespace-nowrap transition-opacity"
+                             x-bind:class="{!! $labelFade !!}">Sair</span>
+                     </button>
+                 </form>
+             </div>
+         </div>
 
-        {{-- Rodapé (some com fade quando recolhida) --}}
-        <div class="shrink-0 border-t border-slate-100 p-4 transition-opacity" x-bind:class="{!! $labelFade !!}">
-            <div class="flex items-center gap-2.5 overflow-hidden rounded-xl border border-blue-100 bg-blue-50 p-3">
-                <span
-                    class="flex size-8 shrink-0 items-center justify-center rounded-lg bg-white text-blue-900 shadow-sm">
-                    <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
-                        aria-hidden="true">
-                        <path stroke-linecap="round" stroke-linejoin="round"
-                            d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v16H6.5A2.5 2.5 0 0 0 4 21.5v-16Z" />
-                        <path stroke-linecap="round" d="M4 18.5A2.5 2.5 0 0 1 6.5 16H20M8 7h8M8 10h5" />
-                    </svg>
-                </span>
-                <p class="min-w-0 truncate whitespace-nowrap text-sm font-bold text-blue-950">Biblioteca Digital</p>
-            </div>
-        </div>
-    </aside>
+         {{-- Rodapé (some com fade quando recolhida) --}}
+         <div class="shrink-0 border-t border-blue-700 p-4 transition-opacity" x-bind:class="{!! $labelFade !!}">
+             <div class="flex items-center gap-2.5 overflow-hidden rounded-xl border border-blue-700 bg-blue-900 p-3">
+                 <span
+                     class="flex size-8 shrink-0 items-center justify-center rounded-lg bg-white text-blue-800 shadow-sm">
+                     <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
+                         aria-hidden="true">
+                         <path stroke-linecap="round" stroke-linejoin="round"
+                             d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v16H6.5A2.5 2.5 0 0 0 4 21.5v-16Z" />
+                         <path stroke-linecap="round" d="M4 18.5A2.5 2.5 0 0 1 6.5 16H20M8 7h8M8 10h5" />
+                     </svg>
+                 </span>
+                 <p class="min-w-0 truncate whitespace-nowrap text-sm font-bold text-white">Biblioteca Digital</p>
+             </div>
+         </div>
+     </aside>
 </div>

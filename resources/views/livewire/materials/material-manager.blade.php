@@ -13,7 +13,7 @@
         @enderror
 
         <div class="mb-5 grid grid-cols-1 gap-4 md:grid-cols-3">
-            <x-ts-input wire:model.live.debounce.300ms="search" label="Buscar material" placeholder="Título ou autor" />
+            <x-search-field model="search" label="Buscar material" placeholder="Título ou autor" />
             <x-ts-select.styled
                 wire:model.live="statusFilter"
                 label="Status"
@@ -29,48 +29,41 @@
             />
         </div>
 
-        <div class="overflow-x-auto rounded-md border border-gray-200 bg-white shadow-sm">
-            <table class="min-w-full divide-y divide-gray-200">
-                <thead class="bg-gray-50">
-                    <tr>
-                        <th scope="col" class="px-5 py-3 text-left text-xs font-semibold uppercase text-gray-600">Título</th>
-                        <th scope="col" class="px-5 py-3 text-left text-xs font-semibold uppercase text-gray-600">Categoria</th>
-                        <th scope="col" class="px-5 py-3 text-left text-xs font-semibold uppercase text-gray-600">Tipo</th>
-                        <th scope="col" class="px-5 py-3 text-left text-xs font-semibold uppercase text-gray-600">Status</th>
-                        <th scope="col" class="px-5 py-3 text-right text-xs font-semibold uppercase text-gray-600">Ações</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-gray-100">
-                    @forelse ($materials as $material)
-                        <tr wire:key="material-{{ $material->id }}">
-                            <td class="px-5 py-4 text-sm font-medium text-gray-900">
-                                <a class="text-blue-700 hover:underline" href="{{ route('painel.materials.show', $material) }}">{{ $material->title }}</a>
-                            </td>
-                            <td class="px-5 py-4 text-sm text-gray-600">{{ $material->category->name }}</td>
-                            <td class="px-5 py-4 text-sm text-gray-600">{{ $material->type }}</td>
-                            <td class="px-5 py-4 text-sm text-gray-600">{{ $material->status->label() }}</td>
-                            <td class="px-5 py-4 text-right text-sm">
-                                <div class="flex justify-end gap-2">
-                                    <x-ts-button color="slate" wire:click="editMaterial({{ $material->id }})">Editar</x-ts-button>
-                                    @if ($material->status !== \App\Enums\MaterialStatus::PUBLISHED)
-                                        <x-ts-button color="green" wire:click="publish({{ $material->id }})">Publicar</x-ts-button>
-                                    @endif
-                                    @if ($material->status !== \App\Enums\MaterialStatus::ARCHIVED)
-                                        <x-ts-button color="red" wire:click="archive({{ $material->id }})">Arquivar</x-ts-button>
-                                    @endif
-                                </div>
-                            </td>
-                        </tr>
-                    @empty
-                        <tr>
-                            <td colspan="5" class="px-5 py-10 text-center text-sm text-gray-500">Nenhum material encontrado.</td>
-                        </tr>
-                    @endforelse
-                </tbody>
-            </table>
-        </div>
+        <x-data-table :columns="[
+            ['label' => 'Título'],
+            ['label' => 'Categoria'],
+            ['label' => 'Tipo'],
+            ['label' => 'Status'],
+            ['label' => 'Ações', 'align' => 'right'],
+        ]">
+            @forelse ($materials as $material)
+                <tr wire:key="material-{{ $material->id }}">
+                    <td class="px-5 py-4 text-sm font-medium text-gray-900">
+                        <a class="text-blue-700 hover:underline" href="{{ route('painel.materials.show', $material) }}">{{ $material->title }}</a>
+                    </td>
+                    <td class="px-5 py-4 text-sm text-gray-600">{{ $material->category->name }}</td>
+                    <td class="px-5 py-4 text-sm text-gray-600">{{ $material->type }}</td>
+                    <td class="px-5 py-4 text-sm text-gray-600">{{ $material->status->label() }}</td>
+                    <td class="px-5 py-4 text-right text-sm">
+                        <div class="flex justify-end gap-2">
+                            <x-ts-button color="slate" wire:click="editMaterial({{ $material->id }})">Editar</x-ts-button>
+                            @if ($material->status !== \App\Enums\MaterialStatus::PUBLISHED)
+                                <x-ts-button color="green" wire:click="publish({{ $material->id }})">Publicar</x-ts-button>
+                            @endif
+                            @if ($material->status !== \App\Enums\MaterialStatus::ARCHIVED)
+                                <x-ts-button color="red" wire:click="archive({{ $material->id }})">Arquivar</x-ts-button>
+                            @endif
+                        </div>
+                    </td>
+                </tr>
+            @empty
+                <x-data-table.empty-state :colspan="5">
+                    Nenhum material encontrado.
+                </x-data-table.empty-state>
+            @endforelse
+        </x-data-table>
 
-        <div class="mt-4">{{ $materials->links() }}</div>
+        <x-pagination :paginator="$materials" class="mt-4" />
 
         @if ($showForm)
             <div class="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-gray-900/50 px-4 py-8 sm:items-center">

@@ -151,6 +151,56 @@ it('preserves filters for each tab while switching between them', function () {
         ->assertSet('accessesUserFilter', (string) $admin->getKey());
 });
 
+it('shows each tab filters and clears only the active tab filters', function () {
+    $admin = User::factory()->admin()->create();
+    $teacher = User::factory()->teacher()->create();
+    $material = Material::factory()->create();
+
+    Livewire::actingAs($admin)
+        ->test(ActivityLogIndex::class)
+        ->assertSee('wire:model.live="downloadsUserFilter"', false)
+        ->assertSee('wire:model.live="downloadsMaterialFilter"', false)
+        ->assertSee('wire:click="clearDownloadsFilters"', false)
+        ->set('downloadsUserFilter', (string) $teacher->getKey())
+        ->set('downloadsMaterialFilter', (string) $material->getKey())
+        ->set('downloadsFromDate', '2026-10-01')
+        ->set('downloadsUntilDate', '2026-10-02')
+        ->set('activeTab', 'changes')
+        ->assertSee('wire:model.live="changesActionFilter"', false)
+        ->assertSee('wire:click="clearChangesFilters"', false)
+        ->set('changesUserFilter', (string) $teacher->getKey())
+        ->set('changesActionFilter', ActivityAction::USER_CREATED->value)
+        ->set('changesFromDate', '2026-10-03')
+        ->set('changesUntilDate', '2026-10-04')
+        ->set('activeTab', 'accesses')
+        ->assertSee('wire:model.live="accessesUserFilter"', false)
+        ->assertSee('wire:click="clearAccessesFilters"', false)
+        ->set('accessesUserFilter', (string) $admin->getKey())
+        ->set('accessesFromDate', '2026-10-05')
+        ->set('accessesUntilDate', '2026-10-06')
+        ->set('activeTab', 'downloads')
+        ->call('clearDownloadsFilters')
+        ->assertSet('downloadsUserFilter', '')
+        ->assertSet('downloadsMaterialFilter', '')
+        ->assertSet('downloadsFromDate', '')
+        ->assertSet('downloadsUntilDate', '')
+        ->assertSet('changesUserFilter', (string) $teacher->getKey())
+        ->assertSet('changesActionFilter', ActivityAction::USER_CREATED->value)
+        ->assertSet('accessesUserFilter', (string) $admin->getKey())
+        ->set('activeTab', 'changes')
+        ->call('clearChangesFilters')
+        ->assertSet('changesUserFilter', '')
+        ->assertSet('changesActionFilter', '')
+        ->assertSet('changesFromDate', '')
+        ->assertSet('changesUntilDate', '')
+        ->assertSet('accessesUserFilter', (string) $admin->getKey())
+        ->set('activeTab', 'accesses')
+        ->call('clearAccessesFilters')
+        ->assertSet('accessesUserFilter', '')
+        ->assertSet('accessesFromDate', '')
+        ->assertSet('accessesUntilDate', '');
+});
+
 it('registers login and logout events without logging credentials', function () {
     $user = User::factory()->staff()->create();
 

@@ -20,6 +20,73 @@ class ActivityLogIndex extends Component
 {
     use WithPagination;
 
+    /**
+     * @var array<string, array{
+     *     label: string,
+     *     clearMethod: string,
+     *     filterGridColumns: string,
+     *     headerStyle: string,
+     *     filters: array<int, array<string, string>>,
+     *     columns: array<int, array{label: string, nowrap?: bool}>
+     * }>
+     */
+    private const TAB_PRESENTATION = [
+        'downloads' => [
+            'label' => 'Downloads',
+            'clearMethod' => 'clearDownloadsFilters',
+            'filterGridColumns' => 'md:grid-cols-2 xl:grid-cols-4',
+            'headerStyle' => 'blue',
+            'filters' => [
+                ['label' => 'Usuário', 'model' => 'downloadsUserFilter', 'type' => 'select', 'placeholder' => 'Todos os usuários', 'options' => 'users'],
+                ['label' => 'Material', 'model' => 'downloadsMaterialFilter', 'type' => 'select', 'placeholder' => 'Todos os materiais', 'options' => 'materials'],
+                ['label' => 'De', 'model' => 'downloadsFromDate', 'type' => 'date'],
+                ['label' => 'Até', 'model' => 'downloadsUntilDate', 'type' => 'date'],
+            ],
+            'columns' => [
+                ['label' => 'Data e hora', 'nowrap' => true],
+                ['label' => 'Usuário'],
+                ['label' => 'Material'],
+                ['label' => 'Versão'],
+                ['label' => 'Categoria'],
+            ],
+        ],
+        'changes' => [
+            'label' => 'Cadastros e alterações',
+            'clearMethod' => 'clearChangesFilters',
+            'filterGridColumns' => 'md:grid-cols-2 xl:grid-cols-4',
+            'headerStyle' => 'blue',
+            'filters' => [
+                ['label' => 'Usuário', 'model' => 'changesUserFilter', 'type' => 'select', 'placeholder' => 'Todos os usuários', 'options' => 'users'],
+                ['label' => 'Ação', 'model' => 'changesActionFilter', 'type' => 'select', 'placeholder' => 'Todas as ações', 'options' => 'actions'],
+                ['label' => 'De', 'model' => 'changesFromDate', 'type' => 'date'],
+                ['label' => 'Até', 'model' => 'changesUntilDate', 'type' => 'date'],
+            ],
+            'columns' => [
+                ['label' => 'Data e hora', 'nowrap' => true],
+                ['label' => 'Quem fez'],
+                ['label' => 'Ação'],
+                ['label' => 'O que foi afetado'],
+            ],
+        ],
+        'accesses' => [
+            'label' => 'Acessos',
+            'clearMethod' => 'clearAccessesFilters',
+            'filterGridColumns' => 'md:grid-cols-3',
+            'headerStyle' => 'blue',
+            'filters' => [
+                ['label' => 'Usuário', 'model' => 'accessesUserFilter', 'type' => 'select', 'placeholder' => 'Todos os usuários', 'options' => 'users'],
+                ['label' => 'De', 'model' => 'accessesFromDate', 'type' => 'date'],
+                ['label' => 'Até', 'model' => 'accessesUntilDate', 'type' => 'date'],
+            ],
+            'columns' => [
+                ['label' => 'Data e hora', 'nowrap' => true],
+                ['label' => 'Usuário'],
+                ['label' => 'Ação'],
+                ['label' => 'Descrição'],
+            ],
+        ],
+    ];
+
     #[Url]
     public string $activeTab = 'downloads';
 
@@ -119,12 +186,38 @@ class ActivityLogIndex extends Component
             default => abort(404),
         };
 
+        $users = User::query()->orderBy('name')->get(['id', 'name']);
+        $materials = Material::query()->orderBy('title')->get(['id', 'title']);
+        $tabPresentation = self::TAB_PRESENTATION[$this->activeTab];
+        $filterOptions = [
+            'users' => $users->mapWithKeys(
+                static fn (User $user): array => [(string) $user->getKey() => $user->name],
+            )->all(),
+            'materials' => $materials->mapWithKeys(
+                static fn (Material $material): array => [(string) $material->getKey() => $material->title],
+            )->all(),
+            'actions' => collect($this->changeActions())
+                ->mapWithKeys(
+                    static fn (ActivityAction $action): array => [
+                        $action->value => $action->label(),
+                    ],
+                )
+                ->all(),
+        ];
+        $tabLabels = $this->tabLabels();
+
         return view('livewire.activity.activity-log-index', [
             'records' => $records,
-            'users' => User::query()->orderBy('name')->get(['id', 'name']),
-            'materials' => Material::query()->orderBy('title')->get(['id', 'title']),
-            'changeActions' => $this->changeActions(),
+            'filterFields' => $tabPresentation['filters'],
+            'filterOptions' => $filterOptions,
+            'filterGridColumns' => $tabPresentation['filterGridColumns'],
+            'clearFiltersMethod' => $tabPresentation['clearMethod'],
+            'columns' => $tabPresentation['columns'],
+            'tableHeaderStyle' => $tabPresentation['headerStyle'],
             'actionBadgeClasses' => $this->actionBadgeClasses(),
+            'tabLabels' => $tabLabels,
+            'activeTabLabel' => $tabPresentation['label'],
+            'emptyMessage' => 'Nenhum registro encontrado',
         ]);
     }
 
@@ -243,7 +336,18 @@ class ActivityLogIndex extends Component
      */
     private function tabs(): array
     {
-        return ['downloads', 'changes', 'accesses'];
+        return array_keys(self::TAB_PRESENTATION);
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    private function tabLabels(): array
+    {
+        return array_map(
+            static fn (array $tab): string => $tab['label'],
+            self::TAB_PRESENTATION,
+        );
     }
 
     /**
