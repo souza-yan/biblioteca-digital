@@ -130,9 +130,8 @@
                      <path stroke-linecap="round" d="M4 6h16M4 12h16M4 18h16" />
                  </svg>
              </button>
-
              <div class="ml-3 shrink-0 whitespace-nowrap transition-opacity" x-bind:class="{!! $labelFade !!}">
-                 <p class="text-sm font-bold text-white">Biblioteca de Robótica</p>
+                 <p class="text-base font-bold text-white">Biblioteca de Robótica</p>
              </div>
          </div>
 
@@ -237,22 +236,6 @@
                              x-bind:class="{!! $labelFade !!}">Sair</span>
                      </button>
                  </form>
-             </div>
-         </div>
-
-         {{-- Rodapé (some com fade quando recolhida) --}}
-         <div class="shrink-0 border-t border-blue-700 p-4 transition-opacity" x-bind:class="{!! $labelFade !!}">
-             <div class="flex items-center gap-2.5 overflow-hidden rounded-xl border border-blue-700 bg-blue-900 p-3">
-                 <span
-                     class="flex size-8 shrink-0 items-center justify-center rounded-lg bg-white text-blue-800 shadow-sm">
-                     <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
-                         aria-hidden="true">
-                         <path stroke-linecap="round" stroke-linejoin="round"
-                             d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v16H6.5A2.5 2.5 0 0 0 4 21.5v-16Z" />
-                         <path stroke-linecap="round" d="M4 18.5A2.5 2.5 0 0 1 6.5 16H20M8 7h8M8 10h5" />
-                     </svg>
-                 </span>
-                 <p class="min-w-0 truncate whitespace-nowrap text-sm font-bold text-white">Biblioteca Digital</p>
              </div>
          </div>
      </aside>

@@ -1,9 +1,4 @@
-@props([
-    'columns',
-    'headerStyle' => 'blue',
-    'stickyHeader' => false,
-    'compactHeader' => false,
-])
+@props(['columns', 'headerStyle' => 'blue', 'stickyHeader' => false, 'compactHeader' => false])
 
 <div {{ $attributes->class('overflow-x-auto rounded-md border border-gray-200 bg-white shadow-sm') }}>
     <table class="min-w-full divide-y divide-gray-200">
@@ -15,18 +10,15 @@
         ])>
             <tr>
                 @foreach ($columns as $column)
-                    <th
-                        scope="col"
-                        @class([
-                            'px-4 py-3 text-xs font-semibold uppercase' => $compactHeader,
-                            'px-5 py-3 text-xs font-semibold uppercase' => ! $compactHeader,
-                            'text-left' => ($column['align'] ?? 'left') === 'left',
-                            'text-right' => ($column['align'] ?? 'left') === 'right',
-                            'whitespace-nowrap' => $column['nowrap'] ?? false,
-                            'text-white' => $headerStyle === 'blue',
-                            'text-gray-600' => $headerStyle === 'gray',
-                        ])
-                    >
+                    <th scope="col" @class([
+                        'px-4 py-3 text-base font-semibold uppercase' => $compactHeader,
+                        'px-5 py-3 text-base font-semibold uppercase' => !$compactHeader,
+                        'text-left' => ($column['align'] ?? 'left') === 'left',
+                        'text-right' => ($column['align'] ?? 'left') === 'right',
+                        'whitespace-nowrap' => $column['nowrap'] ?? false,
+                        'text-white' => $headerStyle === 'blue',
+                        'text-gray-600' => $headerStyle === 'gray',
+                    ])>
                         {{ $column['label'] }}
                     </th>
                 @endforeach

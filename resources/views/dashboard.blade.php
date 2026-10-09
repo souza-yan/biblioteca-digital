@@ -14,14 +14,14 @@
             {{-- Visão Geral --}}
             <header class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
                 <div class="min-w-0 space-y-2">
-                    <h1 class="text-3xl font-bold tracking-tight text-blue-900 sm:text-4xl">Visão Geral</h1>
+                    <h1 class="text-3xl font-bold tracking-tight text-blue-800 sm:text-4xl">Visão Geral</h1>
                     <p class="text-base text-slate-500 sm:text-lg">
                         Acompanhe os principais indicadores da sua biblioteca digital.
                     </p>
                 </div>
 
                 <a href="{{ route('painel.library') }}"
-                    class="inline-flex shrink-0 items-center gap-2 text-base font-semibold text-blue-700 hover:text-blue-900">
+                    class="inline-flex shrink-0 items-center gap-2 text-base font-semibold text-blue-800 hover:text-blue-800">
                     Ver biblioteca
                     <span aria-hidden="true">›</span>
                 </a>
@@ -30,7 +30,7 @@
             {{-- Acesso rápido --}}
             <section aria-labelledby="quick-links-title">
                 <div class="mb-4">
-                    <p class="text-sm font-semibold uppercase tracking-[0.14em] text-blue-700">
+                    <p class="text-sm font-semibold uppercase tracking-[0.14em] text-blue-800">
                         Acesso rápido
                     </p>
 
@@ -54,8 +54,8 @@
                             'href' => route('painel.library'),
                             'title' => 'Explorar categorias',
                             'text' => 'Filtre a biblioteca por categoria',
-                            'box' => 'bg-violet-50 text-violet-600',
-                            'border' => 'border-violet-100',
+                            'box' => 'bg-violet-10 text-violet-600',
+                            'border' => 'border-violet-600',
                             'icon' =>
                                 '<path stroke-linecap="round" stroke-linejoin="round" d="M3 7.5A1.5 1.5 0 0 1 4.5 6H10l2 2h7.5A1.5 1.5 0 0 1 21 9.5v8a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 17.5v-10Z" />',
                         ],
@@ -93,7 +93,7 @@
                             </span>
 
                             <span class="min-w-0 flex-1">
-                                <span class="block text-lg font-semibold text-blue-700">
+                                <span class="block text-lg font-semibold text-blue-800">
                                     {{ $link['title'] }}
                                 </span>
 
@@ -118,7 +118,7 @@
                 <section class="w-full min-w-0 space-y-4 lg:col-span-6" aria-labelledby="recently-accessed-title">
                     <div class="flex items-end justify-between gap-4">
                         <div>
-                            <p class="text-sm font-semibold uppercase tracking-[0.14em] text-blue-700">
+                            <p class="text-sm font-semibold uppercase tracking-[0.14em] text-blue-800">
                                 Continue de onde parou
                             </p>
 
@@ -134,7 +134,7 @@
                                 class="group flex w-full min-w-0 items-center justify-between gap-4 border-b border-slate-100 p-4 transition last:border-b-0 hover:bg-blue-50/50 sm:p-5">
                                 <span class="min-w-0 flex-1">
                                     <span
-                                        class="block truncate text-base font-semibold text-slate-800 group-hover:text-blue-900">
+                                        class="block truncate text-base font-semibold text-slate-800 group-hover:text-blue-800">
                                         {{ $material->title }}
                                     </span>
 
@@ -145,7 +145,7 @@
                                     </span>
                                 </span>
 
-                                <span class="shrink-0 whitespace-nowrap text-sm font-semibold text-blue-700">
+                                <span class="shrink-0 whitespace-nowrap text-sm font-semibold text-blue-800">
                                     Abrir material
                                     <span aria-hidden="true">→</span>
                                 </span>
@@ -163,7 +163,7 @@
                 <section class="w-full min-w-0 space-y-4 lg:col-span-6" aria-labelledby="recent-materials-title">
                     <div class="flex items-end justify-between gap-4">
                         <div>
-                            <p class="text-sm font-semibold uppercase tracking-[0.14em] text-blue-700">
+                            <p class="text-sm font-semibold uppercase tracking-[0.14em] text-blue-800">
                                 Descubra conteúdos
                             </p>
 
@@ -173,7 +173,7 @@
                         </div>
 
                         <a href="{{ route('painel.library') }}"
-                            class="shrink-0 text-sm font-semibold text-blue-700 hover:text-blue-900">
+                            class="shrink-0 text-sm font-semibold text-blue-800 hover:text-blue-800">
                             Ver biblioteca
                             <span aria-hidden="true">→</span>
                         </a>
@@ -195,7 +195,7 @@
 
                                 <span class="min-w-0 flex-1">
                                     <span
-                                        class="block truncate text-base font-semibold text-slate-800 group-hover:text-blue-900">
+                                        class="block truncate text-base font-semibold text-slate-800 group-hover:text-blue-800">
                                         {{ $material->title }}
                                     </span>
 
@@ -210,7 +210,7 @@
                                     </span>
                                 </span>
 
-                                <svg class="size-5 shrink-0 text-slate-300 transition group-hover:translate-x-0.5 group-hover:text-blue-700"
+                                <svg class="size-5 shrink-0 text-slate-300 transition group-hover:translate-x-0.5 group-hover:text-blue-800"
                                     viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
                                     aria-hidden="true">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14m-6-6 6 6-6 6" />
@@ -249,7 +249,7 @@
 
             <header class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
                 <div class="min-w-0 space-y-2">
-                    <h1 class="text-3xl font-bold tracking-tight text-blue-900 sm:text-4xl">
+                    <h1 class="text-3xl font-bold tracking-tight text-blue-800 sm:text-4xl">
                         Visão Geral
                     </h1>
 
@@ -259,7 +259,7 @@
                 </div>
 
                 <a href="{{ route('painel.materials') }}"
-                    class="inline-flex shrink-0 items-center gap-2 text-base font-semibold text-blue-700 hover:text-blue-900">
+                    class="inline-flex shrink-0 items-center gap-2 text-base font-semibold text-blue-800 hover:text-blue-800">
                     Ver materiais
                     <span aria-hidden="true">›</span>
                 </a>
@@ -279,7 +279,7 @@
                     </span>
 
                     <div class="min-w-0">
-                        <p class="text-lg font-semibold text-blue-700">
+                        <p class="text-lg font-semibold text-blue-800">
                             Total de materiais
                         </p>
 
@@ -306,11 +306,11 @@
                     </span>
 
                     <div class="min-w-0">
-                        <p class="text-lg font-semibold text-blue-700">
+                        <p class="text-lg font-semibold text-blue-800">
                             Total de categorias
                         </p>
 
-                        <p class="mt-1 text-4xl font-bold tracking-tight text-blue-700 sm:text-5xl">
+                        <p class="mt-1 text-4xl font-bold tracking-tight text-blue-800 sm:text-5xl">
                             {{ number_format($categoryCounts['total'], 0, ',', '.') }}
                         </p>
 
@@ -334,11 +334,11 @@
                     </span>
 
                     <div class="min-w-0">
-                        <p class="text-lg font-semibold text-blue-700">
+                        <p class="text-lg font-semibold text-blue-800">
                             Usuários ativos
                         </p>
 
-                        <p class="mt-1 text-4xl font-bold tracking-tight text-blue-700 sm:text-5xl">
+                        <p class="mt-1 text-4xl font-bold tracking-tight text-blue-800 sm:text-5xl">
                             {{ number_format($activeUsersCount, 0, ',', '.') }}
                         </p>
 
@@ -359,16 +359,16 @@
                     </span>
 
                     <div class="min-w-0">
-                        <p class="text-base font-semibold text-blue-700">
+                        <p class="text-lg font-semibold text-blue-800">
                             Downloads
                         </p>
 
-                        <p class="mt-1 text-4xl font-bold tracking-tight text-blue-700 sm:text-5xl">
+                        <p class="mt-1 text-4xl font-bold tracking-tight text-blue-800 sm:text-5xl">
                             {{ number_format($recentDownloadsCount, 0, ',', '.') }}
                         </p>
 
                         <p class="mt-1 text-base text-slate-500">
-                            Nos últimos 30 dias
+                            nos últimos 30 dias
                         </p>
                     </div>
                 </article>
@@ -474,7 +474,7 @@
                     </div>
 
                     <a href="{{ route('painel.categories') }}"
-                        class="mt-6 inline-flex text-base font-semibold text-blue-700 hover:text-blue-900">
+                        class="mt-6 inline-flex text-base font-semibold text-blue-800 hover:text-blue-800">
                         Gerenciar categorias
                         <span class="ml-1" aria-hidden="true">›</span>
                     </a>
@@ -500,7 +500,7 @@
                         </div>
 
                         <a href="{{ route('painel.materials.most-downloaded', ['downloadPeriod' => $downloadPeriod]) }}"
-                            class="shrink-0 text-base font-semibold text-blue-700 hover:text-blue-900">
+                            class="shrink-0 text-base font-semibold text-blue-800 hover:text-blue-800">
                             Ver todas
                             <span aria-hidden="true">›</span>
                         </a>
@@ -561,7 +561,7 @@
                         </div>
 
                         <a href="{{ route('painel.activities') }}"
-                            class="shrink-0 text-base font-semibold text-blue-700 hover:text-blue-900">
+                            class="shrink-0 text-base font-semibold text-blue-800 hover:text-blue-800">
                             Ver todas
                             <span aria-hidden="true">›</span>
                         </a>

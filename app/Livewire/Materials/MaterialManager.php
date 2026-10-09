@@ -33,7 +33,7 @@ class MaterialManager extends Component
 
     public ?string $search = '';
 
-    public ?string $statusFilter = '';
+    public string $statusFilter = '';
 
     public ?string $categoryFilter = '';
 
@@ -45,6 +45,8 @@ class MaterialManager extends Component
     public function mount(): void
     {
         $this->authorizeManager();
+
+        $this->statusFilter = MaterialStatus::PUBLISHED->value;
     }
 
     public function updatedSearch(): void
@@ -53,9 +55,14 @@ class MaterialManager extends Component
         $this->resetPage();
     }
 
-    public function updatedStatusFilter(): void
+    public function updatedStatusFilter($value): void
     {
         $this->authorizeManager();
+
+        if (MaterialStatus::tryFrom((string) $value) === null) {
+            $this->statusFilter = MaterialStatus::PUBLISHED->value;
+        }
+
         $this->resetPage();
     }
 
@@ -97,9 +104,7 @@ class MaterialManager extends Component
     public function save(CreateMaterialWithVersion $createMaterialWithVersion, UpdateMaterial $updateMaterial): void
     {
         $actor = $this->authorizeManager();
-        $material = $this->editingMaterialId === null
-            ? null
-            : $this->findManagedMaterial($this->editingMaterialId, 'update');
+        $material = $this->editingMaterialId === null ? null : $this->findManagedMaterial($this->editingMaterialId, 'update');
         $temporaryFile = $this->form->file;
 
         if ($material === null) {
@@ -113,7 +118,7 @@ class MaterialManager extends Component
             if ($material === null) {
                 $uploadedFile = $attributes['file'] ?? null;
 
-                if (! $uploadedFile instanceof UploadedFile) {
+                if (!$uploadedFile instanceof UploadedFile) {
                     $this->addError('form.file', 'O arquivo enviado é inválido.');
 
                     return;
@@ -123,13 +128,7 @@ class MaterialManager extends Component
                 $changeNote = $attributes['change_note'] ?: null;
                 unset($attributes['file'], $attributes['change_note'], $attributes['initialStatus']);
 
-                $createMaterialWithVersion->handle(
-                    $actor,
-                    $attributes,
-                    $uploadedFile,
-                    $changeNote,
-                    $initialStatus,
-                );
+                $createMaterialWithVersion->handle($actor, $attributes, $uploadedFile, $changeNote, $initialStatus);
             } else {
                 $updateMaterial->handle($actor, $material, $attributes);
             }
@@ -151,7 +150,7 @@ class MaterialManager extends Component
         $actor = $this->authorizeManager();
         $material = $this->findManagedMaterial($materialId, 'publish');
 
-        if (! $material->currentVersion()->exists()) {
+        if (!$material->currentVersion()->exists()) {
             $this->addError('publish', 'O material precisa ter uma versão atual para ser publicado.');
 
             return;
@@ -174,19 +173,16 @@ class MaterialManager extends Component
     {
         $this->authorizeManager();
 
-        $status = filled($this->statusFilter)
-            ? MaterialStatus::tryFrom($this->statusFilter)
-            : null;
+        $status = MaterialStatus::tryFrom($this->statusFilter) ?? MaterialStatus::PUBLISHED;
 
         $materials = Material::query()
             ->with(['category', 'currentVersion'])
             ->when(filled($this->search), function (Builder $query): void {
                 $query->where(function (Builder $query): void {
-                    $query->where('title', 'like', '%' . $this->search . '%')
-                        ->orWhere('author', 'like', '%' . $this->search . '%');
+                    $query->where('title', 'like', '%' . $this->search . '%')->orWhere('author', 'like', '%' . $this->search . '%');
                 });
             })
-            ->when($status, fn(Builder $query, MaterialStatus $s): Builder => $query->where('status', $s->value))
+            ->where('status', $status->value)
             ->when(filled($this->categoryFilter), fn(Builder $query): Builder => $query->where('category_id', $this->categoryFilter))
             ->orderBy('title')
             ->paginate(15);
@@ -200,7 +196,6 @@ class MaterialManager extends Component
             'categories' => Category::query()->orderBy('name')->get(),
             'activeCategories' => Category::query()->where('is_active', true)->orderBy('name')->get(),
             'statusOptions' => [
-                ['label' => 'Todos os status', 'value' => ''],
                 ...array_map(
                     fn(MaterialStatus $status): array => [
                         'label' => $status->label(),
