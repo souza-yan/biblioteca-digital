@@ -7,6 +7,37 @@
 
     <title>{{ config('app.name', 'Biblioteca Digital de Robótica') }}</title>
 
+    {{-- Aplica o estado da sidebar ANTES da primeira renderização --}}
+    <script>
+        try {
+            if (localStorage.getItem('sidebarCollapsed') === '1') {
+                document.documentElement.classList.add('sidebar-collapsed');
+            }
+        } catch (e) {}
+    </script>
+
+    <style>
+        #app-sidebar {
+            position: fixed; left: 0; top: 0; bottom: 0; z-index: 50;
+            width: 16rem; transition: width 400ms;
+        }
+        #app-header {
+            position: fixed; top: 0; right: 0; left: 16rem; z-index: 40;
+            height: 4rem; transition: left 400ms;
+        }
+        #app-main {
+            padding-left: 16rem; transition: padding-left 400ms;
+        }
+
+        /* Textos: aparecem com atraso ao expandir, somem rápido ao recolher */
+        .sidebar-label { opacity: 1; transition: opacity 200ms 200ms; }
+
+        html.sidebar-collapsed #app-sidebar { width: 5rem; }
+        html.sidebar-collapsed #app-header  { left: 5rem; }
+        html.sidebar-collapsed #app-main    { padding-left: 5rem; }
+        html.sidebar-collapsed .sidebar-label { opacity: 0; transition: opacity 100ms; }
+    </style>
+
     {{-- Dependencia dos Scripts da library --}}
     <tallstackui:script />
 
@@ -19,19 +50,11 @@
     @livewireStyles
 </head>
 
-{{-- MUDANÇA 1: x-data no body, assim sidebar e conteúdo compartilham o estado --}}
-<body class="bg-slate-50 font-sans antialiased text-slate-900"
-    x-data="{ menuOpen: false, sidebarCollapsed: $persist(false).as('sidebarCollapsed') }">
+<body class="bg-slate-50 font-sans antialiased text-slate-900" x-data="{ menuOpen: false }">
     <x-banner />
 
     <div class="min-h-screen">
-        @livewire('navigation-menu')
-
-        <div class="min-h-screen pt-16"
-            style="padding-left: 16rem; transition: padding-left 200ms"
-            x-bind:style="sidebarCollapsed
-                ? 'padding-left: 5rem; transition: padding-left 200ms'
-                : 'padding-left: 16rem; transition: padding-left 200ms'">
+        <div id="app-main" class="min-h-screen pt-16">
 
             @if (isset($header))
                 <header class="border-b border-slate-200 bg-white">
@@ -45,6 +68,8 @@
                 {{ $slot }}
             </main>
         </div>
+
+        @livewire('navigation-menu')
     </div>
 
     @stack('modals')
