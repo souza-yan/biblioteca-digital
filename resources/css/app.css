@@ -1,6 +1,13 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+
+@import '../../vendor/tallstackui/tallstackui/css/v4.css';
+
+@plugin '@tailwindcss/forms';
+@plugin '@tailwindcss/typography';
+
+@source '../../vendor/tallstackui/tallstackui/**/*.php';
+@source '../views';
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 
 [x-cloak] {
     display: none;

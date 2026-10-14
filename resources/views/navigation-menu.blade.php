@@ -70,11 +70,12 @@
     {{-- HEADER --}}
     <header id="app-header" class="border-b border-slate-200 bg-white">
         <div class="flex h-full items-center justify-between gap-3 px-4 sm:px-6">
-            <div class="flex min-w-0 items-center gap-3">
+            <div class="flex min-w-0 items-center gap-3 pl-4 sm:pl-6">
                 <a href="{{ route('dashboard') }}"
-                    class="flex items-center gap-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
+                    class="flex items-center gap-2 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-blue-600"
                     aria-label="Ir para a página inicial">
-                    <img src="{{ asset('images/logo_caraguatatuba.svg') }}" alt="Nome do Sistema" class="h-10 w-auto">
+                    <img src="{{ asset('images/logo_caraguatatuba.svg') }}" alt="Logo Prefeitura de Caraguatatuba"
+                        class="h-10 w-auto">
                 </a>
             </div>
             <div class="flex shrink-0 items-center gap-2 sm:gap-4">
@@ -107,8 +108,6 @@
     <aside id="app-sidebar" class="flex flex-col overflow-hidden border-r border-blue-900 bg-blue-800"
         aria-label="Navegação principal">
 
-        {{-- Topo da sidebar: sanduíche.
-             px-5 (20px) + botão de 40px + 20px = 80px: o ícone fica centralizado na barra recolhida. --}}
         <div class="flex shrink-0 items-center border-b border-blue-700 px-5" style="height: 4rem">
             <button type="button"
                 class="inline-flex size-10 shrink-0 items-center justify-center rounded-xl text-white transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-white"
@@ -217,8 +216,8 @@
                     @csrf
                     <button type="submit" title="Sair" style="padding-left: 18px; padding-right: 18px"
                         class="flex w-full items-center gap-3 rounded-xl py-3 text-base font-medium text-white transition hover:bg-blue-700">
-                        <svg class="size-5 shrink-0 text-white" viewBox="0 0 24 24" fill="none"
-                            stroke="currentColor" stroke-width="1.7" aria-hidden="true">
+                        <svg class="size-5 shrink-0 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="1.7" aria-hidden="true">
                             <path stroke-linecap="round" stroke-linejoin="round"
                                 d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3M10 17l5-5-5-5M15 12H4" />
                         </svg>

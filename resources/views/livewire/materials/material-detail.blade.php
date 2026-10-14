@@ -127,16 +127,7 @@
                                     <td class="whitespace-nowrap px-4 py-3 text-sm text-gray-600">
                                         {{ $version->created_at?->format('d/m/Y H:i') }}</td>
                                     <td class="px-4 py-3 text-right text-sm">
-                                        <details class="mb-2 text-left">
-                                            <summary
-                                                class="cursor-pointer text-sm font-medium text-blue-700 hover:underline">
-                                                Ver prévia</summary>
-                                            @include('livewire.materials.partials.file-preview', [
-                                                'version' => $version,
-                                                'previewUrl' => route('previews.version', [$material, $version]),
-                                            ])
-                                        </details>
-                                        <x-ts-button color="slate"
+                                        <x-ts-button color="emerald"
                                             href="{{ route('downloads.version', [$material, $version]) }}">Baixar</x-ts-button>
                                     </td>
                                 </tr>
@@ -150,30 +141,55 @@
                     </table>
                 </div>
 
-                <form wire:submit="saveVersion" class="mt-6 space-y-4 border-t border-gray-100 pt-5">
-                    <h3 class="text-base font-semibold text-gray-900">Enviar nova versão</h3>
+                <form wire:submit="saveVersion"
+                    class="mt-8 space-y-5 rounded-2xl border border-slate-200 bg-slate-50/60 p-5 sm:p-6">
+
                     <div>
-                        <label for="version-file" class="mb-1 block text-sm font-medium text-gray-700">Arquivo</label>
+                        <h3 class="text-base font-semibold text-slate-900">Enviar nova versão</h3>
+                        <p class="mt-1 text-sm text-slate-500">
+                            Selecione o arquivo e descreva o que mudou.
+                        </p>
+                    </div>
+
+                    <div>
+                        <label for="version-file" class="mb-1.5 block text-sm font-medium text-slate-700">
+                            Arquivo
+                        </label>
                         <input id="version-file" type="file" wire:model="versionForm.file"
                             accept="{{ implode(',', array_map(fn($mime) => '.' . $mime, config('materials.upload.allowed_mimes'))) }}"
-                            class="block w-full text-sm text-gray-700">
+                            class="block w-full cursor-pointer rounded-lg border border-slate-300 bg-white text-sm text-slate-700
+                   shadow-xs transition
+                   file:mr-4 file:cursor-pointer file:border-0 file:bg-blue-50 file:px-4 file:py-2.5
+                   file:text-sm file:font-medium file:text-blue-700
+                   hover:file:bg-blue-100
+                   focus:border-blue-500 focus:outline-hidden focus:ring-2 focus:ring-blue-500/30">
                         @error('versionForm.file')
-                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            <p class="mt-1.5 text-sm text-red-600">{{ $message }}</p>
                         @enderror
                     </div>
 
-                    <x-ts-input wire:model="versionForm.change_note" label="Nota de alteração" />
-                    @error('versionForm.change_note')
-                        <p class="text-sm text-red-600">{{ $message }}</p>
-                    @enderror
-
-                    <div wire:loading wire:target="versionForm.file" x-data="{ progress: 0 }"
-                        x-on:livewire-upload-progress="progress = $event.detail.progress" class="space-y-1">
-                        <progress class="h-2 w-full" max="100" x-bind:value="progress"></progress>
-                        <p class="text-xs text-gray-600">Enviando arquivo: <span x-text="progress"></span>%</p>
+                    <div>
+                        <x-ts-input wire:model="versionForm.change_note" label="Nota de alteração" />
+                        @error('versionForm.change_note')
+                            <p class="mt-1.5 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
                     </div>
 
-                    <x-ts-button color="blue" type="submit">Salvar versão</x-ts-button>
+                    <div wire:loading wire:target="versionForm.file" x-data="{ progress: 0 }"
+                        x-on:livewire-upload-progress="progress = $event.detail.progress"
+                        class="space-y-1.5 rounded-lg border border-blue-100 bg-blue-50 p-3">
+                        <progress class="h-2 w-full overflow-hidden rounded-full accent-blue-600" max="100"
+                            x-bind:value="progress"></progress>
+                        <p class="text-xs font-medium text-blue-800">
+                            Enviando arquivo: <span x-text="progress"></span>%
+                        </p>
+                    </div>
+
+                    <div class="flex justify-end border-t border-slate-200 pt-4">
+                        <x-ts-button color="blue" type="submit" class="w-full sm:w-auto">
+                            Salvar versão
+                        </x-ts-button>
+                    </div>
                 </form>
             </section>
         @endif

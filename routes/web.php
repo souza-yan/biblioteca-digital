@@ -15,10 +15,6 @@ use App\Livewire\Users\UserManager;
 use App\Models\User;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', function () {
-    return view('welcome');
-});
-
 Route::middleware([
     'auth:sanctum',
     config('jetstream.auth_session'),
@@ -26,7 +22,7 @@ Route::middleware([
     'active',
 ])->group(function () {
 
-    Route::get('/dashboard', function (BuildDashboard $buildDashboard) {
+    Route::get('/', function (BuildDashboard $buildDashboard) {
         $actor = request()->user();
         abort_unless($actor instanceof User, 403);
         $requestedDownloadPeriod = request()->query('downloadPeriod', '30');
