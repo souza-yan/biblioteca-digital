@@ -82,10 +82,17 @@
                 <a href="{{ route('profile.show') }}"
                     class="flex items-center gap-2 rounded-xl p-1.5 text-left transition hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-blue-600"
                     aria-label="Abrir perfil de {{ $currentUser->name }}">
-                    <span
-                        class="flex size-10 items-center justify-center rounded-full bg-blue-100 text-base font-semibold text-blue-900">
-                        {{ \Illuminate\Support\Str::upper(\Illuminate\Support\Str::substr($currentUser->name, 0, 1)) }}
-                    </span>
+
+                    @if ($currentUser->profile_photo_path)
+                        <img src="{{ $currentUser->profile_photo_url }}" alt="{{ $currentUser->name }}"
+                            class="size-10 shrink-0 rounded-full object-cover">
+                    @else
+                        <span
+                            class="flex size-10 shrink-0 items-center justify-center rounded-full bg-blue-100 text-base font-semibold text-blue-900">
+                            {{ \Illuminate\Support\Str::upper(\Illuminate\Support\Str::substr($currentUser->name, 0, 1)) }}
+                        </span>
+                    @endif
+
                     <span class="hidden max-w-40 sm:block">
                         <span
                             class="block truncate text-base font-semibold text-slate-800">{{ $currentUser->name }}</span>
