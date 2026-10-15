@@ -11,6 +11,7 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Url;
 use Livewire\Component;
@@ -36,54 +37,24 @@ class ActivityLogIndex extends Component
             'clearMethod' => 'clearDownloadsFilters',
             'filterGridColumns' => 'md:grid-cols-2 xl:grid-cols-4',
             'headerStyle' => 'blue',
-            'filters' => [
-                ['label' => 'Usuário', 'model' => 'downloadsUserFilter', 'type' => 'select', 'placeholder' => 'Todos os usuários', 'options' => 'users'],
-                ['label' => 'Material', 'model' => 'downloadsMaterialFilter', 'type' => 'select', 'placeholder' => 'Todos os materiais', 'options' => 'materials'],
-                ['label' => 'De', 'model' => 'downloadsFromDate', 'type' => 'date'],
-                ['label' => 'Até', 'model' => 'downloadsUntilDate', 'type' => 'date'],
-            ],
-            'columns' => [
-                ['label' => 'Data e hora', 'nowrap' => true],
-                ['label' => 'Usuário'],
-                ['label' => 'Material'],
-                ['label' => 'Versão'],
-                ['label' => 'Categoria'],
-            ],
+            'filters' => [['label' => 'Usuário', 'model' => 'downloadsUserFilter', 'type' => 'select', 'placeholder' => 'Todos os usuários', 'options' => 'users'], ['label' => 'Material', 'model' => 'downloadsMaterialFilter', 'type' => 'select', 'placeholder' => 'Todos os materiais', 'options' => 'materials'], ['label' => 'De', 'model' => 'downloadsFromDate', 'type' => 'date'], ['label' => 'Até', 'model' => 'downloadsUntilDate', 'type' => 'date']],
+            'columns' => [['label' => 'Data e hora', 'nowrap' => true], ['label' => 'Usuário'], ['label' => 'Material'], ['label' => 'Versão'], ['label' => 'Categoria']],
         ],
         'changes' => [
             'label' => 'Cadastros e alterações',
             'clearMethod' => 'clearChangesFilters',
             'filterGridColumns' => 'md:grid-cols-2 xl:grid-cols-4',
             'headerStyle' => 'blue',
-            'filters' => [
-                ['label' => 'Usuário', 'model' => 'changesUserFilter', 'type' => 'select', 'placeholder' => 'Todos os usuários', 'options' => 'users'],
-                ['label' => 'Ação', 'model' => 'changesActionFilter', 'type' => 'select', 'placeholder' => 'Todas as ações', 'options' => 'actions'],
-                ['label' => 'De', 'model' => 'changesFromDate', 'type' => 'date'],
-                ['label' => 'Até', 'model' => 'changesUntilDate', 'type' => 'date'],
-            ],
-            'columns' => [
-                ['label' => 'Data e hora', 'nowrap' => true],
-                ['label' => 'Quem fez'],
-                ['label' => 'Ação'],
-                ['label' => 'O que foi afetado'],
-            ],
+            'filters' => [['label' => 'Usuário', 'model' => 'changesUserFilter', 'type' => 'select', 'placeholder' => 'Todos os usuários', 'options' => 'users'], ['label' => 'Ação', 'model' => 'changesActionFilter', 'type' => 'select', 'placeholder' => 'Todas as ações', 'options' => 'actions'], ['label' => 'De', 'model' => 'changesFromDate', 'type' => 'date'], ['label' => 'Até', 'model' => 'changesUntilDate', 'type' => 'date']],
+            'columns' => [['label' => 'Data e hora', 'nowrap' => true], ['label' => 'Quem fez'], ['label' => 'Ação'], ['label' => 'O que foi afetado']],
         ],
         'accesses' => [
             'label' => 'Acessos',
             'clearMethod' => 'clearAccessesFilters',
             'filterGridColumns' => 'md:grid-cols-3',
             'headerStyle' => 'blue',
-            'filters' => [
-                ['label' => 'Usuário', 'model' => 'accessesUserFilter', 'type' => 'select', 'placeholder' => 'Todos os usuários', 'options' => 'users'],
-                ['label' => 'De', 'model' => 'accessesFromDate', 'type' => 'date'],
-                ['label' => 'Até', 'model' => 'accessesUntilDate', 'type' => 'date'],
-            ],
-            'columns' => [
-                ['label' => 'Data e hora', 'nowrap' => true],
-                ['label' => 'Usuário'],
-                ['label' => 'Ação'],
-                ['label' => 'Descrição'],
-            ],
+            'filters' => [['label' => 'Usuário', 'model' => 'accessesUserFilter', 'type' => 'select', 'placeholder' => 'Todos os usuários', 'options' => 'users'], ['label' => 'De', 'model' => 'accessesFromDate', 'type' => 'date'], ['label' => 'Até', 'model' => 'accessesUntilDate', 'type' => 'date']],
+            'columns' => [['label' => 'Data e hora', 'nowrap' => true], ['label' => 'Usuário'], ['label' => 'Ação'], ['label' => 'Descrição']],
         ],
     ];
 
@@ -116,7 +87,7 @@ class ActivityLogIndex extends Component
     {
         Gate::authorize('viewAny', ActivityLog::class);
 
-        if (! in_array($this->activeTab, $this->tabs(), true)) {
+        if (!in_array($this->activeTab, $this->tabs(), true)) {
             $this->activeTab = 'downloads';
         }
     }
@@ -126,7 +97,7 @@ class ActivityLogIndex extends Component
         Gate::authorize('viewAny', ActivityLog::class);
 
         if ($propertyName === 'activeTab') {
-            if (! in_array($this->activeTab, $this->tabs(), true)) {
+            if (!in_array($this->activeTab, $this->tabs(), true)) {
                 $this->activeTab = 'downloads';
             }
 
@@ -135,11 +106,19 @@ class ActivityLogIndex extends Component
 
         $rules = $this->filterRules();
 
-        if (! array_key_exists($propertyName, $rules)) {
+        if (!array_key_exists($propertyName, $rules)) {
             return;
         }
 
-        $this->validateOnly($propertyName, $rules);
+        try {
+            $this->validateOnly($propertyName, $rules);
+        } catch (ValidationException $e) {
+            // Descarta o valor inválido para que o render() nunca receba lixo
+            $this->reset($propertyName);
+
+            throw $e;
+        }
+
         $this->resetPage($this->paginatorForFilter($propertyName));
     }
 
@@ -149,6 +128,7 @@ class ActivityLogIndex extends Component
         abort_unless(in_array($tab, $this->tabs(), true), 404);
 
         $this->activeTab = $tab;
+        $this->resetValidation();
     }
 
     public function clearDownloadsFilters(): void
@@ -177,7 +157,7 @@ class ActivityLogIndex extends Component
     {
         Gate::authorize('viewAny', ActivityLog::class);
 
-        $this->validate($this->filterRules());
+        // O validate() foi removido daqui: a validação acontece só no updated()
 
         $records = match ($this->activeTab) {
             'downloads' => $this->downloadsQuery()->paginate(15, ['*'], 'downloadsPage'),
@@ -186,19 +166,19 @@ class ActivityLogIndex extends Component
             default => abort(404),
         };
 
-        $users = User::query()->orderBy('name')->get(['id', 'name']);
-        $materials = Material::query()->orderBy('title')->get(['id', 'title']);
+        $users = User::query()
+            ->orderBy('name')
+            ->get(['id', 'name']);
+        $materials = Material::query()
+            ->orderBy('title')
+            ->get(['id', 'title']);
         $tabPresentation = self::TAB_PRESENTATION[$this->activeTab];
         $filterOptions = [
-            'users' => $users->mapWithKeys(
-                static fn (User $user): array => [(string) $user->getKey() => $user->name],
-            )->all(),
-            'materials' => $materials->mapWithKeys(
-                static fn (Material $material): array => [(string) $material->getKey() => $material->title],
-            )->all(),
+            'users' => $users->mapWithKeys(static fn(User $user): array => [(string) $user->getKey() => $user->name])->all(),
+            'materials' => $materials->mapWithKeys(static fn(Material $material): array => [(string) $material->getKey() => $material->title])->all(),
             'actions' => collect($this->changeActions())
                 ->mapWithKeys(
-                    static fn (ActivityAction $action): array => [
+                    static fn(ActivityAction $action): array => [
                         $action->value => $action->label(),
                     ],
                 )
@@ -228,10 +208,10 @@ class ActivityLogIndex extends Component
     {
         return Download::query()
             ->with(['user', 'material.category', 'version'])
-            ->when($this->downloadsUserFilter !== '', fn (Builder $query): Builder => $query->where('user_id', $this->downloadsUserFilter))
-            ->when($this->downloadsMaterialFilter !== '', fn (Builder $query): Builder => $query->where('material_id', $this->downloadsMaterialFilter))
-            ->when($this->downloadsFromDate !== '', fn (Builder $query): Builder => $query->whereDate('downloaded_at', '>=', $this->downloadsFromDate))
-            ->when($this->downloadsUntilDate !== '', fn (Builder $query): Builder => $query->whereDate('downloaded_at', '<=', $this->downloadsUntilDate))
+            ->when($this->downloadsUserFilter !== '', fn(Builder $query): Builder => $query->where('user_id', $this->downloadsUserFilter))
+            ->when($this->downloadsMaterialFilter !== '', fn(Builder $query): Builder => $query->where('material_id', $this->downloadsMaterialFilter))
+            ->when($this->downloadsFromDate !== '', fn(Builder $query): Builder => $query->whereDate('downloaded_at', '>=', $this->downloadsFromDate))
+            ->when($this->downloadsUntilDate !== '', fn(Builder $query): Builder => $query->whereDate('downloaded_at', '<=', $this->downloadsUntilDate))
             ->orderByDesc('downloaded_at')
             ->orderByDesc('id');
     }
@@ -241,18 +221,15 @@ class ActivityLogIndex extends Component
      */
     private function changesQuery(): Builder
     {
-        $actions = array_map(
-            static fn (ActivityAction $action): string => $action->value,
-            $this->changeActions(),
-        );
+        $actions = array_map(static fn(ActivityAction $action): string => $action->value, $this->changeActions());
 
         return ActivityLog::query()
             ->with(['user', 'material'])
             ->whereIn('action', $actions)
-            ->when($this->changesUserFilter !== '', fn (Builder $query): Builder => $query->where('user_id', $this->changesUserFilter))
-            ->when($this->changesActionFilter !== '', fn (Builder $query): Builder => $query->where('action', $this->changesActionFilter))
-            ->when($this->changesFromDate !== '', fn (Builder $query): Builder => $query->whereDate('created_at', '>=', $this->changesFromDate))
-            ->when($this->changesUntilDate !== '', fn (Builder $query): Builder => $query->whereDate('created_at', '<=', $this->changesUntilDate))
+            ->when($this->changesUserFilter !== '', fn(Builder $query): Builder => $query->where('user_id', $this->changesUserFilter))
+            ->when($this->changesActionFilter !== '', fn(Builder $query): Builder => $query->where('action', $this->changesActionFilter))
+            ->when($this->changesFromDate !== '', fn(Builder $query): Builder => $query->whereDate('created_at', '>=', $this->changesFromDate))
+            ->when($this->changesUntilDate !== '', fn(Builder $query): Builder => $query->whereDate('created_at', '<=', $this->changesUntilDate))
             ->orderByDesc('created_at')
             ->orderByDesc('id');
     }
@@ -262,17 +239,14 @@ class ActivityLogIndex extends Component
      */
     private function accessesQuery(): Builder
     {
-        $actions = array_map(
-            static fn (ActivityAction $action): string => $action->value,
-            $this->accessActions(),
-        );
+        $actions = array_map(static fn(ActivityAction $action): string => $action->value, $this->accessActions());
 
         return ActivityLog::query()
             ->with(['user', 'material'])
             ->whereIn('action', $actions)
-            ->when($this->accessesUserFilter !== '', fn (Builder $query): Builder => $query->where('user_id', $this->accessesUserFilter))
-            ->when($this->accessesFromDate !== '', fn (Builder $query): Builder => $query->whereDate('created_at', '>=', $this->accessesFromDate))
-            ->when($this->accessesUntilDate !== '', fn (Builder $query): Builder => $query->whereDate('created_at', '<=', $this->accessesUntilDate))
+            ->when($this->accessesUserFilter !== '', fn(Builder $query): Builder => $query->where('user_id', $this->accessesUserFilter))
+            ->when($this->accessesFromDate !== '', fn(Builder $query): Builder => $query->whereDate('created_at', '>=', $this->accessesFromDate))
+            ->when($this->accessesUntilDate !== '', fn(Builder $query): Builder => $query->whereDate('created_at', '<=', $this->accessesUntilDate))
             ->orderByDesc('created_at')
             ->orderByDesc('id');
     }
@@ -288,12 +262,7 @@ class ActivityLogIndex extends Component
             'downloadsFromDate' => $this->dateFilterRules($this->downloadsFromDate),
             'downloadsUntilDate' => $this->dateFilterRules($this->downloadsUntilDate),
             'changesUserFilter' => $this->idFilterRules($this->changesUserFilter, 'users'),
-            'changesActionFilter' => $this->changesActionFilter === ''
-                ? ['nullable']
-                : ['required', Rule::in(array_map(
-                    static fn (ActivityAction $action): string => $action->value,
-                    $this->changeActions(),
-                ))],
+            'changesActionFilter' => $this->changesActionFilter === '' ? ['nullable'] : ['required', Rule::in(array_map(static fn(ActivityAction $action): string => $action->value, $this->changeActions()))],
             'changesFromDate' => $this->dateFilterRules($this->changesFromDate),
             'changesUntilDate' => $this->dateFilterRules($this->changesUntilDate),
             'accessesUserFilter' => $this->idFilterRules($this->accessesUserFilter, 'users'),
@@ -307,9 +276,7 @@ class ActivityLogIndex extends Component
      */
     private function idFilterRules(string $value, string $table): array
     {
-        return $value === ''
-            ? ['nullable']
-            : ['required', 'integer', Rule::exists($table, 'id')];
+        return $value === '' ? ['nullable'] : ['required', 'integer', Rule::exists($table, 'id')];
     }
 
     /**
@@ -317,9 +284,7 @@ class ActivityLogIndex extends Component
      */
     private function dateFilterRules(string $value): array
     {
-        return $value === ''
-            ? ['nullable']
-            : ['required', 'date_format:Y-m-d'];
+        return $value === '' ? ['nullable'] : ['required', 'date_format:Y-m-d'];
     }
 
     private function paginatorForFilter(string $propertyName): string
@@ -344,10 +309,7 @@ class ActivityLogIndex extends Component
      */
     private function tabLabels(): array
     {
-        return array_map(
-            static fn (array $tab): string => $tab['label'],
-            self::TAB_PRESENTATION,
-        );
+        return array_map(static fn(array $tab): string => $tab['label'], self::TAB_PRESENTATION);
     }
 
     /**
@@ -355,19 +317,7 @@ class ActivityLogIndex extends Component
      */
     private function changeActions(): array
     {
-        return [
-            ActivityAction::USER_CREATED,
-            ActivityAction::USER_UPDATED,
-            ActivityAction::USER_TOGGLED,
-            ActivityAction::CATEGORY_CREATED,
-            ActivityAction::CATEGORY_UPDATED,
-            ActivityAction::CATEGORY_TOGGLED,
-            ActivityAction::MATERIAL_CREATED,
-            ActivityAction::MATERIAL_UPDATED,
-            ActivityAction::MATERIAL_PUBLISHED,
-            ActivityAction::MATERIAL_ARCHIVED,
-            ActivityAction::VERSION_CREATED,
-        ];
+        return [ActivityAction::USER_CREATED, ActivityAction::USER_UPDATED, ActivityAction::USER_TOGGLED, ActivityAction::CATEGORY_CREATED, ActivityAction::CATEGORY_UPDATED, ActivityAction::CATEGORY_TOGGLED, ActivityAction::MATERIAL_CREATED, ActivityAction::MATERIAL_UPDATED, ActivityAction::MATERIAL_PUBLISHED, ActivityAction::MATERIAL_ARCHIVED, ActivityAction::VERSION_CREATED];
     }
 
     /**
@@ -375,11 +325,7 @@ class ActivityLogIndex extends Component
      */
     private function accessActions(): array
     {
-        return [
-            ActivityAction::AUTH_LOGIN,
-            ActivityAction::AUTH_LOGOUT,
-            ActivityAction::MATERIAL_PREVIEWED,
-        ];
+        return [ActivityAction::AUTH_LOGIN, ActivityAction::AUTH_LOGOUT, ActivityAction::MATERIAL_PREVIEWED];
     }
 
     /**

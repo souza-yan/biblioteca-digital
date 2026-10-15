@@ -17,10 +17,12 @@ use Livewire\Attributes\Layout;
 use Livewire\Attributes\Locked;
 use Livewire\Component;
 use Livewire\WithPagination;
+use TallStackUi\Traits\Interactions;
 
 class UserManager extends Component
 {
     use InteractsWithCurrentUser;
+    use Interactions;
     use WithPagination;
 
     public UserForm $form;
@@ -77,6 +79,7 @@ class UserManager extends Component
     public function save(CreateUser $createUser, UpdateUser $updateUser): void
     {
         $actor = $this->authorizeManager();
+
         $user = $this->editingUserId === null
             ? null
             : $this->findManagedUser($this->editingUserId);
@@ -90,12 +93,26 @@ class UserManager extends Component
 
         if ($user === null) {
             $createUser->handle($actor, $attributes);
+
+            $this->toast()
+                ->success(
+                    'Usuário cadastrado!',
+                    'O usuário foi cadastrado com sucesso.'
+                )
+                ->send();
         } else {
             if ($attributes['role'] !== $user->role->value) {
                 Gate::authorize('changeRole', $user);
             }
 
             $updateUser->handle($actor, $user, $attributes);
+
+            $this->toast()
+                ->success(
+                    'Usuário atualizado!',
+                    'As informações do usuário foram atualizadas com sucesso.'
+                )
+                ->send();
         }
 
         $this->resetForm();
@@ -103,8 +120,10 @@ class UserManager extends Component
         $this->resetPage();
     }
 
-    public function toggleActive(int $userId, ToggleUserActive $toggleUserActive): void
-    {
+    public function toggleActive(
+        int $userId,
+        ToggleUserActive $toggleUserActive
+    ): void {
         $actor = $this->authorizeManager();
         $user = $this->findManagedUser($userId);
 
@@ -115,6 +134,13 @@ class UserManager extends Component
         }
 
         $toggleUserActive->handle($actor, $user);
+
+        $this->toast()
+            ->success(
+                'Status atualizado!',
+                'O usuário foi '.($user->fresh()->is_active ? 'ativado' : 'desativado').' com sucesso.'
+            )
+            ->send();
     }
 
     #[Layout('layouts.app')]
@@ -123,7 +149,10 @@ class UserManager extends Component
         $actor = $this->authorizeManager();
 
         $users = User::query()
-            ->when($actor->isStaff(), fn (Builder $query): Builder => $query->where('role', Role::TEACHER))
+            ->when(
+                $actor->isStaff(),
+                fn (Builder $query): Builder => $query->where('role', Role::TEACHER)
+            )
             ->when($this->search !== '', function (Builder $query): void {
                 $query->where(function (Builder $query): void {
                     $query->where('name', 'like', '%'.$this->search.'%')

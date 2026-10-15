@@ -1,3 +1,4 @@
+```blade
 <x-guest-layout>
     <x-authentication-card>
         <x-slot name="logo">
@@ -5,7 +6,7 @@
         </x-slot>
 
         <div class="mb-4 text-sm text-gray-600">
-            {{ __('Forgot your password? No problem. Just let us know your email address and we will email you a password reset link that will allow you to choose a new one.') }}
+            {{ __('Esqueceu sua senha? Não tem problema! Informe seu endereço de e-mail e enviaremos um link para redefinir sua senha.') }}
         </div>
 
         @session('status')
@@ -20,15 +21,25 @@
             @csrf
 
             <div class="block">
-                <x-label for="email" value="{{ __('Email') }}" />
-                <x-input id="email" class="block mt-1 w-full" type="email" name="email" :value="old('email')" required autofocus autocomplete="username" />
+                <x-label for="email" value="{{ __('E-mail') }}" />
+                <x-input
+                    id="email"
+                    class="block mt-1 w-full"
+                    type="email"
+                    name="email"
+                    :value="old('email')"
+                    required
+                    autofocus
+                    autocomplete="username"
+                />
             </div>
 
             <div class="flex items-center justify-end mt-4">
                 <x-button>
-                    {{ __('Email Password Reset Link') }}
+                    {{ __('Enviar link de redefinição de senha') }}
                 </x-button>
             </div>
         </form>
     </x-authentication-card>
 </x-guest-layout>
+```

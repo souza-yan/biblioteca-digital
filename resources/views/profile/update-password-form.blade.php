@@ -146,17 +146,29 @@
             <x-input-error for="password_confirmation" class="mt-2" />
         </div>
 
-        <div class="mt-auto flex items-center justify-end pt-2"> <x-action-message class="me-3"
-                on="saved">Senha atualizada.</x-action-message>
+        <div class="mt-auto flex items-center justify-end gap-3 pt-2">
+            <x-action-message class="me-1" on="saved">
+                <span
+                    class="inline-flex items-center gap-2 rounded-lg border border-green-200 bg-green-50 px-3 py-2 text-sm font-semibold text-green-700 shadow-sm">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"
+                        class="size-5 shrink-0" aria-hidden="true">
+                        <path fill-rule="evenodd"
+                            d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                            clip-rule="evenodd" />
+                    </svg>
 
-            <button type="submit"
-                class="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-bold text-white bg-blue-900 rounded-lg hover:bg-blue-800 disabled:opacity-50"
-                wire:loading.attr="disabled">
+                    Senha atualizada com sucesso!
+                </span>
+            </x-action-message>
+
+            <button type="submit" wire:loading.attr="disabled"
+                class="inline-flex items-center gap-2 rounded-lg bg-blue-900 px-5 py-2.5 text-sm font-bold text-white shadow-sm transition hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-900 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                    stroke="currentColor" class="size-4">
+                    stroke="currentColor" class="size-4" aria-hidden="true">
                     <path stroke-linecap="round" stroke-linejoin="round"
                         d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
                 </svg>
+
                 Atualizar senha
             </button>
         </div>

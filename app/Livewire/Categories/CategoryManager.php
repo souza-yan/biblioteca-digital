@@ -16,10 +16,12 @@ use Livewire\Attributes\Layout;
 use Livewire\Attributes\Locked;
 use Livewire\Component;
 use Livewire\WithPagination;
+use TallStackUi\Traits\Interactions;
 
 class CategoryManager extends Component
 {
     use InteractsWithCurrentUser;
+    use Interactions;
     use WithPagination;
 
     public CategoryForm $form;
@@ -70,9 +72,12 @@ class CategoryManager extends Component
         $this->showForm = true;
     }
 
-    public function save(CreateCategory $createCategory, UpdateCategory $updateCategory): void
-    {
+    public function save(
+        CreateCategory $createCategory,
+        UpdateCategory $updateCategory
+    ): void {
         $actor = $this->authorizeManager();
+
         $category = $this->editingCategoryId === null
             ? null
             : $this->findManagedCategory($this->editingCategoryId, 'update');
@@ -87,8 +92,22 @@ class CategoryManager extends Component
 
         if ($category === null) {
             $createCategory->handle($actor, $attributes);
+
+            $this->toast()
+                ->success(
+                    'Categoria cadastrada!',
+                    'A categoria foi cadastrada com sucesso.'
+                )
+                ->send();
         } else {
             $updateCategory->handle($actor, $category, $attributes);
+
+            $this->toast()
+                ->success(
+                    'Categoria atualizada!',
+                    'As informações da categoria foram atualizadas com sucesso.'
+                )
+                ->send();
         }
 
         $this->resetForm();
@@ -96,12 +115,23 @@ class CategoryManager extends Component
         $this->resetPage();
     }
 
-    public function toggleActive(int $categoryId, ToggleCategoryActive $toggleCategoryActive): void
-    {
+    public function toggleActive(
+        int $categoryId,
+        ToggleCategoryActive $toggleCategoryActive
+    ): void {
         $actor = $this->authorizeManager();
         $category = $this->findManagedCategory($categoryId, 'toggleActive');
 
         $toggleCategoryActive->handle($actor, $category);
+
+        $category->refresh();
+
+        $this->toast()
+            ->success(
+                'Status atualizado!',
+                'A categoria foi '.($category->is_active ? 'ativada' : 'desativada').' com sucesso.'
+            )
+            ->send();
     }
 
     #[Layout('layouts.app')]
@@ -128,8 +158,10 @@ class CategoryManager extends Component
         ]);
     }
 
-    private function findManagedCategory(int $categoryId, string $ability): Category
-    {
+    private function findManagedCategory(
+        int $categoryId,
+        string $ability
+    ): Category {
         $category = Category::query()->findOrFail($categoryId);
 
         Gate::authorize($ability, $category);
@@ -142,9 +174,7 @@ class CategoryManager extends Component
         Gate::authorize('viewAny', Category::class);
         Gate::authorize('create', Category::class);
 
-        $actor = $this->currentUser();
-
-        return $actor;
+        return $this->currentUser();
     }
 
     private function resetForm(): void

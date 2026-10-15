@@ -8,7 +8,8 @@
 
         <nav class="flex flex-wrap gap-2 border-b border-blue-200" role="tablist" aria-label="Tipos de atividade">
             @foreach ($tabLabels as $tab => $label)
-                <button type="button" role="tab" aria-selected="{{ $activeTab === $tab ? 'true' : 'false' }}"
+                <button type="button" role="tab" wire:key="tab-button-{{ $tab }}"
+                    aria-selected="{{ $activeTab === $tab ? 'true' : 'false' }}"
                     wire:click="selectTab('{{ $tab }}')"
                     class="{{ $activeTab === $tab
                         ? 'border-b-2 border-blue-800 bg-blue-800 text-white'
@@ -18,23 +19,34 @@
             @endforeach
         </nav>
 
-        <section role="tabpanel" aria-label="{{ $activeTabLabel }}" class="space-y-4">
-            <x-activity.filters :fields="$filterFields" :option-groups="$filterOptions" :clear-method="$clearFiltersMethod" :grid-columns="$filterGridColumns" />
+        {{-- A chave por aba força o Livewire a recriar tudo ao trocar de aba --}}
+        <section role="tabpanel" aria-label="{{ $activeTabLabel }}" class="space-y-4"
+            wire:key="panel-{{ $activeTab }}">
 
-            <x-data-table :columns="$columns" :header-style="$tableHeaderStyle" :compact-header="true" :sticky-header="true"
-                class="max-h-[70vh] overflow-auto [&_td]:text-lg [&_td]:text-black">
-                @forelse ($records as $record)
-                    @if ($activeTab === 'downloads')
-                        <x-activity.download-row :download="$record" />
-                    @else
-                        <x-activity.log-row :log="$record" :row-type="$activeTab === 'changes' ? 'change' : 'access'" :badge-classes="$actionBadgeClasses" />
-                    @endif
-                @empty
-                    <x-data-table.empty-state :colspan="count($columns)" :compact="true">
-                        <span class="text-lg">{{ $emptyMessage }}</span>
-                    </x-data-table.empty-state>
-                @endforelse
-            </x-data-table>
+            <div wire:key="filters-{{ $activeTab }}">
+                <x-activity.filters :fields="$filterFields" :option-groups="$filterOptions"
+                    :clear-method="$clearFiltersMethod" :grid-columns="$filterGridColumns" />
+            </div>
+
+            <div wire:key="table-{{ $activeTab }}">
+                <x-data-table :columns="$columns" :header-style="$tableHeaderStyle" :compact-header="true"
+                    :sticky-header="true"
+                    class="max-h-[70vh] overflow-auto [&_td]:text-lg [&_td]:text-black">
+                    @forelse ($records as $record)
+                        @if ($activeTab === 'downloads')
+                            <x-activity.download-row wire:key="download-{{ $record->id }}" :download="$record" />
+                        @else
+                            <x-activity.log-row wire:key="{{ $activeTab }}-{{ $record->id }}" :log="$record"
+                                :row-type="$activeTab === 'changes' ? 'change' : 'access'"
+                                :badge-classes="$actionBadgeClasses" />
+                        @endif
+                    @empty
+                        <x-data-table.empty-state :colspan="count($columns)" :compact="true">
+                            <span class="text-lg">{{ $emptyMessage }}</span>
+                        </x-data-table.empty-state>
+                    @endforelse
+                </x-data-table>
+            </div>
 
             <x-pagination :paginator="$records" />
         </section>

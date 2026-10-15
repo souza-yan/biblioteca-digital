@@ -127,15 +127,28 @@
                 @endif
             </div>
 
-            <div class="flex items-center justify-end pt-2">
-                <x-action-message class="me-3" on="saved">Salvo.</x-action-message>
+            <div class="flex items-center justify-end gap-3 pt-2">
+                <x-action-message class="me-1" on="saved">
+                    <span
+                        class="inline-flex items-center gap-2 rounded-lg border border-green-200 bg-green-50 px-3 py-2 text-sm font-semibold text-green-700 shadow-sm">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"
+                            class="size-5 shrink-0" aria-hidden="true">
+                            <path fill-rule="evenodd"
+                                d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                                clip-rule="evenodd" />
+                        </svg>
+
+                        Alterações salvas com sucesso!
+                    </span>
+                </x-action-message>
 
                 <button type="submit" wire:loading.attr="disabled" wire:target="photo"
-                    class="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-bold text-white bg-blue-900 rounded-lg hover:bg-blue-800 disabled:opacity-50">
+                    class="inline-flex items-center gap-2 rounded-lg bg-blue-900 px-5 py-2.5 text-sm font-bold text-white shadow-sm transition hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-900 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
-                        stroke="currentColor" class="size-4">
+                        stroke="currentColor" class="size-4" aria-hidden="true">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
                     </svg>
+
                     Salvar alterações
                 </button>
             </div>

@@ -22,12 +22,14 @@ use Livewire\Component;
 use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 use Livewire\WithFileUploads;
 use Livewire\WithPagination;
+use TallStackUi\Traits\Interactions;
 
 class MaterialManager extends Component
 {
     use InteractsWithCurrentUser;
     use WithFileUploads;
     use WithPagination;
+    use Interactions;
 
     public MaterialForm $form;
 
@@ -101,10 +103,16 @@ class MaterialManager extends Component
         $this->showForm = true;
     }
 
-    public function save(CreateMaterialWithVersion $createMaterialWithVersion, UpdateMaterial $updateMaterial): void
-    {
+    public function save(
+        CreateMaterialWithVersion $createMaterialWithVersion,
+        UpdateMaterial $updateMaterial
+    ): void {
         $actor = $this->authorizeManager();
-        $material = $this->editingMaterialId === null ? null : $this->findManagedMaterial($this->editingMaterialId, 'update');
+
+        $material = $this->editingMaterialId === null
+            ? null
+            : $this->findManagedMaterial($this->editingMaterialId, 'update');
+
         $temporaryFile = $this->form->file;
 
         if ($material === null) {
@@ -119,18 +127,53 @@ class MaterialManager extends Component
                 $uploadedFile = $attributes['file'] ?? null;
 
                 if (!$uploadedFile instanceof UploadedFile) {
-                    $this->addError('form.file', 'O arquivo enviado é inválido.');
+                    $this->addError(
+                        'form.file',
+                        'O arquivo enviado é inválido.'
+                    );
 
                     return;
                 }
 
-                $initialStatus = MaterialStatus::from($attributes['initialStatus']);
-                $changeNote = $attributes['change_note'] ?: null;
-                unset($attributes['file'], $attributes['change_note'], $attributes['initialStatus']);
+                $initialStatus = MaterialStatus::from(
+                    $attributes['initialStatus']
+                );
 
-                $createMaterialWithVersion->handle($actor, $attributes, $uploadedFile, $changeNote, $initialStatus);
+                $changeNote = $attributes['change_note'] ?: null;
+
+                unset(
+                    $attributes['file'],
+                    $attributes['change_note'],
+                    $attributes['initialStatus']
+                );
+
+                $createMaterialWithVersion->handle(
+                    $actor,
+                    $attributes,
+                    $uploadedFile,
+                    $changeNote,
+                    $initialStatus
+                );
+
+                $this->toast()
+                    ->success(
+                        'Material criado com sucesso!',
+                        'O material foi cadastrado na Biblioteca Digital.'
+                    )
+                    ->send();
             } else {
-                $updateMaterial->handle($actor, $material, $attributes);
+                $updateMaterial->handle(
+                    $actor,
+                    $material,
+                    $attributes
+                );
+
+                $this->toast()
+                    ->success(
+                        'Material atualizado com sucesso!',
+                        'As alterações foram salvas corretamente.'
+                    )
+                    ->send();
             }
 
             $this->resetForm();
@@ -144,28 +187,50 @@ class MaterialManager extends Component
             $this->form->file = null;
         }
     }
-
-    public function publish(int $materialId, PublishMaterial $publishMaterial): void
-    {
+    public function publish(
+        int $materialId,
+        PublishMaterial $publishMaterial
+    ): void {
         $actor = $this->authorizeManager();
         $material = $this->findManagedMaterial($materialId, 'publish');
 
         if (!$material->currentVersion()->exists()) {
-            $this->addError('publish', 'O material precisa ter uma versão atual para ser publicado.');
+            $this->addError(
+                'publish',
+                'O material precisa ter uma versão atual para ser publicado.'
+            );
 
             return;
         }
 
         $publishMaterial->handle($actor, $material);
+
+        $this->toast()
+            ->success(
+                'Material publicado!',
+            )
+            ->send();
+
         $this->resetPage();
     }
 
-    public function archive(int $materialId, ArchiveMaterial $archiveMaterial): void
-    {
+    public function archive(
+        int $materialId,
+        ArchiveMaterial $archiveMaterial
+    ): void {
         $actor = $this->authorizeManager();
         $material = $this->findManagedMaterial($materialId, 'archive');
 
         $archiveMaterial->handle($actor, $material);
+
+        $this->toast()
+            ->success(
+                'Material arquivado!',
+                'O material foi arquivado com sucesso.'
+            )
+            ->send();
+
+        $this->resetPage();
     }
 
     #[Layout('layouts.app')]
@@ -173,17 +238,26 @@ class MaterialManager extends Component
     {
         $this->authorizeManager();
 
-        $status = MaterialStatus::tryFrom($this->statusFilter) ?? MaterialStatus::PUBLISHED;
+        $status = MaterialStatus::tryFrom($this->statusFilter)
+            ?? MaterialStatus::PUBLISHED;
 
         $materials = Material::query()
             ->with(['category', 'currentVersion'])
             ->when(filled($this->search), function (Builder $query): void {
                 $query->where(function (Builder $query): void {
-                    $query->where('title', 'like', '%' . $this->search . '%')->orWhere('author', 'like', '%' . $this->search . '%');
+                    $query
+                        ->where('title', 'like', '%' . $this->search . '%')
+                        ->orWhere('author', 'like', '%' . $this->search . '%');
                 });
             })
             ->where('status', $status->value)
-            ->when(filled($this->categoryFilter), fn(Builder $query): Builder => $query->where('category_id', $this->categoryFilter))
+            ->when(
+                filled($this->categoryFilter),
+                fn(Builder $query): Builder => $query->where(
+                    'category_id',
+                    $this->categoryFilter
+                )
+            )
             ->orderBy('title')
             ->paginate(15);
 
@@ -194,7 +268,10 @@ class MaterialManager extends Component
         return view('livewire.materials.material-manager', [
             'materials' => $materials,
             'categories' => Category::query()->orderBy('name')->get(),
-            'activeCategories' => Category::query()->where('is_active', true)->orderBy('name')->get(),
+            'activeCategories' => Category::query()
+                ->where('is_active', true)
+                ->orderBy('name')
+                ->get(),
             'statusOptions' => [
                 ...array_map(
                     fn(MaterialStatus $status): array => [
@@ -204,12 +281,17 @@ class MaterialManager extends Component
                     MaterialStatus::cases(),
                 ),
             ],
-            'creationStatuses' => [MaterialStatus::DRAFT, MaterialStatus::PUBLISHED],
+            'creationStatuses' => [
+                MaterialStatus::DRAFT,
+                MaterialStatus::PUBLISHED,
+            ],
         ]);
     }
 
-    private function findManagedMaterial(int $materialId, string $ability): Material
-    {
+    private function findManagedMaterial(
+        int $materialId,
+        string $ability
+    ): Material {
         $material = Material::query()->findOrFail($materialId);
 
         Gate::authorize($ability, $material);
