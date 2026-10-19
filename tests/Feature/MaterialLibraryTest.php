@@ -26,7 +26,7 @@ it('allows teachers to browse published materials only', function () {
 it('forbids admins and staff from the teacher library route', function (string $role) {
     $actor = $role === 'admin'
         ? User::factory()->admin()->create()
-        : User::factory()->staff()->create();
+        : User::factory()->staffInSchool()->create();
     $this->actingAs($actor);
 
     $this->get('/painel/biblioteca')->assertForbidden();
@@ -146,11 +146,30 @@ it('shows published material details and an enabled download link to teachers', 
     $this->get(route('painel.library.show', $material))
         ->assertOk()
         ->assertSee($material->title)
-        ->assertSee('Baixar')
+        ->assertSee('aria-label="Baixar '.$material->title.'"', false)
         ->assertSee(route('downloads.show', $material), false);
 
     Livewire::test(MaterialDetail::class, ['material' => $material])
         ->assertSee($material->title);
+});
+
+it('hides publish and archive actions from staff material details and rejects direct calls', function () {
+    $staff = User::factory()->staffInSchool()->create();
+    $material = Material::factory()->published()->create();
+    $this->actingAs($staff);
+
+    Livewire::test(MaterialDetail::class, ['material' => $material])
+        ->assertSee($material->title)
+        ->assertDontSee('Publicar')
+        ->assertDontSee('Arquivar');
+
+    Livewire::test(MaterialDetail::class, ['material' => $material])
+        ->call('publish')
+        ->assertForbidden();
+
+    Livewire::test(MaterialDetail::class, ['material' => $material])
+        ->call('archive')
+        ->assertForbidden();
 });
 
 it('forbids teachers from viewing unpublished material details', function (MaterialStatus $status) {

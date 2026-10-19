@@ -4,6 +4,7 @@ namespace App\Livewire\Forms;
 
 use App\Enums\Role;
 use App\Livewire\Concerns\InteractsWithCurrentUser;
+use App\Models\School;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
 use Livewire\Attributes\Locked;
@@ -26,23 +27,36 @@ class UserForm extends Form
 
     public string $role = '';
 
+    public ?int $school_id = null;
+
     /**
      * @return array<string, array<int, mixed>>
      */
     public function rules(): array
     {
         $actor = $this->currentUser();
+        $staffEditingExistingUser = $actor->isStaff() && $this->userId !== null;
+
+        $schoolRules = $actor->isStaff()
+            ? ['prohibited']
+            : [
+                $this->role === Role::STAFF->value ? 'required' : 'nullable',
+                'integer',
+                Rule::exists((new School)->getTable(), 'id')->where('is_active', true),
+            ];
 
         return [
-            'name' => ['required', 'string', 'max:255'],
-            'email' => [
+            'name' => $staffEditingExistingUser ? ['exclude'] : ['required', 'string', 'max:255'],
+            'email' => $staffEditingExistingUser ? ['exclude'] : [
                 'required',
                 'email',
                 'max:255',
                 Rule::unique('users', 'email')->ignore($this->userId),
             ],
             'password' => [
-                $this->userId === null ? 'required' : 'nullable',
+                $staffEditingExistingUser
+                    ? 'exclude'
+                    : ($this->userId === null ? 'required' : 'nullable'),
                 'confirmed',
                 Password::defaults(),
             ],
@@ -50,6 +64,17 @@ class UserForm extends Form
                 $this->userId === null ? 'required' : 'sometimes',
                 Rule::enum(Role::class)->only($actor->assignableRoles()),
             ],
+            'school_id' => $schoolRules,
         ];
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    public function messages(): array
+    {
+        return $this->currentUser()->isStaff()
+            ? ['email.unique' => 'Não foi possível salvar o usuário com os dados informados.']
+            : [];
     }
 }

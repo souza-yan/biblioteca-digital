@@ -76,13 +76,13 @@
                                     @endif
 
                                     @if (Laravel\Jetstream\Jetstream::hasPermissions())
-                                        <button class="cursor-pointer ms-6 text-sm text-gray-400 underline" wire:click="manageApiTokenPermissions({{ $token->id }})">
-                                            {{ __('Permissions') }}
+                                        <button type="button" class="ms-6 inline-flex size-12 items-center justify-center rounded text-gray-500 hover:bg-gray-100" wire:click="manageApiTokenPermissions({{ $token->id }})" aria-label="Gerenciar permissões do token" title="Gerenciar permissões">
+                                            <x-ts-icon icon="shield-check" outline class="size-7" />
                                         </button>
                                     @endif
 
-                                    <button class="cursor-pointer ms-6 text-sm text-red-500" wire:click="confirmApiTokenDeletion({{ $token->id }})">
-                                        {{ __('Delete') }}
+                                    <button type="button" class="ms-6 inline-flex size-12 items-center justify-center rounded text-red-600 hover:bg-red-50" wire:click="confirmApiTokenDeletion({{ $token->id }})" aria-label="Excluir token de API" title="Excluir token">
+                                        <x-ts-icon icon="trash" outline class="size-7" />
                                     </button>
                                 </div>
                             </div>
@@ -112,8 +112,8 @@
         </x-slot>
 
         <x-slot name="footer">
-            <x-secondary-button wire:click="$set('displayingToken', false)" wire:loading.attr="disabled">
-                {{ __('Close') }}
+            <x-secondary-button wire:click="$set('displayingToken', false)" wire:loading.attr="disabled" aria-label="Fechar" title="Fechar" class="!size-12 !p-0 justify-center">
+                <x-ts-icon icon="x-mark" outline class="size-7" />
             </x-secondary-button>
         </x-slot>
     </x-dialog-modal>
@@ -136,8 +136,8 @@
         </x-slot>
 
         <x-slot name="footer">
-            <x-secondary-button wire:click="$set('managingApiTokenPermissions', false)" wire:loading.attr="disabled">
-                {{ __('Cancel') }}
+            <x-secondary-button wire:click="$set('managingApiTokenPermissions', false)" wire:loading.attr="disabled" aria-label="Cancelar" title="Cancelar" class="!size-12 !p-0 justify-center">
+                <x-ts-icon icon="x-mark" outline class="size-7" />
             </x-secondary-button>
 
             <x-button class="ms-3" wire:click="updateApiToken" wire:loading.attr="disabled">
@@ -157,8 +157,8 @@
         </x-slot>
 
         <x-slot name="footer">
-            <x-secondary-button wire:click="$toggle('confirmingApiTokenDeletion')" wire:loading.attr="disabled">
-                {{ __('Cancel') }}
+            <x-secondary-button wire:click="$toggle('confirmingApiTokenDeletion')" wire:loading.attr="disabled" aria-label="Cancelar" title="Cancelar" class="!size-12 !p-0 justify-center">
+                <x-ts-icon icon="x-mark" outline class="size-7" />
             </x-secondary-button>
 
             <x-danger-button class="ms-3" wire:click="deleteApiToken" wire:loading.attr="disabled">

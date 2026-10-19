@@ -12,9 +12,9 @@
             </div>
 
             <a href="{{ route('dashboard', ['downloadPeriod' => $downloadPeriod]) }}"
-                class="shrink-0 text-base font-semibold text-blue-700 hover:text-blue-900">
-                Voltar ao painel
-                <span aria-hidden="true">›</span>
+                aria-label="Voltar ao painel" title="Voltar ao painel"
+                class="inline-flex size-12 shrink-0 items-center justify-center rounded-md text-blue-700 hover:bg-blue-50 hover:text-blue-900">
+                <x-ts-icon icon="arrow-left" outline class="size-7" />
             </a>
         </header>
 
@@ -34,9 +34,9 @@
                             @endforeach
                         </select>
                     </label>
-                    <button type="submit"
-                        class="inline-flex min-h-10 items-center justify-center rounded-lg bg-blue-800 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-900">
-                        Aplicar
+                    <button type="submit" aria-label="Aplicar filtro de período" title="Aplicar filtro"
+                        class="inline-flex size-12 items-center justify-center rounded-lg bg-blue-800 text-white hover:bg-blue-900">
+                        <x-ts-icon icon="funnel" outline class="size-7" />
                     </button>
                 </form>
 
@@ -80,7 +80,7 @@
 
             @if ($topDownloadedMaterials->hasPages())
                 <div class="border-t border-slate-100 pt-4">
-                    {{ $topDownloadedMaterials->links() }}
+                    <x-pagination :paginator="$topDownloadedMaterials" />
                 </div>
             @endif
         </section>

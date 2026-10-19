@@ -5,7 +5,7 @@
             aria-labelledby="category-library-title">
             <p class="text-base font-bold uppercase tracking-[0.18em] text-blue-200">Biblioteca digital</p>
             <h1 id="category-library-title" class="mt-3 text-4xl font-bold leading-tight tracking-tight sm:text-5xl">
-                Categorias
+                Materiais
             </h1>
             <p class="mt-4 max-w-2xl text-lg leading-7 text-blue-100 sm:text-xl">
                 Explore os temas e encontre materiais publicados para cada categoria.
@@ -17,7 +17,7 @@
                 <div>
                     <p class="text-base font-semibold uppercase tracking-[0.14em] text-blue-700">Acervo</p>
                     <h2 id="available-categories-title" class="mt-1 text-2xl font-bold text-black">
-                        Categorias disponíveis
+                        Explore por categoria
                     </h2>
                 </div>
                 <div class="w-full sm:max-w-md">
@@ -46,7 +46,6 @@
                         <span class="mt-4 block text-xl font-semibold text-black group-hover:text-blue-900">
                             {{ $category->name }}
                         </span>
-                        <span class="mt-1 block text-base font-medium text-blue-700">{{ $category->slug }}</span>
                         <span class="mt-2 flex-1 text-base leading-6 text-black">
                             {{ $category->description ?: 'Consulte os materiais publicados nesta categoria.' }}
                         </span>

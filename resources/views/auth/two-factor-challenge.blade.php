@@ -48,19 +48,21 @@
                 <div class="flex items-center justify-end mt-4">
                     <button
                         type="button"
-                        class="text-sm text-gray-600 hover:text-gray-900 underline cursor-pointer"
+                        aria-label="Usar código de recuperação" title="Usar código de recuperação"
+                        class="inline-flex size-12 items-center justify-center rounded text-gray-600 hover:bg-gray-100"
                         x-show="! recovery"
                         x-on:click="
                             recovery = true;
                             $nextTick(() => { $refs.recovery_code.focus() })
                         "
                     >
-                        {{ __('Usar código de recuperação') }}
+                        <x-ts-icon icon="key" outline class="size-7" />
                     </button>
 
                     <button
                         type="button"
-                        class="text-sm text-gray-600 hover:text-gray-900 underline cursor-pointer"
+                        aria-label="Usar código de autenticação" title="Usar código de autenticação"
+                        class="inline-flex size-12 items-center justify-center rounded text-gray-600 hover:bg-gray-100"
                         x-cloak
                         x-show="recovery"
                         x-on:click="
@@ -68,7 +70,7 @@
                             $nextTick(() => { $refs.code.focus() })
                         "
                     >
-                        {{ __('Usar código de autenticação') }}
+                        <x-ts-icon icon="device-phone-mobile" outline class="size-7" />
                     </button>
 
                     <x-button class="ms-4">

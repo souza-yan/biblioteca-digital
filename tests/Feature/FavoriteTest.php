@@ -12,7 +12,9 @@ it('allows a teacher to favorite and unfavorite a material from the library', fu
     $this->actingAs($teacher);
 
     Livewire::test(MaterialLibrary::class)
-        ->call('toggleFavorite', $material->getKey());
+        ->assertSee('Adicionar aos favoritos')
+        ->call('toggleFavorite', $material->getKey())
+        ->assertSee('Remover dos favoritos');
 
     $this->assertDatabaseHas('favorites', [
         'user_id' => $teacher->getKey(),
@@ -20,7 +22,8 @@ it('allows a teacher to favorite and unfavorite a material from the library', fu
     ]);
 
     Livewire::test(MaterialLibrary::class)
-        ->call('toggleFavorite', $material->getKey());
+        ->call('toggleFavorite', $material->getKey())
+        ->assertSee('Adicionar aos favoritos');
 
     $this->assertDatabaseMissing('favorites', [
         'user_id' => $teacher->getKey(),
@@ -34,8 +37,9 @@ it('allows a teacher to toggle a favorite from material details', function () {
     $this->actingAs($teacher);
 
     Livewire::test(MaterialDetail::class, ['material' => $material])
-        ->assertSee('Favoritar')
-        ->call('toggleFavorite');
+        ->assertSee('Adicionar aos favoritos')
+        ->call('toggleFavorite')
+        ->assertSee('Remover dos favoritos');
 
     $this->assertDatabaseHas('favorites', [
         'user_id' => $teacher->getKey(),
@@ -74,7 +78,7 @@ it('forbids a teacher from favoriting a draft material', function () {
 it('forbids admins and staff from favoriting materials and viewing the favorites page', function (string $role) {
     $user = $role === 'admin'
         ? User::factory()->admin()->create()
-        : User::factory()->staff()->create();
+        : User::factory()->staffInSchool()->create();
     $material = Material::factory()->published()->create();
     $this->actingAs($user);
 
@@ -118,7 +122,7 @@ it('shows the favorites navigation link only to teachers', function () {
         ->assertOk()
         ->assertSee('Favoritos');
 
-    $this->actingAs(User::factory()->staff()->create())
+    $this->actingAs(User::factory()->staffInSchool()->create())
         ->get(route('painel.materials'))
         ->assertOk()
         ->assertDontSee('Favoritos');

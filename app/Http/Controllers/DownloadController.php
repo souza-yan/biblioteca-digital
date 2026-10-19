@@ -35,12 +35,11 @@ class DownloadController extends Controller
         MaterialVersion $version,
         RecordDownload $recordDownload,
     ): StreamedResponse {
-        Gate::authorize('download', $material);
-
         $user = $request->user();
 
         abort_unless($user instanceof User && ($user->isAdmin() || $user->isStaff()), 403);
         abort_if((int) $version->material_id !== (int) $material->getKey(), 404);
+        Gate::authorize('download', $material);
 
         return $this->downloadVersion($request, $material, $version, $recordDownload);
     }

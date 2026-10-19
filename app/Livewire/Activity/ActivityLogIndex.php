@@ -6,6 +6,7 @@ use App\Enums\ActivityAction;
 use App\Models\ActivityLog;
 use App\Models\Download;
 use App\Models\Material;
+use App\Models\School;
 use App\Models\User;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
@@ -87,7 +88,7 @@ class ActivityLogIndex extends Component
     {
         Gate::authorize('viewAny', ActivityLog::class);
 
-        if (!in_array($this->activeTab, $this->tabs(), true)) {
+        if (! in_array($this->activeTab, $this->tabs(), true)) {
             $this->activeTab = 'downloads';
         }
     }
@@ -97,7 +98,7 @@ class ActivityLogIndex extends Component
         Gate::authorize('viewAny', ActivityLog::class);
 
         if ($propertyName === 'activeTab') {
-            if (!in_array($this->activeTab, $this->tabs(), true)) {
+            if (! in_array($this->activeTab, $this->tabs(), true)) {
                 $this->activeTab = 'downloads';
             }
 
@@ -106,7 +107,7 @@ class ActivityLogIndex extends Component
 
         $rules = $this->filterRules();
 
-        if (!array_key_exists($propertyName, $rules)) {
+        if (! array_key_exists($propertyName, $rules)) {
             return;
         }
 
@@ -166,7 +167,15 @@ class ActivityLogIndex extends Component
             default => abort(404),
         };
 
+        $school = $this->currentStaffSchool();
         $users = User::query()
+            ->when($school !== null, fn (Builder $query): Builder => $query->whereHas(
+                'schools',
+                fn (Builder $schools): Builder => $schools
+                    ->where('schools.id', $school->getKey())
+                    ->where('schools.is_active', true)
+                    ->where('school_user.is_active', true),
+            ))
             ->orderBy('name')
             ->get(['id', 'name']);
         $materials = Material::query()
@@ -174,11 +183,11 @@ class ActivityLogIndex extends Component
             ->get(['id', 'title']);
         $tabPresentation = self::TAB_PRESENTATION[$this->activeTab];
         $filterOptions = [
-            'users' => $users->mapWithKeys(static fn(User $user): array => [(string) $user->getKey() => $user->name])->all(),
-            'materials' => $materials->mapWithKeys(static fn(Material $material): array => [(string) $material->getKey() => $material->title])->all(),
+            'users' => $users->mapWithKeys(static fn (User $user): array => [(string) $user->getKey() => $user->name])->all(),
+            'materials' => $materials->mapWithKeys(static fn (Material $material): array => [(string) $material->getKey() => $material->title])->all(),
             'actions' => collect($this->changeActions())
                 ->mapWithKeys(
-                    static fn(ActivityAction $action): array => [
+                    static fn (ActivityAction $action): array => [
                         $action->value => $action->label(),
                     ],
                 )
@@ -206,12 +215,21 @@ class ActivityLogIndex extends Component
      */
     private function downloadsQuery(): Builder
     {
+        $school = $this->currentStaffSchool();
+
         return Download::query()
             ->with(['user', 'material.category', 'version'])
-            ->when($this->downloadsUserFilter !== '', fn(Builder $query): Builder => $query->where('user_id', $this->downloadsUserFilter))
-            ->when($this->downloadsMaterialFilter !== '', fn(Builder $query): Builder => $query->where('material_id', $this->downloadsMaterialFilter))
-            ->when($this->downloadsFromDate !== '', fn(Builder $query): Builder => $query->whereDate('downloaded_at', '>=', $this->downloadsFromDate))
-            ->when($this->downloadsUntilDate !== '', fn(Builder $query): Builder => $query->whereDate('downloaded_at', '<=', $this->downloadsUntilDate))
+            ->when($school !== null, fn (Builder $query): Builder => $query->whereHas(
+                'user.schools',
+                fn (Builder $schools): Builder => $schools
+                    ->where('schools.id', $school->getKey())
+                    ->where('schools.is_active', true)
+                    ->where('school_user.is_active', true),
+            ))
+            ->when($this->downloadsUserFilter !== '', fn (Builder $query): Builder => $query->where('user_id', $this->downloadsUserFilter))
+            ->when($this->downloadsMaterialFilter !== '', fn (Builder $query): Builder => $query->where('material_id', $this->downloadsMaterialFilter))
+            ->when($this->downloadsFromDate !== '', fn (Builder $query): Builder => $query->whereDate('downloaded_at', '>=', $this->downloadsFromDate))
+            ->when($this->downloadsUntilDate !== '', fn (Builder $query): Builder => $query->whereDate('downloaded_at', '<=', $this->downloadsUntilDate))
             ->orderByDesc('downloaded_at')
             ->orderByDesc('id');
     }
@@ -221,15 +239,23 @@ class ActivityLogIndex extends Component
      */
     private function changesQuery(): Builder
     {
-        $actions = array_map(static fn(ActivityAction $action): string => $action->value, $this->changeActions());
+        $actions = array_map(static fn (ActivityAction $action): string => $action->value, $this->changeActions());
+        $school = $this->currentStaffSchool();
 
         return ActivityLog::query()
             ->with(['user', 'material'])
             ->whereIn('action', $actions)
-            ->when($this->changesUserFilter !== '', fn(Builder $query): Builder => $query->where('user_id', $this->changesUserFilter))
-            ->when($this->changesActionFilter !== '', fn(Builder $query): Builder => $query->where('action', $this->changesActionFilter))
-            ->when($this->changesFromDate !== '', fn(Builder $query): Builder => $query->whereDate('created_at', '>=', $this->changesFromDate))
-            ->when($this->changesUntilDate !== '', fn(Builder $query): Builder => $query->whereDate('created_at', '<=', $this->changesUntilDate))
+            ->when($school !== null, fn (Builder $query): Builder => $query->whereHas(
+                'user.schools',
+                fn (Builder $schools): Builder => $schools
+                    ->where('schools.id', $school->getKey())
+                    ->where('schools.is_active', true)
+                    ->where('school_user.is_active', true),
+            ))
+            ->when($this->changesUserFilter !== '', fn (Builder $query): Builder => $query->where('user_id', $this->changesUserFilter))
+            ->when($this->changesActionFilter !== '', fn (Builder $query): Builder => $query->where('action', $this->changesActionFilter))
+            ->when($this->changesFromDate !== '', fn (Builder $query): Builder => $query->whereDate('created_at', '>=', $this->changesFromDate))
+            ->when($this->changesUntilDate !== '', fn (Builder $query): Builder => $query->whereDate('created_at', '<=', $this->changesUntilDate))
             ->orderByDesc('created_at')
             ->orderByDesc('id');
     }
@@ -239,16 +265,39 @@ class ActivityLogIndex extends Component
      */
     private function accessesQuery(): Builder
     {
-        $actions = array_map(static fn(ActivityAction $action): string => $action->value, $this->accessActions());
+        $actions = array_map(static fn (ActivityAction $action): string => $action->value, $this->accessActions());
+        $school = $this->currentStaffSchool();
 
         return ActivityLog::query()
             ->with(['user', 'material'])
             ->whereIn('action', $actions)
-            ->when($this->accessesUserFilter !== '', fn(Builder $query): Builder => $query->where('user_id', $this->accessesUserFilter))
-            ->when($this->accessesFromDate !== '', fn(Builder $query): Builder => $query->whereDate('created_at', '>=', $this->accessesFromDate))
-            ->when($this->accessesUntilDate !== '', fn(Builder $query): Builder => $query->whereDate('created_at', '<=', $this->accessesUntilDate))
+            ->when($school !== null, fn (Builder $query): Builder => $query->whereHas(
+                'user.schools',
+                fn (Builder $schools): Builder => $schools
+                    ->where('schools.id', $school->getKey())
+                    ->where('schools.is_active', true)
+                    ->where('school_user.is_active', true),
+            ))
+            ->when($this->accessesUserFilter !== '', fn (Builder $query): Builder => $query->where('user_id', $this->accessesUserFilter))
+            ->when($this->accessesFromDate !== '', fn (Builder $query): Builder => $query->whereDate('created_at', '>=', $this->accessesFromDate))
+            ->when($this->accessesUntilDate !== '', fn (Builder $query): Builder => $query->whereDate('created_at', '<=', $this->accessesUntilDate))
             ->orderByDesc('created_at')
             ->orderByDesc('id');
+    }
+
+    private function currentStaffSchool(): ?School
+    {
+        $actor = auth()->user();
+
+        if (! $actor instanceof User || ! $actor->isStaff()) {
+            return null;
+        }
+
+        $school = $actor->school();
+
+        abort_unless($school !== null, 403);
+
+        return $school;
     }
 
     /**
@@ -262,7 +311,7 @@ class ActivityLogIndex extends Component
             'downloadsFromDate' => $this->dateFilterRules($this->downloadsFromDate),
             'downloadsUntilDate' => $this->dateFilterRules($this->downloadsUntilDate),
             'changesUserFilter' => $this->idFilterRules($this->changesUserFilter, 'users'),
-            'changesActionFilter' => $this->changesActionFilter === '' ? ['nullable'] : ['required', Rule::in(array_map(static fn(ActivityAction $action): string => $action->value, $this->changeActions()))],
+            'changesActionFilter' => $this->changesActionFilter === '' ? ['nullable'] : ['required', Rule::in(array_map(static fn (ActivityAction $action): string => $action->value, $this->changeActions()))],
             'changesFromDate' => $this->dateFilterRules($this->changesFromDate),
             'changesUntilDate' => $this->dateFilterRules($this->changesUntilDate),
             'accessesUserFilter' => $this->idFilterRules($this->accessesUserFilter, 'users'),
@@ -276,7 +325,27 @@ class ActivityLogIndex extends Component
      */
     private function idFilterRules(string $value, string $table): array
     {
-        return $value === '' ? ['nullable'] : ['required', 'integer', Rule::exists($table, 'id')];
+        if ($value === '') {
+            return ['nullable'];
+        }
+
+        $actor = auth()->user();
+
+        if ($table === 'users' && $actor instanceof User && $actor->isStaff()) {
+            $school = $this->currentStaffSchool();
+
+            abort_unless($school !== null, 403);
+
+            return [
+                'required',
+                'integer',
+                Rule::exists('school_user', 'user_id')
+                    ->where('school_id', $school->getKey())
+                    ->where('is_active', true),
+            ];
+        }
+
+        return ['required', 'integer', Rule::exists($table, 'id')];
     }
 
     /**
@@ -309,7 +378,7 @@ class ActivityLogIndex extends Component
      */
     private function tabLabels(): array
     {
-        return array_map(static fn(array $tab): string => $tab['label'], self::TAB_PRESENTATION);
+        return array_map(static fn (array $tab): string => $tab['label'], self::TAB_PRESENTATION);
     }
 
     /**
@@ -317,7 +386,7 @@ class ActivityLogIndex extends Component
      */
     private function changeActions(): array
     {
-        return [ActivityAction::USER_CREATED, ActivityAction::USER_UPDATED, ActivityAction::USER_TOGGLED, ActivityAction::CATEGORY_CREATED, ActivityAction::CATEGORY_UPDATED, ActivityAction::CATEGORY_TOGGLED, ActivityAction::MATERIAL_CREATED, ActivityAction::MATERIAL_UPDATED, ActivityAction::MATERIAL_PUBLISHED, ActivityAction::MATERIAL_ARCHIVED, ActivityAction::VERSION_CREATED];
+        return [ActivityAction::USER_CREATED, ActivityAction::USER_UPDATED, ActivityAction::USER_TOGGLED, ActivityAction::USER_PASSWORD_RESET_REQUESTED, ActivityAction::CATEGORY_CREATED, ActivityAction::CATEGORY_UPDATED, ActivityAction::CATEGORY_TOGGLED, ActivityAction::MATERIAL_CREATED, ActivityAction::MATERIAL_UPDATED, ActivityAction::MATERIAL_PUBLISHED, ActivityAction::MATERIAL_ARCHIVED, ActivityAction::VERSION_CREATED];
     }
 
     /**
@@ -337,6 +406,7 @@ class ActivityLogIndex extends Component
             ActivityAction::USER_CREATED->value => 'bg-blue-100 text-blue-800',
             ActivityAction::USER_UPDATED->value => 'bg-blue-100 text-blue-800',
             ActivityAction::USER_TOGGLED->value => 'bg-blue-100 text-blue-800',
+            ActivityAction::USER_PASSWORD_RESET_REQUESTED->value => 'bg-blue-100 text-blue-800',
             ActivityAction::CATEGORY_CREATED->value => 'bg-cyan-100 text-cyan-800',
             ActivityAction::CATEGORY_UPDATED->value => 'bg-cyan-100 text-cyan-800',
             ActivityAction::CATEGORY_TOGGLED->value => 'bg-cyan-100 text-cyan-800',

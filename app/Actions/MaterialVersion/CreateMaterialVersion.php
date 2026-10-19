@@ -9,6 +9,7 @@ use App\Models\MaterialVersion;
 use App\Models\User;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Storage;
 use RuntimeException;
 use Throwable;
@@ -33,9 +34,11 @@ class CreateMaterialVersion
                 $changeNote,
                 &$storedFilePath,
             ): MaterialVersion {
+                $lockedActor = User::query()->lockForUpdate()->findOrFail($actor->getKey());
                 $lockedMaterial = Material::query()
                     ->lockForUpdate()
                     ->findOrFail($material->getKey());
+                Gate::forUser($lockedActor)->authorize('create', [MaterialVersion::class, $lockedMaterial]);
 
                 $mimeType = $uploadedFile->getMimeType();
 
@@ -60,14 +63,14 @@ class CreateMaterialVersion
                     'mime_type' => $mimeType,
                     'size' => (int) $uploadedFile->getSize(),
                     'change_note' => $changeNote,
-                    'published_by' => $actor->getKey(),
+                    'published_by' => $lockedActor->getKey(),
                 ]);
 
                 $lockedMaterial->current_version_id = $version->getKey();
                 $lockedMaterial->save();
 
                 $this->logActivity->handle(
-                    $actor,
+                    $lockedActor,
                     ActivityAction::VERSION_CREATED,
                     'Nova versão criada para o material.',
                     $lockedMaterial,

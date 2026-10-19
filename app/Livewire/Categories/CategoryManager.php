@@ -20,8 +20,8 @@ use TallStackUi\Traits\Interactions;
 
 class CategoryManager extends Component
 {
-    use InteractsWithCurrentUser;
     use Interactions;
+    use InteractsWithCurrentUser;
     use WithPagination;
 
     public CategoryForm $form;
@@ -149,10 +149,6 @@ class CategoryManager extends Component
             ->orderBy('name')
             ->paginate(15);
 
-        foreach ($categories as $category) {
-            Gate::authorize('update', $category);
-        }
-
         return view('livewire.categories.category-manager', [
             'categories' => $categories,
         ]);
@@ -171,10 +167,13 @@ class CategoryManager extends Component
 
     private function authorizeManager(): User
     {
-        Gate::authorize('viewAny', Category::class);
-        Gate::authorize('create', Category::class);
+        $actor = $this->currentUser();
 
-        return $this->currentUser();
+        abort_unless($actor->isAdmin() || $actor->isStaff(), 403);
+        abort_unless(! $actor->isStaff() || $actor->hasExactlyOneActiveSchool(), 403);
+        Gate::authorize('viewAny', Category::class);
+
+        return $actor;
     }
 
     private function resetForm(): void

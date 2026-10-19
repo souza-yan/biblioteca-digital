@@ -5,11 +5,14 @@ namespace Database\Seeders;
 use App\Enums\ActivityAction;
 use App\Enums\MaterialStatus;
 use App\Enums\Role;
+use App\Enums\SchoolRegion;
+use App\Enums\SchoolType;
 use App\Models\ActivityLog;
 use App\Models\Category;
 use App\Models\Download;
 use App\Models\Material;
 use App\Models\MaterialVersion;
+use App\Models\School;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
@@ -23,6 +26,26 @@ class DatabaseSeeder extends Seeder
     {
         $seededUsers = $this->seedUsers();
         $staff = $seededUsers['gestao@example.com'];
+        $schools = $this->seedSchools();
+        $staff->schools()->sync([
+            $schools[SchoolRegion::North->value]->getKey() => ['is_active' => true],
+        ]);
+        $seededUsers['gestao2@example.com']->schools()->sync([
+            $schools[SchoolRegion::Center->value]->getKey() => ['is_active' => true],
+        ]);
+
+        foreach (array_values(array_filter(
+            $seededUsers,
+            fn (User $user): bool => $user->isTeacher(),
+        )) as $index => $teacher) {
+            $schoolKeys = [$schools[SchoolRegion::Center->value]->getKey()];
+
+            if ($index % 2 === 0) {
+                $schoolKeys[] = $schools[SchoolRegion::South->value]->getKey();
+            }
+
+            $teacher->schools()->syncWithoutDetaching(array_fill_keys($schoolKeys, ['is_active' => true]));
+        }
 
         foreach ($this->library() as $categoryName => $materials) {
             $category = Category::query()->updateOrCreate(
@@ -57,6 +80,33 @@ class DatabaseSeeder extends Seeder
         }
 
         $this->seedLibraryActivity($seededUsers);
+    }
+
+    /**
+     * @return array<string, School>
+     */
+    private function seedSchools(): array
+    {
+        $schools = [];
+
+        foreach ([
+            SchoolRegion::North->value => ['name' => 'EMEF Norte', 'address' => 'Endereço de exemplo - Região Norte'],
+            SchoolRegion::Center->value => ['name' => 'EMEF Centro', 'address' => 'Endereço de exemplo - Região Centro'],
+            SchoolRegion::South->value => ['name' => 'EMEF Sul', 'address' => 'Endereço de exemplo - Região Sul'],
+        ] as $region => $attributes) {
+            $schools[$region] = School::query()->updateOrCreate(
+                ['name' => $attributes['name']],
+                [
+                    'type' => SchoolType::Emef,
+                    'region' => SchoolRegion::from($region),
+                    'address' => $attributes['address'],
+                    'phone' => null,
+                    'is_active' => true,
+                ],
+            );
+        }
+
+        return $schools;
     }
 
     /** Categoria => [título, tipo, autor, status] */

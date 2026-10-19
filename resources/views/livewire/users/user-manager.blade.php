@@ -1,29 +1,68 @@
 <div>
     <div class="mx-auto w-full max-w-screen-2xl space-y-6 px-4 py-6 sm:px-6 lg:space-y-8 lg:px-8 lg:py-8">
         <div class="mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
-            <div>
-                <h1 class="mt-1 text-3xl font-bold tracking-tight text-blue-800 sm:text-4xl">Gerenciamento de usuários
+            <div class="min-w-0">
+                @if ($actor->isStaff())
+                    <p class="text-sm font-semibold uppercase tracking-[0.14em] text-blue-700">Gestão escolar</p>
+                @endif
+                <h1 class="mt-1 text-3xl font-bold tracking-tight text-blue-800 sm:text-4xl">
+                    {{ $actor->isStaff() ? 'Professores da escola' : 'Gerenciamento de usuários' }}
                 </h1>
+                <p class="mt-2 max-w-2xl text-base text-slate-500">
+                    {{ $actor->isStaff()
+                        ? 'Gerencie somente o vínculo dos professores com a sua escola. Os dados da conta continuam globais.'
+                        : 'Cadastre usuários e gerencie seus dados, cargos e situação no sistema.' }}
+                </p>
             </div>
 
             <x-ts-button color="blue" wire:click="openCreate">
-                <span class="text-white text-base">Novo usuário</span>
+                <span class="text-white text-base">{{ $actor->isStaff() ? 'Vincular professor' : 'Novo usuário' }}</span>
             </x-ts-button>
         </div>
 
-        <div class="mb-5 max-w-xl">
-            <x-search-field model="search" label="Buscar por nome ou e-mail"
-                placeholder="Digite um nome ou endereço de e-mail" />
+        <div class="relative mb-5 max-w-xl">
+            <x-ts-input id="user-search" wire:model.live.debounce.300ms="search"
+                label="Buscar por nome ou e-mail" placeholder="Digite um nome ou endereço de e-mail"
+                autocomplete="off" aria-controls="user-search-suggestions" />
+
+            <div wire:loading wire:target="search" role="status" class="mt-1 text-sm text-gray-600">
+                Buscando usuários...
+            </div>
+
+            @if ($selectedUserId !== null)
+                <div class="mt-2 flex items-center justify-between gap-3 rounded-md border border-blue-200 bg-blue-50 px-3 py-2 text-sm text-blue-900" role="status">
+                    <span>Selecionado: {{ $selectedUser?->name ?? 'usuário indisponível' }}</span>
+                    <button type="button" wire:click="clearSelectedUser" aria-label="Limpar usuário selecionado"
+                        title="Limpar seleção" class="inline-flex size-9 items-center justify-center rounded hover:bg-blue-100">
+                        <x-ts-icon icon="x-mark" outline class="size-5" />
+                    </button>
+                </div>
+            @elseif (filled($search))
+                <ul id="user-search-suggestions" role="listbox"
+                    class="absolute z-20 mt-1 max-h-60 w-full overflow-auto rounded-md border border-gray-200 bg-white py-1 shadow-lg">
+                    @forelse ($suggestions as $suggestion)
+                        <li wire:key="user-suggestion-{{ $suggestion->id }}" role="presentation">
+                            <button type="button" role="option" aria-selected="false"
+                                aria-label="Selecionar {{ $suggestion->name }} ({{ $suggestion->email }})"
+                                wire:click="selectUser({{ $suggestion->id }})"
+                                class="flex w-full flex-col px-3 py-2 text-left hover:bg-blue-50 focus:bg-blue-50 focus:outline-none">
+                                <span class="font-medium text-gray-900">{{ $suggestion->name }}</span>
+                                <span class="text-sm text-gray-600">{{ $suggestion->email }}</span>
+                            </button>
+                        </li>
+                    @empty
+                        <li class="px-3 py-2 text-sm text-gray-600" role="status">Nenhum usuário encontrado.</li>
+                    @endforelse
+                </ul>
+            @endif
         </div>
 
-        <x-data-table :columns="[
-            ['label' => 'Nome', 'class' => 'text-lg'],
-            ['label' => 'E-mail', 'class' => 'text-lg'],
-            ['label' => 'Cargo', 'class' => 'text-lg'],
-            ['label' => 'Situação', 'class' => 'text-lg'],
-            ['label' => 'Ações', 'align' => 'right', 'class' => 'text-lg'],
-        ]">
+        <x-data-table :columns="$columns">
             @forelse ($users as $user)
+                @php
+                    $schoolMembership = $actor->isStaff() ? $user->schools->first() : null;
+                    $localMembershipIsActive = (bool) ($schoolMembership?->pivot?->is_active ?? false);
+                @endphp
                 <tr wire:key="user-{{ $user->id }}">
                     <td class="whitespace-nowrap px-5 py-4 text-lg font-medium text-black">{{ $user->name }}</td>
                     <td class="whitespace-nowrap px-5 py-4 text-lg text-black">{{ $user->email }}</td>
@@ -37,22 +76,46 @@
                             {{ $user->is_active ? 'Ativo' : 'Inativo' }}
                         </span>
                     </td>
+                    @if ($actor->isStaff())
+                        <td class="whitespace-nowrap px-5 py-4 text-lg">
+                            <span @class([
+                                'inline-flex rounded px-2.5 py-1 text-base font-medium',
+                                'bg-emerald-100 text-emerald-800' => $localMembershipIsActive,
+                                'bg-gray-100 text-gray-700' => !$localMembershipIsActive,
+                            ])>
+                                {{ $localMembershipIsActive ? 'Ativo' : 'Inativo' }}
+                            </span>
+                        </td>
+                    @endif
                     <td class="whitespace-nowrap px-5 py-4 text-right text-lg">
                         <div class="flex justify-end gap-2">
-                            <x-ts-button color="blue" wire:click="editUser({{ $user->id }})">
-                                <span class="text-white">Editar</span>
+                            <x-ts-button color="blue" wire:click="editUser({{ $user->id }})"
+                                aria-label="Editar usuário {{ $user->name }}" title="Editar usuário" class="!size-12 !p-0 justify-center">
+                                <x-ts-icon icon="pencil-square" outline class="size-7 text-white" />
                             </x-ts-button>
+                            @can('resetPassword', $user)
+                                <x-ts-button color="slate" wire:click="sendPasswordResetLink({{ $user->id }})"
+                                    wire:loading.attr="disabled" wire:target="sendPasswordResetLink"
+                                    aria-label="Enviar redefinição de senha para {{ $user->name }}"
+                                    title="Enviar redefinição de senha" class="!size-12 !p-0 justify-center">
+                                    <x-ts-icon icon="key" outline class="size-7 text-white" />
+                                </x-ts-button>
+                            @endcan
                             @if ($user->is($actor))
                             @else
-                                <x-ts-button :color="$user->is_active ? 'red' : 'emerald'" wire:click="toggleActive({{ $user->id }})">
-                                    <span class="text-white">{{ $user->is_active ? 'Desativar' : 'Ativar' }}</span>
-                                </x-ts-button>
+                                @can('toggleActive', $user)
+                                    <x-ts-button :color="($actor->isStaff() ? $localMembershipIsActive : $user->is_active) ? 'red' : 'emerald'" wire:click="toggleActive({{ $user->id }})"
+                                        :aria-label="($actor->isStaff() ? $localMembershipIsActive : $user->is_active) ? 'Desativar usuário '.$user->name : 'Ativar usuário '.$user->name"
+                                        :title="($actor->isStaff() ? $localMembershipIsActive : $user->is_active) ? 'Desativar usuário' : 'Ativar usuário'" class="!size-12 !p-0 justify-center">
+                                        <x-ts-icon :icon="($actor->isStaff() ? $localMembershipIsActive : $user->is_active) ? 'no-symbol' : 'check-circle'" outline class="size-5 text-white" />
+                                    </x-ts-button>
+                                @endcan
                             @endif
                         </div>
                     </td>
                 </tr>
             @empty
-                <x-data-table.empty-state :colspan="5">
+                <x-data-table.empty-state :colspan="count($columns)">
                     <span class="text-lg">Nenhum usuário encontrado.</span>
                 </x-data-table.empty-state>
             @endforelse
@@ -71,38 +134,61 @@
                                 {{ $editingUserId === null ? 'Novo usuário' : 'Editar usuário' }}
                             </h2>
                         </div>
-                        <button type="button" wire:click="closeForm" aria-label="Fechar formulário"
-                            class="rounded p-1 text-gray-500 hover:bg-gray-100 hover:text-gray-800 text-xl">
-                            <span aria-hidden="true">&times;</span>
+                        <button type="button" wire:click="closeForm" aria-label="Fechar formulário" title="Fechar"
+                            class="inline-flex size-12 items-center justify-center rounded p-1 text-gray-500 hover:bg-gray-100 hover:text-gray-800">
+                            <x-ts-icon icon="x-mark" outline class="size-7" />
                         </button>
                     </div>
 
                     <form wire:submit="save" class="space-y-4">
-                        <x-ts-input wire:model="form.name" label="Nome" autocomplete="name" />
-                        <x-ts-input wire:model="form.email" label="E-mail" type="email" autocomplete="email" />
-                        <x-ts-select.styled wire:model="form.role" label="Cargo" placeholder="Selecione um cargo"
-                            :options="$roleOptions" select="label:label|value:value" :disabled="$editingUser?->is($actor) ?? false" required />
+                        @if ($actor->isAdmin() || $editingUserId === null)
+                            <x-ts-input wire:model="form.name" label="Nome" autocomplete="name" />
+                            <x-ts-input wire:model="form.email" label="E-mail" type="email" autocomplete="email" />
+                        @else
+                            <div class="rounded-md bg-gray-50 p-3 text-sm text-gray-700" role="note">
+                                <p><span class="font-medium">Nome:</span> {{ $editingUser?->name }}</p>
+                                <p><span class="font-medium">E-mail:</span> {{ $editingUser?->email }}</p>
+                                <p><span class="font-medium">Cargo:</span> {{ $editingUser?->role->label() }}</p>
+                                <p class="mt-2">A Gestão pode alterar somente o vínculo do professor com esta escola.</p>
+                            </div>
+                        @endif
+                        @if ($actor->isAdmin() || $editingUserId === null)
+                            <x-ts-select.styled wire:model="form.role" label="Cargo" placeholder="Selecione um cargo"
+                                :options="$roleOptions" select="label:label|value:value" :disabled="$editingUser?->is($actor) ?? false" required />
+                        @endif
+                        @if ($actor->isAdmin())
+                            <x-ts-select.styled wire:model="form.school_id" label="Escola" placeholder="Selecione uma escola"
+                                :options="$schoolOptions" select="label:label|value:value" />
+                        @endif
                         @if ($editingUser?->is($actor))
                             @cannot('changeRole', $editingUser)
                                 <p class="text-base text-gray-600">Você não pode alterar o seu próprio cargo.</p>
                             @endcannot
                         @endif
-                        <x-ts-input wire:model="form.password" label="Senha" type="password"
-                            autocomplete="new-password" :hint="$editingUserId === null ? null : 'Deixe em branco para manter a senha atual.'" />
-                        <x-ts-input wire:model="form.password_confirmation" label="Confirmar senha" type="password"
-                            autocomplete="new-password" />
+                        @if ($actor->isAdmin() || $editingUserId === null)
+                            <x-ts-input wire:model="form.password" label="Senha" type="password"
+                                autocomplete="new-password" :hint="$editingUserId === null ? null : 'Deixe em branco para manter a senha atual.'" />
+                            <x-ts-input wire:model="form.password_confirmation" label="Confirmar senha" type="password"
+                                autocomplete="new-password" />
+                        @endif
 
                         @error('user')
                             <p class="text-base text-red-600">{{ $message }}</p>
                         @enderror
 
                         <div class="flex justify-end gap-3 border-t border-gray-100 pt-4">
-                            <x-ts-button color="slate" type="button" wire:click="closeForm">
-                                Cancelar
-                            </x-ts-button>
-                            <x-ts-button color="blue" type="submit">
-                                Salvar usuário
-                            </x-ts-button>
+                            @if ($actor->isStaff() && $editingUserId !== null)
+                                <x-ts-button color="slate" type="button" wire:click="closeForm">
+                                    Fechar
+                                </x-ts-button>
+                            @else
+                                <x-ts-button color="slate" type="button" wire:click="closeForm" aria-label="Cancelar" title="Cancelar" class="!size-12 !p-0 justify-center">
+                                    <x-ts-icon icon="x-mark" outline class="size-7" />
+                                </x-ts-button>
+                                <x-ts-button color="blue" type="submit">
+                                    Salvar usuário
+                                </x-ts-button>
+                            @endif
                         </div>
                     </form>
                 </section>

@@ -1,5 +1,5 @@
 @props(['paginator'])
 
 <div {{ $attributes }}>
-    {{ $paginator->links() }}
+    {{ $paginator->links('components.pagination-links') }}
 </div>

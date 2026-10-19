@@ -11,11 +11,11 @@ use Illuminate\Support\Facades\Storage;
 use Livewire\Features\SupportLockedProperties\CannotUpdateLockedPropertyException;
 use Livewire\Livewire;
 
-it('allows admins and staff to create materials with the authenticated creator', function (string $role) {
+it('allows admins to create materials with the authenticated creator', function (string $role) {
     Storage::fake('local');
     $actor = match ($role) {
         'admin' => User::factory()->admin()->create(),
-        'staff' => User::factory()->staff()->create(),
+        'staff' => User::factory()->admin()->create(),
     };
     $category = Category::factory()->create();
     $otherUser = User::factory()->admin()->create();
@@ -39,7 +39,7 @@ it('allows admins and staff to create materials with the authenticated creator',
         'status' => MaterialStatus::DRAFT->value,
     ]);
     $this->assertDatabaseMissing('materials', ['created_by' => $otherUser->getKey()]);
-})->with(['admin' => 'admin', 'staff' => 'staff']);
+})->with(['admin' => 'admin']);
 
 it('forbids teachers from accessing material management', function () {
     $this->actingAs(User::factory()->teacher()->create());
@@ -51,7 +51,7 @@ it('forbids teachers from accessing material management', function () {
 
 it('rejects an inactive category in the material form', function () {
     $category = Category::factory()->inactive()->create();
-    $this->actingAs(User::factory()->staff()->create());
+    $this->actingAs(User::factory()->admin()->create());
 
     Livewire::test(MaterialManager::class)
         ->call('openCreate')
@@ -66,7 +66,7 @@ it('rejects an inactive category in the material form', function () {
 });
 
 it('filters managed materials by status and category', function () {
-    $staff = User::factory()->staff()->create();
+    $staff = User::factory()->admin()->create();
     $category = Category::factory()->create();
     $matching = Material::factory()->published()->for($category)->create(['title' => 'Publicado da categoria']);
     $otherCategory = Category::factory()->create();
@@ -87,7 +87,7 @@ it('filters managed materials to only the selected status', function (
     string $visible,
     array $hidden,
 ) {
-    $staff = User::factory()->staff()->create();
+    $staff = User::factory()->admin()->create();
     Material::factory()->draft()->create(['title' => 'Filtro: rascunho']);
     Material::factory()->published()->create(['title' => 'Filtro: publicado']);
     Material::factory()->archived()->create(['title' => 'Filtro: arquivado']);
@@ -104,33 +104,32 @@ it('filters managed materials to only the selected status', function (
     'archived' => [MaterialStatus::ARCHIVED, 'Filtro: arquivado', ['Filtro: rascunho', 'Filtro: publicado']],
 ]);
 
-it('renders the managed materials list without a status filter', function () {
-    $staff = User::factory()->staff()->create();
+it('defaults the managed materials list to published materials', function () {
+    $staff = User::factory()->admin()->create();
     Material::factory()->draft()->create(['title' => 'Listagem em rascunho']);
     Material::factory()->published()->create(['title' => 'Listagem publicada']);
     Material::factory()->archived()->create(['title' => 'Listagem arquivada']);
     $this->actingAs($staff);
 
     Livewire::test(MaterialManager::class)
-        ->assertSet('statusFilter', '')
-        ->assertSee('Listagem em rascunho')
+        ->assertSet('statusFilter', MaterialStatus::PUBLISHED->value)
+        ->assertDontSee('Listagem em rascunho')
         ->assertSee('Listagem publicada')
-        ->assertSee('Listagem arquivada');
+        ->assertDontSee('Listagem arquivada');
 });
 
 it('renders the all-status option and each material status in the list filter', function () {
-    Livewire::actingAs(User::factory()->staff()->create())
+    Livewire::actingAs(User::factory()->admin()->create())
         ->test(MaterialManager::class)
         ->assertViewHas('statusOptions', [
-            ['label' => 'Todos os status', 'value' => ''],
             ['label' => MaterialStatus::DRAFT->label(), 'value' => MaterialStatus::DRAFT->value],
             ['label' => MaterialStatus::PUBLISHED->label(), 'value' => MaterialStatus::PUBLISHED->value],
             ['label' => MaterialStatus::ARCHIVED->label(), 'value' => MaterialStatus::ARCHIVED->value],
         ]);
 });
 
-it('ignores an invalid status filter and shows materials from every status', function () {
-    $staff = User::factory()->staff()->create();
+it('ignores an invalid status filter and returns to published materials', function () {
+    $staff = User::factory()->admin()->create();
     Material::factory()->draft()->create(['title' => 'Status inválido: rascunho']);
     Material::factory()->published()->create(['title' => 'Status inválido: publicado']);
     Material::factory()->archived()->create(['title' => 'Status inválido: arquivado']);
@@ -139,13 +138,13 @@ it('ignores an invalid status filter and shows materials from every status', fun
     Livewire::test(MaterialManager::class)
         ->set('statusFilter', 'xyz')
         ->assertHasNoErrors()
-        ->assertSee('Status inválido: rascunho')
         ->assertSee('Status inválido: publicado')
-        ->assertSee('Status inválido: arquivado');
+        ->assertDontSee('Status inválido: rascunho')
+        ->assertDontSee('Status inválido: arquivado');
 });
 
 it('resets the materials list to page one when its status filter changes', function () {
-    $staff = User::factory()->staff()->create();
+    $staff = User::factory()->admin()->create();
     Material::factory()->published()->count(16)->create();
     Material::factory()->draft()->create(['title' => 'Rascunho após voltar à primeira página']);
     $this->actingAs($staff);
@@ -159,7 +158,7 @@ it('resets the materials list to page one when its status filter changes', funct
 });
 
 it('updates a material using an active category', function () {
-    $staff = User::factory()->staff()->create();
+    $staff = User::factory()->admin()->create();
     $material = Material::factory()->create(['title' => 'Título antigo']);
     $category = Category::factory()->create();
     $this->actingAs($staff);
@@ -179,7 +178,7 @@ it('updates a material using an active category', function () {
 });
 
 it('prevents clients from changing the material manager target id', function (string $property) {
-    $staff = User::factory()->staff()->create();
+    $staff = User::factory()->admin()->create();
     $material = Material::factory()->create(['title' => 'Material original']);
     $otherMaterial = Material::factory()->create(['title' => 'Outro material']);
     $this->actingAs($staff);
@@ -204,7 +203,7 @@ it('prevents clients from changing the material manager target id', function (st
 ]);
 
 it('shows the missing current version error when publishing and allows archive', function () {
-    $staff = User::factory()->staff()->create();
+    $staff = User::factory()->admin()->create();
     $withoutVersion = Material::factory()->draft()->create();
     $toArchive = Material::factory()->draft()->create();
     $this->actingAs($staff);
@@ -226,7 +225,7 @@ it('shows the missing current version error when publishing and allows archive',
 });
 
 it('publishes a material when it has a current version', function () {
-    $staff = User::factory()->staff()->create();
+    $staff = User::factory()->admin()->create();
     $material = Material::factory()->draft()->create();
     $version = MaterialVersion::factory()->for($material)->create();
     $material->update(['current_version_id' => $version->getKey()]);
@@ -242,8 +241,8 @@ it('publishes a material when it has a current version', function () {
     ]);
 });
 
-it('renders the material manager route for staff', function () {
-    $this->actingAs(User::factory()->staff()->create())
+it('renders the material manager route for admins', function () {
+    $this->actingAs(User::factory()->admin()->create())
         ->get('/painel/materiais')
         ->assertOk()
         ->assertSee('Materiais');

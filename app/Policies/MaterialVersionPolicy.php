@@ -2,6 +2,7 @@
 
 namespace App\Policies;
 
+use App\Enums\MaterialStatus;
 use App\Models\Material;
 use App\Models\User;
 
@@ -9,11 +10,12 @@ class MaterialVersionPolicy
 {
     public function viewAny(User $user, Material $material): bool
     {
-        return $user->isAdmin() || $user->isStaff();
+        return $user->is_active && ($user->isAdmin()
+            || ($user->isStaff() && $material->status === MaterialStatus::PUBLISHED));
     }
 
     public function create(User $user, Material $material): bool
     {
-        return $user->isAdmin() || $user->isStaff();
+        return $user->is_active && $user->isAdmin();
     }
 }

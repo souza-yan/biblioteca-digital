@@ -20,6 +20,7 @@ Route::middleware([
     config('jetstream.auth_session'),
     'verified',
     'active',
+    'school.context',
 ])->group(function () {
 
     Route::get('/', function (BuildDashboard $buildDashboard) {

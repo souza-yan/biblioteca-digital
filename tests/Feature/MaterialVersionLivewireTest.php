@@ -10,7 +10,7 @@ use Livewire\Features\SupportLockedProperties\CannotUpdateLockedPropertyExceptio
 use Livewire\Livewire;
 
 it('prevents clients from changing the material detail target id', function () {
-    $staff = User::factory()->staff()->create();
+    $staff = User::factory()->admin()->create();
     $material = Material::factory()->create();
     $otherMaterial = Material::factory()->create();
     $this->actingAs($staff);
@@ -22,10 +22,10 @@ it('prevents clients from changing the material detail target id', function () {
         ->toThrow(CannotUpdateLockedPropertyException::class);
 });
 
-it('allows staff to upload sequential versions and updates the current version', function () {
+it('allows admins to upload sequential versions and updates the current version', function () {
     Storage::fake('local');
     $material = Material::factory()->create();
-    $staff = User::factory()->staff()->create();
+    $staff = User::factory()->admin()->create();
     $this->actingAs($staff);
 
     $component = Livewire::test(MaterialDetail::class, ['material' => $material])
@@ -71,7 +71,7 @@ it('forbids teachers from uploading a version to a published material', function
 it('rejects invalid version files and clears the temporary upload', function () {
     Storage::fake('local');
     $material = Material::factory()->create();
-    $this->actingAs(User::factory()->staff()->create());
+    $this->actingAs(User::factory()->admin()->create());
 
     Livewire::test(MaterialDetail::class, ['material' => $material])
         ->set('versionForm.file', UploadedFile::fake()->create('script.txt', 10, 'text/plain'))
@@ -92,11 +92,11 @@ it('uses the material upload mimes and maximum on temporary Livewire uploads', f
 });
 
 it('shows management links only to admins and staff and library to teachers', function () {
-    $staff = User::factory()->staff()->create();
+    $staff = User::factory()->staffInSchool()->create();
     $this->actingAs($staff)
         ->get('/painel/materiais')
         ->assertSee('Usuários')
-        ->assertSee('Categorias')
+        ->assertDontSee(route('painel.categories'), false)
         ->assertSee('Materiais')
         ->assertDontSee(route('painel.library'), false);
 

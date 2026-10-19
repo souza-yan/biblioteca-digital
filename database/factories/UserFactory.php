@@ -2,16 +2,17 @@
 
 namespace Database\Factories;
 
+use App\Enums\Role;
+use App\Models\School;
 use App\Models\Team;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Laravel\Jetstream\Features;
-use App\Enums\Role;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\User>
+ * @extends Factory<User>
  */
 class UserFactory extends Factory
 {
@@ -45,22 +46,30 @@ class UserFactory extends Factory
     // Estados novos: use assim -> User::factory()->admin()->create()
     public function admin(): static
     {
-        return $this->state(fn() => ['role' => Role::ADMIN]);
+        return $this->state(fn () => ['role' => Role::ADMIN]);
     }
 
     public function staff(): static
     {
-        return $this->state(fn() => ['role' => Role::STAFF]);
+        return $this->state(fn () => ['role' => Role::STAFF]);
+    }
+
+    public function staffInSchool(?School $school = null): static
+    {
+        return $this->staff()->afterCreating(function (User $staff) use ($school): void {
+            $activeSchool = $school ?? School::factory()->create();
+            $staff->schools()->attach($activeSchool->getKey(), ['is_active' => true]);
+        });
     }
 
     public function teacher(): static
     {
-        return $this->state(fn() => ['role' => Role::TEACHER]);
+        return $this->state(fn () => ['role' => Role::TEACHER]);
     }
 
     public function inactive(): static
     {
-        return $this->state(fn() => ['is_active' => false]);
+        return $this->state(fn () => ['is_active' => false]);
     }
 
     /**
@@ -68,7 +77,7 @@ class UserFactory extends Factory
      */
     public function unverified(): static
     {
-        return $this->state(fn(array $attributes) => [
+        return $this->state(fn (array $attributes) => [
             'email_verified_at' => null,
         ]);
     }
@@ -84,8 +93,8 @@ class UserFactory extends Factory
 
         return $this->has(
             Team::factory()
-                ->state(fn(array $attributes, User $user) => [
-                    'name' => $user->name . '\'s Team',
+                ->state(fn (array $attributes, User $user) => [
+                    'name' => $user->name.'\'s Team',
                     'user_id' => $user->id,
                     'personal_team' => true,
                 ])

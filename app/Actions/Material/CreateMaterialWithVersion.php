@@ -8,6 +8,7 @@ use App\Models\Material;
 use App\Models\User;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Storage;
 use Throwable;
 
@@ -29,6 +30,8 @@ class CreateMaterialWithVersion
         ?string $changeNote,
         MaterialStatus $initialStatus,
     ): Material {
+        Gate::forUser($actor)->authorize('create', Material::class);
+
         $storedFilePath = null;
 
         try {

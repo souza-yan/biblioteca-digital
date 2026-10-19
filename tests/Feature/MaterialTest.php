@@ -35,7 +35,7 @@ it('forbids teachers from opening draft material details', function () {
 
 it('allows staff to create a material owned by the authenticated user', function () {
     Storage::fake('local');
-    $staff = User::factory()->staff()->create();
+    $staff = User::factory()->admin()->create();
     $category = Category::factory()->create();
     $this->actingAs($staff);
 
@@ -66,7 +66,7 @@ it('forbids teachers from material management', function () {
 });
 
 it('publishes materials with a current version and records the timestamp', function () {
-    $staff = User::factory()->staff()->create();
+    $staff = User::factory()->admin()->create();
     $material = Material::factory()->draft()->create();
     $version = MaterialVersion::factory()->for($material)->create([
         'published_by' => $staff->getKey(),
@@ -83,7 +83,7 @@ it('publishes materials with a current version and records the timestamp', funct
 });
 
 it('rejects publishing without a current version and allows archiving', function () {
-    $staff = User::factory()->staff()->create();
+    $staff = User::factory()->admin()->create();
     $withoutVersion = Material::factory()->draft()->create();
     $toArchive = Material::factory()->draft()->create();
     $this->actingAs($staff);
@@ -100,7 +100,7 @@ it('rejects publishing without a current version and allows archiving', function
 });
 
 it('rejects a missing or inactive category in the material form', function () {
-    $staff = User::factory()->staff()->create();
+    $staff = User::factory()->admin()->create();
     $inactiveCategory = Category::factory()->inactive()->create();
     $this->actingAs($staff);
 
@@ -145,10 +145,10 @@ it('allows teachers to view and download only published materials', function (Ma
     'archived' => [MaterialStatus::ARCHIVED, false],
 ]);
 
-it('allows only admins and staff to manage materials', function (string $role, bool $canManage) {
+it('allows only admins to manage materials', function (string $role, bool $canManage) {
     $user = match ($role) {
         'admin' => User::factory()->admin()->create(),
-        'staff' => User::factory()->staff()->create(),
+        'staff' => User::factory()->staffInSchool()->create(),
         default => User::factory()->teacher()->create(),
     };
     $material = Material::factory()->make();
@@ -159,6 +159,6 @@ it('allows only admins and staff to manage materials', function (string $role, b
         ->and(Gate::forUser($user)->allows('publish', $material))->toBe($canManage);
 })->with([
     'admin' => ['admin', true],
-    'staff' => ['staff', true],
+    'staff' => ['staff', false],
     'teacher' => ['teacher', false],
 ]);

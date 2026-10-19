@@ -100,7 +100,7 @@ it('returns 404 when a historical version belongs to another material', function
     $version = MaterialVersion::factory()->for($otherMaterial)->create();
     Storage::disk('local')->put($version->file_path, 'conteúdo');
 
-    $this->actingAs(User::factory()->staff()->create())
+    $this->actingAs(User::factory()->staffInSchool()->create())
         ->get(route('previews.version', [$material, $version]))
         ->assertNotFound();
 
@@ -196,14 +196,14 @@ it('shows the preview fallback and download link for unsupported files', functio
         ->assertSee(route('downloads.show', $material), false);
 });
 
-it('shows a preview control and download link for each historical version to staff', function () {
-    $material = Material::factory()->create();
+it('shows a preview control and download link for each historical version to admins', function () {
+    $material = Material::factory()->published()->create();
     $version = MaterialVersion::factory()->for($material)->create([
         'mime_type' => 'application/pdf',
         'original_name' => 'versao-anterior.pdf',
     ]);
 
-    Livewire::actingAs(User::factory()->staff()->create())
+    Livewire::actingAs(User::factory()->admin()->create())
         ->test(MaterialDetail::class, ['material' => $material])
         ->assertSee('Ver prévia')
         ->assertSee('versao-anterior.pdf')
@@ -233,19 +233,18 @@ it('shows the correct preview element for supported image and media types', func
     'MP3 audio' => ['audio/mpeg', '<audio'],
 ]);
 
-it('allows staff to preview historical versions and records the preview action', function () {
+it('forbids staff from previewing historical versions of archived materials', function () {
     Storage::fake('local');
-    $staff = User::factory()->staff()->create();
+    $staff = User::factory()->staffInSchool()->create();
     $material = Material::factory()->archived()->create();
     $version = MaterialVersion::factory()->for($material)->create(['mime_type' => 'application/pdf']);
     Storage::disk('local')->put($version->file_path, '%PDF historical');
 
     $this->actingAs($staff)
         ->get(route('previews.version', [$material, $version]))
-        ->assertOk()
-        ->assertHeader('Content-Disposition', 'inline; filename=material.pdf');
+        ->assertForbidden();
 
-    $this->assertDatabaseHas('activity_logs', [
+    $this->assertDatabaseMissing('activity_logs', [
         'user_id' => $staff->getKey(),
         'material_id' => $material->getKey(),
         'action' => ActivityAction::MATERIAL_PREVIEWED->value,

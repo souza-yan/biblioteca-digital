@@ -6,11 +6,8 @@ use App\Models\User;
 use Livewire\Features\SupportLockedProperties\CannotUpdateLockedPropertyException;
 use Livewire\Livewire;
 
-it('allows admins and staff to create categories with generated unique slugs', function (string $role) {
-    $user = match ($role) {
-        'admin' => User::factory()->admin()->create(),
-        'staff' => User::factory()->staff()->create(),
-    };
+it('allows admins to create categories with generated unique slugs', function () {
+    $user = User::factory()->admin()->create();
 
     $this->actingAs($user);
 
@@ -28,7 +25,7 @@ it('allows admins and staff to create categories with generated unique slugs', f
         'description' => 'Conteúdos iniciais',
         'is_active' => true,
     ]);
-})->with(['admin' => 'admin', 'staff' => 'staff']);
+});
 
 it('forbids teachers from the category manager page and Livewire actions', function () {
     $teacher = User::factory()->teacher()->create();
@@ -42,7 +39,7 @@ it('forbids teachers from the category manager page and Livewire actions', funct
 
 it('rejects duplicate slugs without persisting a category', function () {
     Category::factory()->create(['slug' => 'slug-em-uso']);
-    $this->actingAs(User::factory()->staff()->create());
+    $this->actingAs(User::factory()->admin()->create());
 
     Livewire::test(CategoryManager::class)
         ->call('openCreate')
@@ -55,7 +52,7 @@ it('rejects duplicate slugs without persisting a category', function () {
 });
 
 it('updates and toggles categories without deleting them', function () {
-    $staff = User::factory()->staff()->create();
+    $staff = User::factory()->admin()->create();
     $category = Category::factory()->create([
         'name' => 'Ciências',
         'slug' => 'ciencias',
@@ -82,7 +79,7 @@ it('updates and toggles categories without deleting them', function () {
 });
 
 it('prevents clients from changing the category manager target id', function (string $property) {
-    $staff = User::factory()->staff()->create();
+    $staff = User::factory()->admin()->create();
     $category = Category::factory()->create(['name' => 'Categoria original']);
     $otherCategory = Category::factory()->create(['name' => 'Outra categoria']);
     $this->actingAs($staff);
@@ -107,7 +104,7 @@ it('prevents clients from changing the category manager target id', function (st
 ]);
 
 it('searches categories by name or slug', function () {
-    $staff = User::factory()->staff()->create();
+    $staff = User::factory()->admin()->create();
     $match = Category::factory()->create(['name' => 'História Antiga', 'slug' => 'historia-antiga']);
     $unmatched = Category::factory()->create(['name' => 'Geografia', 'slug' => 'geografia']);
     $this->actingAs($staff);
@@ -118,9 +115,22 @@ it('searches categories by name or slug', function () {
         ->assertDontSee($unmatched->name);
 });
 
-it('renders the category manager route for staff', function () {
-    $this->actingAs(User::factory()->staff()->create())
+it('does not render category slugs in the category table', function () {
+    $category = Category::factory()->create([
+        'name' => 'Matemática Básica',
+        'slug' => 'matematica-basica',
+    ]);
+    $this->actingAs(User::factory()->admin()->create());
+
+    Livewire::test(CategoryManager::class)
+        ->assertSee($category->name)
+        ->assertDontSee($category->slug);
+});
+
+it('renders the published materials view on the legacy category route for staff', function () {
+    $this->actingAs(User::factory()->staffInSchool()->create())
         ->get('/painel/categorias')
         ->assertOk()
-        ->assertSee('Categorias');
+        ->assertSee('Materiais publicados')
+        ->assertDontSee('Nova categoria');
 });

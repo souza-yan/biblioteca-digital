@@ -26,10 +26,10 @@ use TallStackUi\Traits\Interactions;
 
 class MaterialManager extends Component
 {
+    use Interactions;
     use InteractsWithCurrentUser;
     use WithFileUploads;
     use WithPagination;
-    use Interactions;
 
     public MaterialForm $form;
 
@@ -60,6 +60,13 @@ class MaterialManager extends Component
     public function updatedStatusFilter($value): void
     {
         $this->authorizeManager();
+
+        if (! $this->currentUser()->isAdmin()) {
+            $this->statusFilter = MaterialStatus::PUBLISHED->value;
+            $this->resetPage();
+
+            return;
+        }
 
         if (MaterialStatus::tryFrom((string) $value) === null) {
             $this->statusFilter = MaterialStatus::PUBLISHED->value;
@@ -121,12 +128,21 @@ class MaterialManager extends Component
 
         try {
             $this->form->materialId = $material?->getKey();
+
+            if ($material !== null) {
+                $this->form->type = $material->type;
+            } elseif ($temporaryFile instanceof UploadedFile) {
+                $this->form->type = strtolower(
+                    $temporaryFile->guessExtension() ?? $temporaryFile->getClientOriginalExtension()
+                );
+            }
+
             $attributes = $this->form->validate();
 
             if ($material === null) {
                 $uploadedFile = $attributes['file'] ?? null;
 
-                if (!$uploadedFile instanceof UploadedFile) {
+                if (! $uploadedFile instanceof UploadedFile) {
                     $this->addError(
                         'form.file',
                         'O arquivo enviado é inválido.'
@@ -187,6 +203,7 @@ class MaterialManager extends Component
             $this->form->file = null;
         }
     }
+
     public function publish(
         int $materialId,
         PublishMaterial $publishMaterial
@@ -194,7 +211,7 @@ class MaterialManager extends Component
         $actor = $this->authorizeManager();
         $material = $this->findManagedMaterial($materialId, 'publish');
 
-        if (!$material->currentVersion()->exists()) {
+        if (! $material->currentVersion()->exists()) {
             $this->addError(
                 'publish',
                 'O material precisa ter uma versão atual para ser publicado.'
@@ -236,24 +253,24 @@ class MaterialManager extends Component
     #[Layout('layouts.app')]
     public function render(): View
     {
-        $this->authorizeManager();
-
-        $status = MaterialStatus::tryFrom($this->statusFilter)
-            ?? MaterialStatus::PUBLISHED;
+        $actor = $this->authorizeManager();
+        $status = $actor->isAdmin()
+            ? MaterialStatus::tryFrom($this->statusFilter) ?? MaterialStatus::PUBLISHED
+            : MaterialStatus::PUBLISHED;
 
         $materials = Material::query()
             ->with(['category', 'currentVersion'])
             ->when(filled($this->search), function (Builder $query): void {
                 $query->where(function (Builder $query): void {
                     $query
-                        ->where('title', 'like', '%' . $this->search . '%')
-                        ->orWhere('author', 'like', '%' . $this->search . '%');
+                        ->where('title', 'like', '%'.$this->search.'%')
+                        ->orWhere('author', 'like', '%'.$this->search.'%');
                 });
             })
             ->where('status', $status->value)
             ->when(
                 filled($this->categoryFilter),
-                fn(Builder $query): Builder => $query->where(
+                fn (Builder $query): Builder => $query->where(
                     'category_id',
                     $this->categoryFilter
                 )
@@ -262,7 +279,7 @@ class MaterialManager extends Component
             ->paginate(15);
 
         foreach ($materials as $material) {
-            Gate::authorize('update', $material);
+            Gate::authorize('view', $material);
         }
 
         return view('livewire.materials.material-manager', [
@@ -274,17 +291,17 @@ class MaterialManager extends Component
                 ->get(),
             'statusOptions' => [
                 ...array_map(
-                    fn(MaterialStatus $status): array => [
+                    fn (MaterialStatus $status): array => [
                         'label' => $status->label(),
                         'value' => $status->value,
                     ],
-                    MaterialStatus::cases(),
+                    $actor->isAdmin() ? MaterialStatus::cases() : [MaterialStatus::PUBLISHED],
                 ),
             ],
-            'creationStatuses' => [
+            'creationStatuses' => $actor->isAdmin() ? [
                 MaterialStatus::DRAFT,
                 MaterialStatus::PUBLISHED,
-            ],
+            ] : [],
         ]);
     }
 
@@ -303,7 +320,9 @@ class MaterialManager extends Component
     {
         $actor = $this->currentUser();
 
-        Gate::authorize('create', Material::class);
+        abort_unless($actor->isAdmin() || $actor->isStaff(), 403);
+        abort_unless(! $actor->isStaff() || $actor->hasExactlyOneActiveSchool(), 403);
+        Gate::authorize('viewAny', Material::class);
 
         return $actor;
     }

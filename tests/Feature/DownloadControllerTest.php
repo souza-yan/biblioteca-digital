@@ -96,7 +96,7 @@ it('returns 404 when a requested version belongs to another material', function 
     $version = MaterialVersion::factory()->for($otherMaterial)->create();
     Storage::disk('local')->put($version->file_path, 'conteúdo');
 
-    $this->actingAs(User::factory()->staff()->create())
+    $this->actingAs(User::factory()->staffInSchool()->create())
         ->get(route('downloads.version', [$material, $version]))
         ->assertNotFound();
 
@@ -117,29 +117,25 @@ it('forbids teachers from downloading historical versions', function () {
     $this->assertDatabaseCount('downloads', 0);
 });
 
-it('allows staff to download historical versions of archived materials', function () {
+it('forbids staff from downloading historical versions of archived materials', function () {
     Storage::fake('local');
     $material = Material::factory()->archived()->create();
     $oldVersion = MaterialVersion::factory()->for($material)->create(['version_number' => 1]);
     MaterialVersion::factory()->for($material)->create(['version_number' => 2]);
     Storage::disk('local')->put($oldVersion->file_path, 'versão anterior');
 
-    $this->actingAs(User::factory()->staff()->create())
+    $this->actingAs(User::factory()->staffInSchool()->create())
         ->get(route('downloads.version', [$material, $oldVersion]))
-        ->assertOk()
-        ->assertDownload($oldVersion->original_name);
+        ->assertForbidden();
 
-    $this->assertDatabaseHas('downloads', [
-        'material_id' => $material->getKey(),
-        'material_version_id' => $oldVersion->getKey(),
-    ]);
+    $this->assertDatabaseCount('downloads', 0);
 });
 
-it('shows historical download links to staff in the material version history', function () {
-    $material = Material::factory()->create();
+it('shows historical download links to admins in the material version history', function () {
+    $material = Material::factory()->published()->create();
     $version = MaterialVersion::factory()->for($material)->create();
 
-    $this->actingAs(User::factory()->staff()->create());
+    $this->actingAs(User::factory()->admin()->create());
 
     Livewire::test(MaterialDetail::class, ['material' => $material])
         ->assertSee(route('downloads.version', [$material, $version]), false);

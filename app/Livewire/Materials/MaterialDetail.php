@@ -113,12 +113,13 @@ class MaterialDetail extends Component
     {
         $material = $this->findViewableMaterial();
         $actor = $this->currentUser();
-        $canManageVersions = $actor->isAdmin() || $actor->isStaff();
+        $canManageVersions = $actor->isAdmin();
+        $canViewVersionHistory = $actor->isAdmin() || $actor->isStaff();
         $isFavorited = $actor->isTeacher()
             && $actor->favorites()->whereKey($material->getKey())->exists();
         $versions = collect();
 
-        if ($canManageVersions) {
+        if ($canViewVersionHistory) {
             Gate::authorize('viewAny', [MaterialVersion::class, $material]);
             $versions = $material->versions()
                 ->with('publisher')
@@ -131,6 +132,7 @@ class MaterialDetail extends Component
             'isTeacher' => $actor->isTeacher(),
             'isFavorited' => $isFavorited,
             'canManageVersions' => $canManageVersions,
+            'canViewVersionHistory' => $canViewVersionHistory,
             'versions' => $versions,
         ]);
     }

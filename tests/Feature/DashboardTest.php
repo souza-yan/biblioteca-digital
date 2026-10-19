@@ -23,7 +23,10 @@ it('shows teachers recent published materials and only their published favorites
     $draft = Material::factory()->draft()->create(['title' => 'Rascunho interno']);
     $favorite = Material::factory()->published()->create(['title' => 'Meu favorito']);
     $archivedFavorite = Material::factory()->archived()->create(['title' => 'Favorito arquivado']);
-    $otherTeacherFavorite = Material::factory()->published()->create(['title' => 'Favorito de outra pessoa']);
+    $otherTeacherFavorite = Material::factory()->published()->create([
+        'title' => 'Favorito de outra pessoa',
+        'published_at' => now()->subDays(10),
+    ]);
     $teacher->favorites()->attach([$favorite->getKey(), $archivedFavorite->getKey()]);
     $otherTeacher->favorites()->attach($otherTeacherFavorite->getKey());
 
@@ -35,7 +38,6 @@ it('shows teachers recent published materials and only their published favorites
         ->assertSee('Meu favorito')
         ->assertDontSee('Rascunho interno')
         ->assertDontSee('Favorito arquivado')
-        ->assertSee('Favorito de outra pessoa')
         ->assertViewHas(
             'favoriteMaterials',
             fn ($materials): bool => ! $materials->contains('id', $otherTeacherFavorite->getKey()),
@@ -105,8 +107,11 @@ it('shows teachers only their five latest unique published downloads and preview
 it('shows admins and staff totals and the latest ten activities', function (string $role) {
     $actor = $role === 'admin'
         ? User::factory()->admin()->create()
-        : User::factory()->staff()->create();
-    User::factory()->teacher()->create();
+        : User::factory()->staffInSchool()->create();
+    $teacher = User::factory()->teacher()->create();
+    if ($role === 'staff') {
+        $teacher->schools()->attach($actor->school()->getKey(), ['is_active' => true]);
+    }
     User::factory()->inactive()->teacher()->create();
 
     $draft = Material::factory()->draft()->create(['created_by' => $actor->getKey()]);
@@ -138,57 +143,70 @@ it('shows admins and staff totals and the latest ten activities', function (stri
         ]);
     }
 
-    $this->actingAs($actor)
+    $response = $this->actingAs($actor)
         ->get(route('dashboard'))
         ->assertOk()
-        ->assertSee('Usuários ativos')
         ->assertSee('2')
-        ->assertSee('Materiais por status')
-        ->assertSee('Rascunho')
-        ->assertSee('Publicado')
-        ->assertSee('Arquivado')
-        ->assertSee('Nos últimos 30 dias')
-        ->assertSee('Atividade 11')
-        ->assertDontSee('Atividade antiga');
+        ->assertViewHas('downloadPeriod', '30');
+
+    if ($role === 'staff') {
+        $response
+            ->assertSee('Pessoas vinculadas')
+            ->assertSee('Materiais publicados')
+            ->assertSee('Downloads da escola')
+            ->assertDontSee('Atividades recentes')
+            ->assertDontSee('Atividade 11');
+    } else {
+        $response
+            ->assertSee('Usuários ativos')
+            ->assertSee('Materiais por status')
+            ->assertSee('Rascunho')
+            ->assertSee('Publicado')
+            ->assertSee('Arquivado')
+            ->assertSee('Atividade 11')
+            ->assertDontSee('Atividade antiga');
+    }
 })->with(['admin', 'staff']);
 
 it('shows category counts and top downloaded materials to admins and staff', function (string $role) {
     $actor = $role === 'admin'
         ? User::factory()->admin()->create()
-        : User::factory()->staff()->create();
+        : User::factory()->staffInSchool()->create();
     $activeCategory = Category::factory()->create(['name' => 'Categoria ativa', 'is_active' => true]);
     Category::factory()->create(['name' => 'Categoria inativa', 'is_active' => false]);
     $topMaterial = Material::factory()->published()->for($activeCategory)->create(['title' => 'Mais baixado']);
     $secondMaterial = Material::factory()->published()->for($activeCategory)->create(['title' => 'Segundo mais baixado']);
     $topVersion = MaterialVersion::factory()->for($topMaterial)->create();
     $secondVersion = MaterialVersion::factory()->for($secondMaterial)->create();
+    $downloadUser = User::factory()->teacher()->create();
+    if ($role === 'staff') {
+        $downloadUser->schools()->attach($actor->school()->getKey(), ['is_active' => true]);
+    }
 
     Download::factory()->count(2)->create([
+        'user_id' => $downloadUser->getKey(),
         'material_id' => $topMaterial->getKey(),
         'material_version_id' => $topVersion->getKey(),
         'downloaded_at' => now()->subDays(10),
     ]);
     Download::factory()->create([
+        'user_id' => $downloadUser->getKey(),
         'material_id' => $topMaterial->getKey(),
         'material_version_id' => $topVersion->getKey(),
         'downloaded_at' => now()->subDays(40),
     ]);
     Download::factory()->create([
+        'user_id' => $downloadUser->getKey(),
         'material_id' => $secondMaterial->getKey(),
         'material_version_id' => $secondVersion->getKey(),
         'downloaded_at' => now()->subDays(10),
     ]);
 
-    $this->actingAs($actor)
+    $response = $this->actingAs($actor)
         ->get(route('dashboard'))
         ->assertOk()
-        ->assertSee('Categorias')
-        ->assertSee('Ativas')
-        ->assertSee('Inativas')
-        ->assertSee('Materiais mais baixados')
         ->assertSee('Mais baixado')
         ->assertSee('Segundo mais baixado')
-        ->assertSee(route('painel.materials.most-downloaded', ['downloadPeriod' => '30']), false)
         ->assertViewHas('categoryCounts', [
             'total' => 2,
             'active' => 1,
@@ -197,6 +215,20 @@ it('shows category counts and top downloaded materials to admins and staff', fun
         ->assertViewHas('topDownloadedMaterials', function ($materials): bool {
             return $materials->first()?->downloads_count === 2;
         });
+
+    if ($role === 'staff') {
+        $response
+            ->assertSee('Materiais mais acessados')
+            ->assertDontSee('Categorias')
+            ->assertDontSee(route('painel.materials.most-downloaded', ['downloadPeriod' => '30']), false);
+    } else {
+        $response
+            ->assertSee('Categorias')
+            ->assertSee('Ativas')
+            ->assertSee('Inativas')
+            ->assertSee('Materiais mais baixados')
+            ->assertSee(route('painel.materials.most-downloaded', ['downloadPeriod' => '30']), false);
+    }
 })->with(['admin', 'staff']);
 
 it('uses the default download period when the dashboard period is invalid', function () {
@@ -256,7 +288,7 @@ it('shows teacher navigation without management links or administrative metrics'
     $this->actingAs($teacher)
         ->get(route('dashboard'))
         ->assertOk()
-        ->assertSee('Explorar categorias')
+        ->assertSee('Explorar materiais')
         ->assertSee(route('painel.library.categories'), false)
         ->assertSee('Meus favoritos')
         ->assertSee('Últimos materiais acessados ou baixados')

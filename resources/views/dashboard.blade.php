@@ -1,7 +1,9 @@
 <x-app-layout>
     @php
         $currentUser = auth()->user();
-        $libraryRoute = $isTeacher ? 'painel.library' : 'painel.materials';
+        $isStaff = $currentUser->isStaff();
+        $staffSchool = $isStaff ? $currentUser->school() : null;
+        $libraryRoute = $isTeacher ? 'painel.library.categories' : 'painel.materials';
         $totalMaterials = $isTeacher ? null : $statusCounts->sum();
         $publishedMaterialsCount = $isTeacher ? null : $statusCounts->get('Publicado', 0);
         $maxDownloads = $isTeacher ? 0 : max(1, (int) $topDownloadedMaterials->max('downloads_count'));
@@ -20,9 +22,9 @@
                     </p>
                 </div>
 
-                <a href="{{ route('painel.library') }}"
+                <a href="{{ route('painel.library.categories') }}"
                     class="inline-flex shrink-0 items-center gap-2 text-base font-semibold text-blue-800 hover:text-blue-800">
-                    Ver biblioteca
+                    Ver materiais
                     <span aria-hidden="true">›</span>
                 </a>
             </header>
@@ -51,11 +53,11 @@
                                 '<circle cx="10.8" cy="10.8" r="6.8" /><path stroke-linecap="round" d="m16 16 4.5 4.5" />',
                         ],
                         [
-                            'href' => route('painel.library'),
-                            'title' => 'Explorar categorias',
+                            'href' => route('painel.library.categories'),
+                            'title' => 'Explorar materiais',
                             'text' => 'Filtre a biblioteca por categoria',
-                            'box' => 'bg-violet-10 text-violet-600',
-                            'border' => 'border-violet-600',
+                            'box' => 'bg-violet-50 text-violet-600',
+                            'border' => 'border-violet-100',
                             'icon' =>
                                 '<path stroke-linecap="round" stroke-linejoin="round" d="M3 7.5A1.5 1.5 0 0 1 4.5 6H10l2 2h7.5A1.5 1.5 0 0 1 21 9.5v8a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 17.5v-10Z" />',
                         ],
@@ -172,9 +174,9 @@
                             </h2>
                         </div>
 
-                        <a href="{{ route('painel.library') }}"
+                        <a href="{{ route('painel.library.categories') }}"
                             class="shrink-0 text-sm font-semibold text-blue-800 hover:text-blue-800">
-                            Ver biblioteca
+                            Ver materiais
                             <span aria-hidden="true">→</span>
                         </a>
                     </div>
@@ -240,6 +242,87 @@
                     </div>
                 </section>
 
+            </div>
+        @elseif ($isStaff)
+            <header class="rounded-2xl bg-blue-800 px-5 py-6 text-white sm:px-7 sm:py-7">
+                <div class="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+                    <div class="min-w-0">
+                        <p class="text-sm font-semibold uppercase tracking-[0.14em] text-blue-200">Gestão escolar</p>
+                        <h1 class="mt-2 text-3xl font-bold tracking-tight sm:text-4xl">{{ $staffSchool?->name }}</h1>
+                        <p class="mt-2 max-w-2xl text-base text-blue-100">
+                            Acompanhe os professores da escola e consulte os conteúdos disponíveis na biblioteca.
+                        </p>
+                    </div>
+                    <div class="flex flex-wrap gap-3">
+                        <a href="{{ route('painel.users') }}"
+                            class="inline-flex items-center justify-center rounded-xl bg-white px-4 py-3 text-sm font-semibold text-blue-800 transition hover:bg-blue-50">
+                            Gerenciar professores
+                        </a>
+                        <a href="{{ route('painel.materials') }}"
+                            class="inline-flex items-center justify-center rounded-xl border border-blue-300 px-4 py-3 text-sm font-semibold text-white transition hover:bg-blue-700">
+                            Consultar materiais
+                        </a>
+                    </div>
+                </div>
+            </header>
+
+            <section aria-label="Resumo da escola" class="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                <article class="rounded-2xl border border-slate-200 bg-white p-5">
+                    <p class="text-sm font-semibold text-slate-500">Pessoas vinculadas</p>
+                    <p class="mt-2 text-3xl font-bold tracking-tight text-slate-900">{{ number_format($activeUsersCount, 0, ',', '.') }}</p>
+                    <p class="mt-1 text-sm text-slate-500">contas ativas na escola</p>
+                </article>
+                <article class="rounded-2xl border border-slate-200 bg-white p-5">
+                    <p class="text-sm font-semibold text-slate-500">Materiais publicados</p>
+                    <p class="mt-2 text-3xl font-bold tracking-tight text-slate-900">{{ number_format($publishedMaterialsCount, 0, ',', '.') }}</p>
+                    <p class="mt-1 text-sm text-slate-500">disponíveis para consulta</p>
+                </article>
+                <article class="rounded-2xl border border-slate-200 bg-white p-5">
+                    <p class="text-sm font-semibold text-slate-500">Downloads da escola</p>
+                    <p class="mt-2 text-3xl font-bold tracking-tight text-slate-900">{{ number_format($recentDownloadsCount, 0, ',', '.') }}</p>
+                    <p class="mt-1 text-sm text-slate-500">nos últimos 30 dias</p>
+                </article>
+            </section>
+
+            <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
+                <section class="rounded-2xl border border-slate-200 bg-white p-5 sm:p-6" aria-labelledby="staff-materials-title">
+                    <div class="flex items-start justify-between gap-4">
+                        <div>
+                            <h2 id="staff-materials-title" class="text-xl font-bold text-slate-900">Materiais mais acessados</h2>
+                            <p class="mt-1 text-sm text-slate-500">Downloads feitos por pessoas atualmente vinculadas à escola.</p>
+                        </div>
+                        <a href="{{ route('painel.materials') }}" class="shrink-0 text-sm font-semibold text-blue-800 hover:underline">Ver materiais</a>
+                    </div>
+                    <div class="mt-5 divide-y divide-slate-100">
+                        @forelse ($topDownloadedMaterials as $material)
+                            <a href="{{ route('painel.materials.show', $material) }}" class="flex items-center justify-between gap-4 py-4 first:pt-0 last:pb-0">
+                                <span class="min-w-0">
+                                    <span class="block truncate font-semibold text-slate-800">{{ $material->title }}</span>
+                                    <span class="mt-1 block truncate text-sm text-slate-500">{{ $material->category->name }}</span>
+                                </span>
+                                <span class="shrink-0 text-sm font-semibold text-slate-600">{{ number_format($material->downloads_count, 0, ',', '.') }}</span>
+                            </a>
+                        @empty
+                            <p class="py-6 text-sm text-slate-500">Ainda não há downloads registrados para esta escola.</p>
+                        @endforelse
+                    </div>
+                </section>
+
+                <section class="rounded-2xl border border-slate-200 bg-white p-5 sm:p-6" aria-labelledby="staff-actions-title">
+                    <h2 id="staff-actions-title" class="text-xl font-bold text-slate-900">Acesso rápido</h2>
+                    <p class="mt-1 text-sm text-slate-500">Tarefas disponíveis para a gestão de {{ $staffSchool?->name }}.</p>
+                    <div class="mt-5 grid gap-3">
+                        <a href="{{ route('painel.users') }}" class="flex items-center justify-between rounded-xl border border-slate-200 px-4 py-4 font-semibold text-slate-800 transition hover:border-blue-200 hover:bg-blue-50">
+                            Professores e vínculos <span class="text-blue-800" aria-hidden="true">›</span>
+                        </a>
+                        <a href="{{ route('painel.materials') }}" class="flex items-center justify-between rounded-xl border border-slate-200 px-4 py-4 font-semibold text-slate-800 transition hover:border-blue-200 hover:bg-blue-50">
+                            Biblioteca de materiais <span class="text-blue-800" aria-hidden="true">›</span>
+                        </a>
+                        <a href="{{ route('profile.show') }}" class="flex items-center justify-between rounded-xl border border-slate-200 px-4 py-4 font-semibold text-slate-800 transition hover:border-blue-200 hover:bg-blue-50">
+                            Dados da conta <span class="text-blue-800" aria-hidden="true">›</span>
+                        </a>
+                    </div>
+                </section>
             </div>
         @else
             {{-- ======================================== --}}
@@ -375,10 +458,8 @@
             </section>
         @endif
 
-        <div class="grid min-w-0 grid-cols-1 gap-6 lg:grid-cols-2">
-
-            @if ($isTeacher)
-            @else
+        @if (! $isTeacher && ! $isStaff)
+            <div class="grid min-w-0 grid-cols-1 gap-6 lg:grid-cols-2">
                 <section class="min-w-0 rounded-2xl border border-slate-200 bg-white p-5 sm:p-6 xl:p-8"
                     aria-labelledby="materials-status-title">
 
@@ -479,10 +560,10 @@
                         <span class="ml-1" aria-hidden="true">›</span>
                     </a>
                 </article>
-            @endif
-        </div>
+            </div>
+        @endif
 
-        @unless ($isTeacher)
+        @if (! $isTeacher && ! $isStaff)
             <div class="grid min-w-0 grid-cols-1 gap-6 lg:grid-cols-2">
 
                 <section class="min-w-0 rounded-2xl border border-slate-200 bg-white p-5 sm:p-6 xl:p-8"
@@ -599,6 +680,6 @@
                 </article>
 
             </div>
-        @endunless
+        @endif
     </div>
 </x-app-layout>

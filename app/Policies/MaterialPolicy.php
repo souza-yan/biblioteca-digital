@@ -10,50 +10,49 @@ class MaterialPolicy
 {
     public function viewAny(User $user): bool
     {
-        return $user->isAdmin() || $user->isStaff() || $user->isTeacher();
+        return $user->is_active && ($user->isAdmin() || $user->isStaff() || $user->isTeacher());
     }
 
     public function browseLibrary(User $user): bool
     {
-        return $user->isTeacher();
+        return $user->is_active && $user->isTeacher();
     }
 
     public function view(User $user, Material $material): bool
     {
-        return $user->isAdmin()
-            || $user->isStaff()
-            || ($user->isTeacher() && $material->status === MaterialStatus::PUBLISHED);
+        return $user->is_active && ($user->isAdmin()
+            || ($user->isStaff() && $material->status === MaterialStatus::PUBLISHED)
+            || ($user->isTeacher() && $material->status === MaterialStatus::PUBLISHED));
     }
 
     public function create(User $user): bool
     {
-        return $user->isAdmin() || $user->isStaff();
+        return $user->is_active && $user->isAdmin();
     }
 
     public function update(User $user, Material $material): bool
     {
-        return $user->isAdmin() || $user->isStaff();
+        return $user->is_active && $user->isAdmin();
     }
 
     public function download(User $user, Material $material): bool
     {
-        return $user->isAdmin()
-            || $user->isStaff()
-            || ($user->isTeacher() && $material->status === MaterialStatus::PUBLISHED);
+        return $user->is_active && ($user->isAdmin()
+            || (($user->isStaff() || $user->isTeacher()) && $material->status === MaterialStatus::PUBLISHED));
     }
 
     public function favorite(User $user, Material $material): bool
     {
-        return $user->isTeacher() && $this->view($user, $material);
+        return $user->is_active && $user->isTeacher() && $this->view($user, $material);
     }
 
     public function archive(User $user, Material $material): bool
     {
-        return $user->isAdmin() || $user->isStaff();
+        return $user->is_active && $user->isAdmin();
     }
 
     public function publish(User $user, Material $material): bool
     {
-        return $user->isAdmin() || $user->isStaff();
+        return $user->is_active && $user->isAdmin();
     }
 }

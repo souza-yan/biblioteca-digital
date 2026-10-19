@@ -7,6 +7,7 @@ use App\Enums\ActivityAction;
 use App\Models\Category;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 
 class ToggleCategoryActive
 {
@@ -15,11 +16,14 @@ class ToggleCategoryActive
     public function handle(User $actor, Category $category): Category
     {
         return DB::transaction(function () use ($actor, $category): Category {
-            $category->update(['is_active' => ! $category->is_active]);
+            $lockedActor = User::query()->lockForUpdate()->findOrFail($actor->getKey());
+            $lockedCategory = Category::query()->lockForUpdate()->findOrFail($category->getKey());
+            Gate::forUser($lockedActor)->authorize('toggleActive', $lockedCategory);
+            $lockedCategory->update(['is_active' => ! $lockedCategory->is_active]);
 
-            $this->logActivity->handle($actor, ActivityAction::CATEGORY_TOGGLED, 'Status da categoria alterado.');
+            $this->logActivity->handle($lockedActor, ActivityAction::CATEGORY_TOGGLED, 'Status da categoria alterado.');
 
-            return $category;
+            return $lockedCategory;
         });
     }
 }

@@ -16,6 +16,10 @@ class EnsureUserIsActive
      */
     public function handle(Request $request, Closure $next): Response
     {
+        if ($request->routeIs('logout')) {
+            return $next($request);
+        }
+
         $user = $request->user();
 
         if ($user && ! $user->is_active) {

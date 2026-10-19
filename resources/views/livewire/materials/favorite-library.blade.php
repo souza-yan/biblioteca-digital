@@ -1,7 +1,8 @@
 <div>
     <div class="mx-auto w-full max-w-screen-2xl space-y-6 px-4 py-6 sm:px-6 lg:space-y-8 lg:px-8 lg:py-8">
         <div class="mb-8">
-            <h1 class="mt-1 text-2xl font-semibold text-gray-900">Meus favoritos</h1>
+            <h1 class="mt-1 text-3xl font-bold tracking-tight text-blue-800 sm:text-4xl">Meus favoritos</h1>
+            <p class="mt-2 text-base text-slate-500">Seus materiais publicados salvos para consultar depois.</p>
         </div>
         <x-data-table :columns="[
             ['label' => 'Título'],
@@ -17,11 +18,17 @@
                     <td class="px-5 py-4 text-right text-lg">
                         <div class="flex justify-end gap-2">
                             @if ($material->currentVersion)
-                                <x-ts-button color="emerald" href="{{ route('downloads.show', $material) }}"><span
-                                        class="text-white">Baixar</span></x-ts-button>
+                                <x-ts-button color="emerald" href="{{ route('downloads.show', $material) }}"
+                                    aria-label="Baixar {{ $material->title }}" title="Baixar material"
+                                    class="!size-12 !p-0 justify-center">
+                                    <x-ts-icon icon="document-arrow-down" outline class="size-7 text-white" />
+                                </x-ts-button>
                             @endif
-                            <x-ts-button color="blue" href="{{ route('painel.library.show', $material) }}"><span
-                                    class="text-white">Detalhes</span></x-ts-button>
+                            <x-ts-button color="blue" href="{{ route('painel.library.show', $material) }}"
+                                aria-label="Ver detalhes de {{ $material->title }}" title="Ver detalhes"
+                                class="!size-12 !p-0 justify-center">
+                                <x-ts-icon icon="eye" outline class="size-7 text-white" />
+                            </x-ts-button>
                         </div>
                     </td>
                 </tr>

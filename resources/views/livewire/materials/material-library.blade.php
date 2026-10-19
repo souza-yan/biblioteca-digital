@@ -1,7 +1,10 @@
 <div>
     <div class="mx-auto w-full max-w-screen-2xl space-y-6 px-4 py-6 sm:px-6 lg:space-y-8 lg:px-8 lg:py-8">
         <div class="mb-8">
-            <h1 class="mt-1 text-3xl font-bold text-black">Materiais publicados</h1>
+            <a href="{{ route('painel.library.categories') }}" class="inline-flex items-center gap-2 rounded text-sm font-semibold text-blue-800 hover:underline focus-visible:outline-2 focus-visible:outline-blue-600">
+                <span aria-hidden="true">←</span> Materiais por categoria
+            </a>
+            <h1 class="mt-3 text-3xl font-bold tracking-tight text-blue-800 sm:text-4xl">Materiais publicados</h1>
         </div>
 
         <div class="mb-5 grid grid-cols-1 gap-4 md:grid-cols-3 items-end">
@@ -11,10 +14,10 @@
                     ->map(fn($category) => ['label' => $category->name, 'value' => $category->id])
                     ->all()" select="label:label|value:value" />
             <div>
-                <label class="block text-sm font-semibold text-black mb-1">
+                <label for="material-sort-order" class="block text-sm font-semibold text-black mb-1">
                     Ordenar por
                 </label>
-                <select wire:model.live="sortOrder"
+                <select id="material-sort-order" wire:model.live="sortOrder"
                     class="block w-full rounded-lg border-slate-300 text-base shadow-sm py-2.5 px-3 focus:border-blue-500 focus:ring-blue-500">
                     @foreach ($sortOptions as $value => $label)
                         <option value="{{ $value }}">{{ $label }}</option>
@@ -37,26 +40,32 @@
                     <td class="px-5 py-4 text-right">
                         <div class="flex flex-row flex-nowrap items-center justify-end gap-2">
                             @if ($isTeacher)
-                                <x-ts-button :color="$material->is_favorited ? 'yellow' : 'red'" wire:click="toggleFavorite({{ $material->id }})"
-                                    class="shrink-0 text-center"
-                                    style="width: 145px; min-width: 145px; max-width: 145px;">
-                                    <span
-                                        class="text-white text-base font-medium whitespace-nowrap w-full inline-block text-center">
-                                        {{ $material->is_favorited ? '★ Favorito' : '☆ Favoritar' }}
-                                    </span>
+                                <x-ts-button :color="$material->is_favorited ? 'yellow' : 'slate'"
+                                    wire:click.stop="toggleFavorite({{ $material->id }})"
+                                    :aria-label="$material->is_favorited ? 'Remover dos favoritos' : 'Adicionar aos favoritos'"
+                                    :title="$material->is_favorited ? 'Remover dos favoritos' : 'Adicionar aos favoritos'"
+                                    wire:loading.attr="disabled" wire:target="toggleFavorite"
+                                    class="!size-12 !p-0 shrink-0 justify-center">
+                                    @if ($material->is_favorited)
+                                        <x-ts-icon icon="bookmark" solid class="size-7 text-amber-950" />
+                                    @else
+                                        <x-ts-icon icon="bookmark" outline class="size-7 text-slate-200" />
+                                    @endif
                                 </x-ts-button>
                             @endif
 
                             @if ($material->currentVersion)
                                 <x-ts-button color="emerald" href="{{ route('downloads.show', $material) }}"
-                                    class="shrink-0">
-                                    <span class="text-white text-base font-medium whitespace-nowrap">Baixar</span>
+                                    aria-label="Baixar {{ $material->title }}" title="Baixar material"
+                                    class="!size-12 !p-0 shrink-0 justify-center">
+                                    <x-ts-icon icon="document-arrow-down" outline class="size-7 text-white" />
                                 </x-ts-button>
                             @endif
 
                             <x-ts-button color="blue" href="{{ route('painel.library.show', $material) }}"
-                                class="shrink-0">
-                                <span class="text-white text-base font-medium whitespace-nowrap">Detalhes</span>
+                                aria-label="Ver detalhes de {{ $material->title }}" title="Ver detalhes"
+                                class="!size-12 !p-0 shrink-0 justify-center">
+                                <x-ts-icon icon="eye" outline class="size-7 text-white" />
                             </x-ts-button>
                         </div>
                     </td>

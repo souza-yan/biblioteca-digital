@@ -79,13 +79,13 @@ it('searches the teacher category library by name, slug, or description', functi
 });
 
 it('forbids staff from the teacher category library route', function () {
-    $this->actingAs(User::factory()->staff()->create())
+    $this->actingAs(User::factory()->staffInSchool()->create())
         ->get(route('painel.library.categories'))
         ->assertForbidden();
 });
 
-it('allows staff to create a category with a generated slug', function () {
-    $this->actingAs(User::factory()->staff()->create());
+it('allows admins to create a category with a generated slug', function () {
+    $this->actingAs(User::factory()->admin()->create());
 
     Livewire::test(CategoryManager::class)
         ->call('openCreate')
@@ -111,7 +111,7 @@ it('forbids teachers from category management', function () {
 
 it('rejects duplicate category slugs without persisting a category', function () {
     Category::factory()->create(['slug' => 'slug-em-uso']);
-    $this->actingAs(User::factory()->staff()->create());
+    $this->actingAs(User::factory()->admin()->create());
 
     Livewire::test(CategoryManager::class)
         ->call('openCreate')
@@ -123,8 +123,8 @@ it('rejects duplicate category slugs without persisting a category', function ()
     $this->assertDatabaseMissing('categories', ['name' => 'Outra categoria']);
 });
 
-it('allows staff to update and deactivate a category', function () {
-    $staff = User::factory()->staff()->create();
+it('allows admins to update and deactivate a category', function () {
+    $staff = User::factory()->admin()->create();
     $category = Category::factory()->create([
         'name' => 'Ciências',
         'slug' => 'ciencias',
@@ -148,10 +148,10 @@ it('allows staff to update and deactivate a category', function () {
     ]);
 });
 
-it('grants category management only to admins and staff', function (string $role, bool $canManage) {
+it('grants category management only to admins', function (string $role, bool $canManage) {
     $user = match ($role) {
         'admin' => User::factory()->admin()->create(),
-        'staff' => User::factory()->staff()->create(),
+        'staff' => User::factory()->staffInSchool()->create(),
         default => User::factory()->teacher()->create(),
     };
     $category = Category::factory()->make();
@@ -161,6 +161,6 @@ it('grants category management only to admins and staff', function (string $role
         ->and(Gate::forUser($user)->allows('toggleActive', $category))->toBe($canManage);
 })->with([
     'admin' => ['admin', true],
-    'staff' => ['staff', true],
+    'staff' => ['staff', false],
     'teacher' => ['teacher', false],
 ]);

@@ -9,6 +9,7 @@ use App\Models\Material;
 use App\Models\MaterialVersion;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 
 class RecordDownload
 {
@@ -17,17 +18,23 @@ class RecordDownload
     public function handle(User $user, Material $material, MaterialVersion $version): Download
     {
         return DB::transaction(function () use ($user, $material, $version): Download {
-            $download = $material->downloads()->create([
-                'user_id' => $user->getKey(),
-                'material_version_id' => $version->getKey(),
+            $currentUser = User::query()->lockForUpdate()->findOrFail($user->getKey());
+            $currentMaterial = Material::query()->lockForUpdate()->findOrFail($material->getKey());
+            $currentVersion = MaterialVersion::query()->findOrFail($version->getKey());
+            Gate::forUser($currentUser)->authorize('download', $currentMaterial);
+            abort_if((int) $currentVersion->material_id !== (int) $currentMaterial->getKey(), 404);
+
+            $download = $currentMaterial->downloads()->create([
+                'user_id' => $currentUser->getKey(),
+                'material_version_id' => $currentVersion->getKey(),
                 'downloaded_at' => now(),
             ]);
 
             $this->logActivity->handle(
-                $user,
+                $currentUser,
                 ActivityAction::MATERIAL_DOWNLOADED,
                 'Material baixado.',
-                $material,
+                $currentMaterial,
             );
 
             return $download;

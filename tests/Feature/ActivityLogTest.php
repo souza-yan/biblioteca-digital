@@ -118,7 +118,7 @@ it('records a material download as activity for its authenticated actor', functi
 });
 
 it('rolls back an action and its activity log when logging fails', function () {
-    $actor = User::factory()->staff()->create();
+    $actor = User::factory()->admin()->create();
     $logActivity = Mockery::mock(LogActivity::class);
     $logActivity->shouldReceive('handle')->once()->andReturnUsing(
         function (User $actor, ActivityAction $action, string $description, ?Material $material = null): ActivityLog {
@@ -155,7 +155,7 @@ it('prevents activity logs from being updated or deleted', function () {
 it('allows admins and staff to view all activity logs and forbids teachers', function (string $role) {
     $user = match ($role) {
         'admin' => User::factory()->admin()->create(),
-        'staff' => User::factory()->staff()->create(),
+        'staff' => User::factory()->staffInSchool()->create(),
         default => User::factory()->teacher()->create(),
     };
     ActivityLog::factory()->withoutMaterial()->create(['description' => 'Atividade global']);
@@ -183,8 +183,8 @@ it('allows admins and staff to view all activity logs and forbids teachers', fun
 
 it('filters change activity logs by user, action and date period', function () {
     $admin = User::factory()->admin()->create();
-    $actor = User::factory()->staff()->create();
-    $otherActor = User::factory()->staff()->create();
+    $actor = User::factory()->staffInSchool()->create();
+    $otherActor = User::factory()->staffInSchool()->create();
     $material = Material::factory()->create(['title' => 'Material filtrável']);
     $otherMaterial = Material::factory()->create(['title' => 'Material não correspondente']);
 
@@ -249,7 +249,7 @@ it('shows the activity navigation link only to admins and staff', function () {
         ->assertOk()
         ->assertDontSee('Atividades');
 
-    $this->actingAs(User::factory()->staff()->create())
+    $this->actingAs(User::factory()->staffInSchool()->create())
         ->get(route('painel.activities'))
         ->assertOk()
         ->assertSee('Atividades');

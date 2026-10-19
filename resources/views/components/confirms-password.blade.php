@@ -34,8 +34,9 @@
     </x-slot>
 
     <x-slot name="footer">
-        <x-secondary-button wire:click="stopConfirmingPassword" wire:loading.attr="disabled">
-            {{ __('Cancel') }}
+        <x-secondary-button wire:click="stopConfirmingPassword" wire:loading.attr="disabled"
+            aria-label="Cancelar" title="Cancelar" class="!size-12 !p-0 justify-center">
+            <x-ts-icon icon="x-mark" outline class="size-7" />
         </x-secondary-button>
 
         <x-button class="ms-3" dusk="confirm-password-button" wire:click="confirmPassword" wire:loading.attr="disabled">

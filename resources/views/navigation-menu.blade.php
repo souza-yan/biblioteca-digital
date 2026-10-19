@@ -1,7 +1,6 @@
 <div>
     @php
         $currentUser = auth()->user();
-        $isManagement = $currentUser->isAdmin() || $currentUser->isStaff();
         $navigationItems = [
             [
                 'label' => 'Início',
@@ -11,7 +10,7 @@
             ],
         ];
 
-        if ($isManagement) {
+        if ($currentUser->isAdmin()) {
             $navigationItems = [
                 ...$navigationItems,
                 [
@@ -39,19 +38,31 @@
                     'icon' => 'activity',
                 ],
             ];
+        } elseif ($currentUser->isStaff()) {
+            $staffSchool = $currentUser->school();
+            $navigationItems = [
+                ...$navigationItems,
+                [
+                    'label' => 'Usuários',
+                    'route' => 'painel.users',
+                    'active' => request()->routeIs('painel.users'),
+                    'icon' => 'users',
+                ],
+                [
+                    'label' => 'Materiais',
+                    'route' => 'painel.materials',
+                    'active' => request()->routeIs('painel.materials*') || request()->routeIs('painel.categories'),
+                    'icon' => 'book',
+                ],
+            ];
         } else {
+            $staffSchool = null;
             $navigationItems = [
                 ...$navigationItems,
                 [
                     'label' => 'Materiais',
-                    'route' => 'painel.library',
-                    'active' => request()->routeIs('painel.library') || request()->routeIs('painel.library.show'),
-                    'icon' => 'book',
-                ],
-                [
-                    'label' => 'Categorias',
                     'route' => 'painel.library.categories',
-                    'active' => request()->routeIs('painel.library.categories'),
+                    'active' => request()->routeIs('painel.library', 'painel.library.*'),
                     'icon' => 'folder',
                 ],
                 [
@@ -63,8 +74,11 @@
             ];
         }
 
-        $searchRoute = $isManagement ? 'painel.materials' : 'painel.library';
-        $roleLabel = $currentUser->isStaff() ? 'Equipe de Informática Educativa' : $currentUser->role->label();
+        if ($currentUser->isAdmin()) {
+            $staffSchool = null;
+        }
+
+        $roleLabel = $currentUser->isStaff() ? 'Gestão escolar' : $currentUser->role->label();
     @endphp
 
     {{-- HEADER --}}
@@ -93,18 +107,22 @@
                         </span>
                     @endif
 
-                    <span class="hidden max-w-40 sm:block">
+                    <span class="hidden min-w-0 max-w-72 sm:block">
                         <span
                             class="block truncate text-base font-semibold text-slate-800">{{ $currentUser->name }}</span>
-                        <span class="block truncate text-sm text-slate-500">{{ $roleLabel }}</span>
+                        <span class="block truncate text-sm text-slate-500"
+                            @if ($staffSchool) title="{{ $roleLabel }} · {{ $staffSchool->name }}" @endif>
+                            {{ $roleLabel }}@if ($staffSchool)<span class="px-1" aria-hidden="true">·</span><span class="font-medium text-blue-800">{{ $staffSchool->name }}</span>@endif
+                        </span>
                     </span>
                 </a>
 
                 <form method="POST" action="{{ route('logout') }}" class="hidden sm:block">
                     @csrf
                     <button type="submit"
-                        class="rounded-lg px-3 py-2 text-sm font-semibold text-slate-600 transition hover:bg-slate-100 hover:text-blue-900 focus:outline-none focus:ring-2 focus:ring-blue-600">
-                        Sair
+                        aria-label="Sair" title="Sair"
+                        class="inline-flex size-12 items-center justify-center rounded-lg text-slate-600 transition hover:bg-slate-100 hover:text-blue-900 focus:outline-none focus:ring-2 focus:ring-blue-600">
+                        <x-ts-icon icon="arrow-right-start-on-rectangle" outline class="size-7" />
                     </button>
                 </form>
             </div>
@@ -115,20 +133,18 @@
     <aside id="app-sidebar" class="flex flex-col overflow-hidden border-r border-blue-900 bg-blue-800"
         aria-label="Navegação principal">
 
-        <div class="flex shrink-0 items-center border-b border-blue-700 px-5" style="height: 4rem">
+        <div class="sidebar-brand flex shrink-0 items-center border-b border-blue-700 px-5" style="height: 4rem">
             <button type="button"
-                class="inline-flex size-10 shrink-0 items-center justify-center rounded-xl text-white transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-white"
+                class="inline-flex size-12 shrink-0 items-center justify-center rounded-xl text-white transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-white"
                 onclick="
                     const c = document.documentElement.classList.toggle('sidebar-collapsed');
                     try { localStorage.setItem('sidebarCollapsed', c ? '1' : '0'); } catch (e) {}
                 "
-                aria-label="Recolher ou expandir barra lateral" title="Recolher ou expandir barra lateral">
-                <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
-                    aria-hidden="true">
-                    <path stroke-linecap="round" d="M4 6h16M4 12h16M4 18h16" />
-                </svg>
+                aria-label="Recolher ou expandir barra lateral" aria-controls="app-sidebar"
+                title="Recolher ou expandir barra lateral">
+                <x-ts-icon icon="bars-3" outline class="size-7" />
             </button>
-            <div class="sidebar-label ml-3 shrink-0 whitespace-nowrap">
+            <div class="sidebar-brand-title sidebar-label ml-3 shrink-0 whitespace-nowrap">
                 <p class="text-base font-bold text-white">Biblioteca de Robótica</p>
             </div>
         </div>
@@ -138,9 +154,9 @@
 
             <nav class="space-y-1">
                 @foreach ($navigationItems as $item)
-                    <a href="{{ route($item['route']) }}" title="{{ $item['label'] }}"
+                    <a href="{{ route($item['route']) }}" title="{{ $item['label'] }}" aria-label="{{ $item['label'] }}"
                         style="padding-left: 18px; padding-right: 18px" @class([
-                            'group flex items-center gap-3 rounded-xl py-3 text-base font-medium transition',
+                            'sidebar-nav-link group flex items-center gap-3 rounded-xl py-3 text-base font-medium transition',
                             'bg-white text-blue-800 shadow-sm' => $item['active'],
                             'text-white hover:bg-blue-700' => !$item['active'],
                         ])
@@ -199,9 +215,9 @@
                     Conta
                 </p>
 
-                <a href="{{ route('profile.show') }}" title="Meu perfil"
+                <a href="{{ route('profile.show') }}" title="Meu perfil" aria-label="Meu perfil"
                     style="padding-left: 18px; padding-right: 18px" @class([
-                        'group flex items-center gap-3 rounded-xl py-3 text-base font-medium transition',
+                        'sidebar-account-link group flex items-center gap-3 rounded-xl py-3 text-base font-medium transition',
                         'bg-white text-blue-800 shadow-sm' => request()->routeIs('profile.show'),
                         'text-white hover:bg-blue-700' => !request()->routeIs('profile.show'),
                     ])>
@@ -221,14 +237,9 @@
                 {{-- Sair: no header ele some em telas pequenas, então fica aqui também --}}
                 <form method="POST" action="{{ route('logout') }}" class="mt-1 sm:hidden">
                     @csrf
-                    <button type="submit" title="Sair" style="padding-left: 18px; padding-right: 18px"
-                        class="flex w-full items-center gap-3 rounded-xl py-3 text-base font-medium text-white transition hover:bg-blue-700">
-                        <svg class="size-5 shrink-0 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="1.7" aria-hidden="true">
-                            <path stroke-linecap="round" stroke-linejoin="round"
-                                d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3M10 17l5-5-5-5M15 12H4" />
-                        </svg>
-                        <span class="sidebar-label shrink-0 whitespace-nowrap">Sair</span>
+                    <button type="submit" title="Sair" aria-label="Sair"
+                        class="flex w-full items-center justify-center rounded-xl py-3 text-white transition hover:bg-blue-700">
+                        <x-ts-icon icon="arrow-right-start-on-rectangle" outline class="size-7" />
                     </button>
                 </form>
             </div>

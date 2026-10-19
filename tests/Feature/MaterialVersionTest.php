@@ -9,10 +9,10 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Livewire;
 
-it('stores a staff upload privately as the first material version', function () {
+it('stores an administrator upload privately as the first material version', function () {
     Storage::fake('local');
     $material = Material::factory()->create();
-    $staff = User::factory()->staff()->create();
+    $staff = User::factory()->admin()->create();
     $this->actingAs($staff);
 
     Livewire::test(MaterialDetail::class, ['material' => $material])
@@ -32,10 +32,10 @@ it('stores a staff upload privately as the first material version', function () 
     ]);
 });
 
-it('increments versions and preserves older files when staff uploads again', function () {
+it('increments versions and preserves older files when an administrator uploads again', function () {
     Storage::fake('local');
     $material = Material::factory()->create();
-    $this->actingAs(User::factory()->staff()->create());
+    $this->actingAs(User::factory()->admin()->create());
 
     $component = Livewire::test(MaterialDetail::class, ['material' => $material])
         ->set('versionForm.file', UploadedFile::fake()->create('apostila-1.pdf', 100, 'application/pdf'))
@@ -57,14 +57,14 @@ it('increments versions and preserves older files when staff uploads again', fun
     ]);
 });
 
-it('shows version history to staff and administrators but not teachers', function (string $role) {
+it('shows version history to administrators but not teachers', function (string $role) {
     $material = Material::factory()->create();
     $version = MaterialVersion::factory()->for($material)->create([
         'original_name' => 'versao-privada.pdf',
     ]);
     $actor = $role === 'admin'
         ? User::factory()->admin()->create()
-        : User::factory()->staff()->create();
+        : User::factory()->admin()->create();
     $this->actingAs($actor);
 
     $this->get(route('painel.materials.show', $material))
@@ -73,7 +73,7 @@ it('shows version history to staff and administrators but not teachers', functio
         ->assertSee($version->original_name)
         ->assertSee(route('downloads.version', [$material, $version]), false)
         ->assertDontSee($version->file_path);
-})->with(['admin', 'staff']);
+})->with(['admin']);
 
 it('does not expose version history or permit uploads to teachers', function () {
     $material = Material::factory()->published()->create();
@@ -96,7 +96,7 @@ it('does not expose version history or permit uploads to teachers', function () 
 it('rejects invalid version files and does not store them', function () {
     Storage::fake('local');
     $material = Material::factory()->create();
-    $this->actingAs(User::factory()->staff()->create());
+    $this->actingAs(User::factory()->admin()->create());
 
     Livewire::test(MaterialDetail::class, ['material' => $material])
         ->set('versionForm.file', UploadedFile::fake()->create('script.txt', 10, 'text/plain'))
@@ -111,7 +111,7 @@ it('rejects version files above the configured upload maximum', function () {
     Storage::fake('local');
     config()->set('materials.upload.max_size_kilobytes', 1);
     $material = Material::factory()->create();
-    $this->actingAs(User::factory()->staff()->create());
+    $this->actingAs(User::factory()->admin()->create());
 
     Livewire::test(MaterialDetail::class, ['material' => $material])
         ->set('versionForm.file', UploadedFile::fake()->create('apostila.pdf', 2, 'application/pdf'))
@@ -122,10 +122,10 @@ it('rejects version files above the configured upload maximum', function () {
     expect(Storage::disk('local')->allFiles())->toBe([]);
 });
 
-it('allows only admins and staff to list or create material versions', function (string $role, bool $allowed) {
+it('allows only admins to list or create material versions', function (string $role, bool $allowed) {
     $user = match ($role) {
         'admin' => User::factory()->admin()->create(),
-        'staff' => User::factory()->staff()->create(),
+        'staff' => User::factory()->staffInSchool()->create(),
         default => User::factory()->teacher()->create(),
     };
     $material = Material::factory()->make();
@@ -134,6 +134,6 @@ it('allows only admins and staff to list or create material versions', function 
         ->and(Gate::forUser($user)->allows('create', [MaterialVersion::class, $material]))->toBe($allowed);
 })->with([
     'admin' => ['admin', true],
-    'staff' => ['staff', true],
+    'staff' => ['staff', false],
     'teacher' => ['teacher', false],
 ]);

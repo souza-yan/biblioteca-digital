@@ -33,8 +33,9 @@
     </div>
 
     <div class="mt-4 flex justify-end">
-        <x-ts-button color="blue" class="text-white text-base" wire:click="{{ $clearMethod }}">
-            Limpar filtros
+        <x-ts-button color="blue" class="!size-12 !p-0 justify-center text-white" wire:click="{{ $clearMethod }}"
+            aria-label="Limpar filtros" title="Limpar filtros">
+            <x-ts-icon icon="arrow-path" outline class="size-7" />
         </x-ts-button>
     </div>
 

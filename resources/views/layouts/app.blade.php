@@ -54,15 +54,47 @@
             transition: padding-left var(--sidebar-speed);
         }
 
-        /* Textos: aparecem com atraso ao expandir, somem rápido ao recolher */
+        /* Os textos acompanham o recolhimento sem desaparecer abruptamente. */
         .sidebar-label {
+            max-width: 20rem;
+            overflow: hidden;
             opacity: 1;
-            transition: opacity 200ms 200ms;
+            transition: max-width var(--sidebar-speed), opacity var(--sidebar-speed), margin-left var(--sidebar-speed);
         }
 
         html.sidebar-collapsed .sidebar-label {
+            max-width: 0;
+            margin-left: 0;
             opacity: 0;
-            transition: opacity 100ms;
+        }
+
+        #app-sidebar .sidebar-brand {
+            transition: padding var(--sidebar-speed);
+        }
+
+        html.sidebar-collapsed #app-sidebar .sidebar-brand {
+            padding-left: 1rem;
+            padding-right: 1rem;
+        }
+
+        #app-sidebar .sidebar-nav-link,
+        #app-sidebar .sidebar-account-link {
+            transition: gap var(--sidebar-speed), background-color 150ms, color 150ms;
+        }
+
+        html.sidebar-collapsed #app-sidebar .sidebar-nav-link,
+        html.sidebar-collapsed #app-sidebar .sidebar-account-link {
+            gap: 0;
+        }
+
+        #app-sidebar p.sidebar-label {
+            max-height: 4rem;
+            transition: max-width var(--sidebar-speed), max-height var(--sidebar-speed), padding var(--sidebar-speed), opacity var(--sidebar-speed);
+        }
+
+        html.sidebar-collapsed #app-sidebar p.sidebar-label {
+            max-height: 0;
+            padding: 0;
         }
     </style>
 

@@ -3,6 +3,7 @@
 namespace App\Actions\Dashboard;
 
 use App\Models\Material;
+use App\Models\School;
 use Illuminate\Database\Eloquent\Builder;
 
 class BuildMaterialDownloadRanking
@@ -34,7 +35,7 @@ class BuildMaterialDownloadRanking
     /**
      * @return Builder<Material>
      */
-    public function handle(string $requestedPeriod = '30'): Builder
+    public function handle(string $requestedPeriod = '30', ?School $school = null): Builder
     {
         $period = $this->normalizePeriod($requestedPeriod);
         $downloadCutoff = $period === 'total'
@@ -44,9 +45,20 @@ class BuildMaterialDownloadRanking
         return Material::query()
             ->with('category')
             ->withCount([
-                'downloads as downloads_count' => fn (Builder $query): Builder => $downloadCutoff === null
-                    ? $query
-                    : $query->where('downloaded_at', '>=', $downloadCutoff),
+                'downloads as downloads_count' => function (Builder $query) use ($downloadCutoff, $school): Builder {
+                    if ($downloadCutoff !== null) {
+                        $query->where('downloaded_at', '>=', $downloadCutoff);
+                    }
+
+                    if ($school !== null) {
+                        $query->whereHas('user.schools', fn (Builder $schools): Builder => $schools
+                            ->where('schools.id', $school->getKey())
+                            ->where('schools.is_active', true)
+                            ->where('school_user.is_active', true));
+                    }
+
+                    return $query;
+                },
             ])
             ->having('downloads_count', '>', 0)
             ->orderByDesc('downloads_count')

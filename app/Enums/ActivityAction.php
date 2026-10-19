@@ -7,6 +7,7 @@ enum ActivityAction: string
     case USER_CREATED = 'user.created';
     case USER_UPDATED = 'user.updated';
     case USER_TOGGLED = 'user.toggled';
+    case USER_PASSWORD_RESET_REQUESTED = 'user.password_reset_requested';
     case CATEGORY_CREATED = 'category.created';
     case CATEGORY_UPDATED = 'category.updated';
     case CATEGORY_TOGGLED = 'category.toggled';
@@ -26,6 +27,7 @@ enum ActivityAction: string
             self::USER_CREATED => 'Usuário criado',
             self::USER_UPDATED => 'Usuário atualizado',
             self::USER_TOGGLED => 'Status do usuário alterado',
+            self::USER_PASSWORD_RESET_REQUESTED => 'Redefinição de senha solicitada',
             self::CATEGORY_CREATED => 'Categoria criada',
             self::CATEGORY_UPDATED => 'Categoria atualizada',
             self::CATEGORY_TOGGLED => 'Status da categoria alterado',

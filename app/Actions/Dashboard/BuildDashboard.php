@@ -56,6 +56,9 @@ class BuildDashboard
             ];
         }
 
+        $school = $actor->isStaff() ? $actor->school() : null;
+        abort_unless(! $actor->isStaff() || $school !== null, 403);
+
         $downloadPeriodOptions = $this->buildMaterialDownloadRanking->periodOptions();
         $downloadPeriod = $this->buildMaterialDownloadRanking->normalizePeriod($requestedDownloadPeriod);
 
@@ -71,16 +74,39 @@ class BuildDashboard
 
         return [
             'isTeacher' => false,
-            'activeUsersCount' => User::query()->where('is_active', true)->count(),
+            'activeUsersCount' => User::query()
+                ->where('is_active', true)
+                ->when($school !== null, fn ($query) => $query->whereHas(
+                    'schools',
+                    fn ($schools) => $schools
+                        ->where('schools.id', $school->getKey())
+                        ->where('schools.is_active', true)
+                        ->where('school_user.is_active', true),
+                ))
+                ->count(),
             'statusCounts' => collect(MaterialStatus::cases())
                 ->mapWithKeys(fn (MaterialStatus $status): array => [
                     $status->label() => (int) $statusCounts->get($status->value, 0),
                 ]),
             'recentDownloadsCount' => Download::query()
                 ->where('downloaded_at', '>=', now()->subDays(30))
+                ->when($school !== null, fn ($query) => $query->whereHas(
+                    'user.schools',
+                    fn ($schools) => $schools
+                        ->where('schools.id', $school->getKey())
+                        ->where('schools.is_active', true)
+                        ->where('school_user.is_active', true),
+                ))
                 ->count(),
             'recentActivities' => ActivityLog::query()
                 ->with(['user', 'material'])
+                ->when($school !== null, fn ($query) => $query->whereHas(
+                    'user.schools',
+                    fn ($schools) => $schools
+                        ->where('schools.id', $school->getKey())
+                        ->where('schools.is_active', true)
+                        ->where('school_user.is_active', true),
+                ))
                 ->orderByDesc('created_at')
                 ->orderByDesc('id')
                 ->limit(3)
@@ -91,7 +117,7 @@ class BuildDashboard
                 'inactive' => (int) $categoryTotals->total - (int) $categoryTotals->active,
             ],
             'topDownloadedMaterials' => $this->buildMaterialDownloadRanking
-                ->handle($downloadPeriod)
+                ->handle($downloadPeriod, $school)
                 ->limit(3)
                 ->get(),
             'downloadPeriod' => $downloadPeriod,

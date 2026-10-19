@@ -8,7 +8,11 @@ use App\Models\User;
 it('shows the complete download ranking for admins and staff in the selected period', function (string $role) {
     $actor = $role === 'admin'
         ? User::factory()->admin()->create()
-        : User::factory()->staff()->create();
+        : User::factory()->staffInSchool()->create();
+    $downloadUser = User::factory()->teacher()->create();
+    if ($role === 'staff') {
+        $downloadUser->schools()->attach($actor->school()->getKey(), ['is_active' => true]);
+    }
 
     $expectedTitles = [];
 
@@ -23,6 +27,7 @@ it('shows the complete download ranking for admins and staff in the selected per
         $expectedTitles[] = $title;
 
         Download::factory()->count($downloadCount)->create([
+            'user_id' => $downloadUser->getKey(),
             'material_id' => $material->getKey(),
             'material_version_id' => $version->getKey(),
             'downloaded_at' => now()->subDays(10),
@@ -34,6 +39,7 @@ it('shows the complete download ranking for admins and staff in the selected per
     ]);
     $outsidePeriodVersion = MaterialVersion::factory()->for($outsidePeriodMaterial)->create();
     Download::factory()->create([
+        'user_id' => $downloadUser->getKey(),
         'material_id' => $outsidePeriodMaterial->getKey(),
         'material_version_id' => $outsidePeriodVersion->getKey(),
         'downloaded_at' => now()->subDays(40),

@@ -1,8 +1,9 @@
 <div>
     <div class="mx-auto w-full max-w-screen-2xl space-y-6 px-4 py-6 sm:px-6 lg:space-y-8 lg:px-8 lg:py-8">
-        <a class="text-base font-medium text-blue-700 hover:underline"
-            href="{{ $isTeacher ? route('painel.library') : route('painel.materials') }}">
-            {{ $isTeacher ? 'Voltar à biblioteca' : 'Voltar aos materiais' }}
+        <a class="inline-flex size-12 items-center justify-center rounded-md text-blue-700 hover:bg-blue-50"
+            href="{{ $isTeacher ? route('painel.library', ['categoryFilter' => $material->category_id]) : route('painel.materials') }}">
+            <x-ts-icon icon="arrow-left" outline class="size-7" />
+            <span class="sr-only">{{ $isTeacher ? 'Voltar aos materiais desta categoria' : 'Voltar aos materiais' }}</span>
         </a>
 
         <article class="mt-5 rounded-md border border-gray-200 bg-white p-6 shadow-sm">
@@ -16,30 +17,40 @@
                 {{-- Bloco de botões padronizados e alinhados --}}
                 <div class="flex flex-row flex-nowrap items-center gap-2 shrink-0">
                     @if ($isTeacher)
-                        <x-ts-button :color="$isFavorited ? 'yellow' : 'red'" wire:click="toggleFavorite" class="shrink-0 w-36 justify-center">
-                            <span class="text-white text-base font-medium whitespace-nowrap">
-                                {{ $isFavorited ? '★ Favorito' : '☆ Favoritar' }}
-                            </span>
+                        <x-ts-button :color="$isFavorited ? 'yellow' : 'slate'"
+                            wire:click.stop="toggleFavorite"
+                            :aria-label="$isFavorited ? 'Remover dos favoritos' : 'Adicionar aos favoritos'"
+                            :title="$isFavorited ? 'Remover dos favoritos' : 'Adicionar aos favoritos'"
+                            wire:loading.attr="disabled" wire:target="toggleFavorite"
+                            class="!size-12 !p-0 shrink-0 justify-center">
+                            @if ($isFavorited)
+                                <x-ts-icon icon="bookmark" solid class="size-7 text-amber-950" />
+                            @else
+                                <x-ts-icon icon="bookmark" outline class="size-7 text-slate-200" />
+                            @endif
                         </x-ts-button>
                     @endif
 
                     @if ($material->currentVersion)
                         <x-ts-button color="emerald" href="{{ route('downloads.show', $material) }}"
-                            class="shrink-0 w-32 justify-center">
-                            <span class="text-white text-base font-medium whitespace-nowrap">Baixar</span>
+                            aria-label="Baixar {{ $material->title }}" title="Baixar material"
+                            class="!size-12 !p-0 shrink-0 justify-center">
+                            <x-ts-icon icon="document-arrow-down" outline class="size-7 text-white" />
                         </x-ts-button>
                     @endif
 
-                    @if (!$isTeacher)
+                    @if ($canManageVersions)
                         @if ($material->status !== \App\Enums\MaterialStatus::PUBLISHED)
-                            <x-ts-button color="yellow" wire:click="publish" class="shrink-0 w-32 justify-center">
-                                <span class="text-white text-base font-medium whitespace-nowrap">Publicar</span>
+                            <x-ts-button color="emerald" wire:click="publish" aria-label="Publicar material"
+                                title="Publicar material" class="!size-12 !p-0 shrink-0 justify-center">
+                                <x-ts-icon icon="cloud-arrow-up" outline class="size-7 text-white" />
                             </x-ts-button>
                         @endif
 
                         @if ($material->status !== \App\Enums\MaterialStatus::ARCHIVED)
-                            <x-ts-button color="red" wire:click="archive" class="shrink-0 w-32 justify-center">
-                                <span class="text-white text-base font-medium whitespace-nowrap">Arquivar</span>
+                            <x-ts-button color="red" wire:click="archive" aria-label="Arquivar material"
+                                title="Arquivar material" class="!size-12 !p-0 shrink-0 justify-center">
+                                <x-ts-icon icon="archive-box" outline class="size-7 text-white" />
                             </x-ts-button>
                         @endif
                     @endif
@@ -83,7 +94,7 @@
 
         {{-- O restante do arquivo continua igual abaixo... --}}
 
-        @if ($canManageVersions)
+        @if ($canViewVersionHistory)
             <section class="mt-6 rounded-md border border-gray-200 bg-white p-6 shadow-sm">
                 <h2 class="text-lg font-semibold text-gray-900">Versões</h2>
 
@@ -127,8 +138,20 @@
                                     <td class="whitespace-nowrap px-4 py-3 text-sm text-gray-600">
                                         {{ $version->created_at?->format('d/m/Y H:i') }}</td>
                                     <td class="px-4 py-3 text-right text-sm">
+                                        @if (in_array($version->mime_type, ['application/pdf', 'image/png', 'image/jpeg', 'image/webp', 'image/gif', 'text/plain', 'video/mp4', 'video/webm', 'audio/mpeg'], true))
+                                            <x-ts-button color="blue"
+                                                href="{{ route('previews.version', [$material, $version]) }}"
+                                                aria-label="Ver prévia da versão {{ $version->version_number }}"
+                                                title="Ver prévia" class="!size-12 !p-0 justify-center">
+                                                <x-ts-icon icon="eye" outline class="size-7 text-white" />
+                                            </x-ts-button>
+                                        @endif
                                         <x-ts-button color="emerald"
-                                            href="{{ route('downloads.version', [$material, $version]) }}">Baixar</x-ts-button>
+                                            href="{{ route('downloads.version', [$material, $version]) }}"
+                                            aria-label="Baixar versão {{ $version->version_number }}" title="Baixar versão"
+                                            class="!size-12 !p-0 justify-center">
+                                            <x-ts-icon icon="document-arrow-down" outline class="size-7 text-white" />
+                                        </x-ts-button>
                                     </td>
                                 </tr>
                             @empty
@@ -141,7 +164,8 @@
                     </table>
                 </div>
 
-                <form wire:submit="saveVersion"
+                @if ($canManageVersions)
+                    <form wire:submit="saveVersion"
                     class="mt-8 space-y-5 rounded-2xl border border-slate-200 bg-slate-50/60 p-5 sm:p-6">
 
                     <div>
@@ -190,7 +214,8 @@
                             Salvar versão
                         </x-ts-button>
                     </div>
-                </form>
+                    </form>
+                @endif
             </section>
         @endif
     </div>

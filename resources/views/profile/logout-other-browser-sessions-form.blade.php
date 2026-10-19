@@ -1,4 +1,4 @@
-<div class="bg-white shadow rounded-2xl p-6 lg:col-span-2">
+<div class="min-w-0 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
     <div class="flex items-start gap-4">
         <div class="flex items-center justify-center size-12 shrink-0 rounded-xl bg-blue-50 text-blue-900">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
@@ -39,7 +39,7 @@
                         @endif
                     </div>
 
-                    <div class="ms-3">
+                    <div class="ms-3 min-w-0 break-words">
                         <div class="text-sm text-gray-700">
                             {{ $session->agent->platform() ?: 'Desconhecido' }} -
                             {{ $session->agent->browser() ?: 'Desconhecido' }}
@@ -59,12 +59,12 @@
     @endif
 
     <div class="flex items-center mt-5">
-        <button type="button" wire:click="confirmLogout" wire:loading.attr="disabled"
-            class="inline-flex items-center px-5 py-2.5 text-sm font-bold text-white bg-blue-900 rounded-lg hover:bg-blue-800 disabled:opacity-50">
-            Encerrar outras sessões
+        <button type="button" wire:click="confirmLogout" wire:loading.attr="disabled" aria-label="Encerrar outras sessões" title="Encerrar outras sessões"
+            class="inline-flex size-12 items-center justify-center rounded-lg bg-blue-900 text-white hover:bg-blue-800 disabled:opacity-50">
+            <x-ts-icon icon="arrow-right-start-on-rectangle" outline class="size-7" />
         </button>
 
-        <x-action-message class="ms-3" on="loggedOut">Concluído.</x-action-message>
+        <x-action-message class="ms-3 min-w-0 break-words" on="loggedOut">Concluído.</x-action-message>
     </div>
 
     <!-- Modal de confirmação -->
@@ -84,8 +84,8 @@
         </x-slot>
 
         <x-slot name="footer">
-            <x-secondary-button wire:click="$toggle('confirmingLogout')" wire:loading.attr="disabled">
-                Cancelar
+            <x-secondary-button wire:click="$toggle('confirmingLogout')" wire:loading.attr="disabled" aria-label="Cancelar" title="Cancelar" class="!size-12 !p-0 justify-center">
+                <x-ts-icon icon="x-mark" outline class="size-7" />
             </x-secondary-button>
 
             <button type="button" wire:click="logoutOtherBrowserSessions" wire:loading.attr="disabled"

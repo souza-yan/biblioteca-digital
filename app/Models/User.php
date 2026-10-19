@@ -122,4 +122,57 @@ class User extends Authenticatable
         return $this->belongsToMany(Material::class, 'favorites')
             ->withPivot('created_at');
     }
+
+    /**
+     * @return BelongsToMany<School, $this>
+     */
+    public function schools(): BelongsToMany
+    {
+        return $this->belongsToMany(School::class, 'school_user')
+            ->withPivot('is_active')
+            ->withTimestamps();
+    }
+
+    public function belongsToSchool(School $school): bool
+    {
+        return $this->schools()
+            ->whereKey($school->getKey())
+            ->wherePivot('is_active', true)
+            ->where('schools.is_active', true)
+            ->exists();
+    }
+
+    public function hasSchoolMembership(School $school): bool
+    {
+        return $this->schools()
+            ->whereKey($school->getKey())
+            ->where('schools.is_active', true)
+            ->exists();
+    }
+
+    public function hasExactlyOneActiveSchool(): bool
+    {
+        return $this->school() !== null;
+    }
+
+    public function isExclusiveTo(School $school): bool
+    {
+        return $this->schools()->count() === 1
+            && $this->belongsToSchool($school);
+    }
+
+    /**
+     * Returns the sole active school, or null for zero or multiple active schools.
+     * This method never chooses a context from a user's first related school.
+     */
+    public function school(): ?School
+    {
+        $activeSchools = $this->schools()
+            ->wherePivot('is_active', true)
+            ->where('schools.is_active', true)
+            ->limit(2)
+            ->get();
+
+        return $activeSchools->count() === 1 ? $activeSchools->first() : null;
+    }
 }

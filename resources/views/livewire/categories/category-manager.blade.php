@@ -1,12 +1,17 @@
 <div>
-    <div class="mx-auto w-full max-w-screen-2xl space-y-6 px-4 py-6 sm:px-6 lg:space-y-8 lg:px-8 lg:py-8">
+    @if (auth()->user()?->isStaff())
+        <livewire:materials.material-manager />
+    @else
+        <div class="mx-auto w-full max-w-screen-2xl space-y-6 px-4 py-6 sm:px-6 lg:space-y-8 lg:px-8 lg:py-8">
         <div class="mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
             <div>
                 <h1 class="mt-1 text-3xl font-bold tracking-tight text-blue-800 sm:text-4xl">Categorias</h1>
             </div>
-            <x-ts-button color="blue" wire:click="openCreate">
-                <span class="text-white text-base">Nova categoria</span>
-            </x-ts-button>
+            @can('create', \App\Models\Category::class)
+                <x-ts-button color="blue" wire:click="openCreate">
+                    <span class="text-white text-base">Nova categoria</span>
+                </x-ts-button>
+            @endcan
         </div>
 
         <div class="mb-5 max-w-xl">
@@ -15,27 +20,32 @@
 
         <x-data-table :columns="[
             ['label' => 'Nome', 'class' => 'text-lg'],
-            ['label' => 'Slug', 'class' => 'text-lg'],
             ['label' => 'Situação', 'class' => 'text-lg'],
             ['label' => 'Ações', 'align' => 'right', 'class' => 'text-lg'],
         ]">
             @forelse ($categories as $category)
                 <tr wire:key="category-{{ $category->id }}">
                     <td class="px-5 py-4 text-lg font-medium text-gray-900">{{ $category->name }}</td>
-                    <td class="px-5 py-4 text-lg text-black">{{ $category->slug }}</td>
                     <td class="px-5 py-4 text-lg text-black">{{ $category->is_active ? 'Ativa' : 'Inativa' }}</td>
                     <td class="px-5 py-4 text-right text-lg">
-                        <div class="flex justify-end gap-2">
-                            <x-ts-button color="blue"
-                                wire:click="editCategory({{ $category->id }})"><span class="text-white">Editar</span></x-ts-button>
-                            <x-ts-button :color="$category->is_active ? 'red' : 'emerald'" wire:click="toggleActive({{ $category->id }})">
-                                <span class="text-white">{{ $category->is_active ? 'Desativar' : 'Ativar' }}</span>
-                            </x-ts-button>
-                        </div>
+                        @can('update', $category)
+                            <div class="flex justify-end gap-2">
+                                <x-ts-button color="blue"
+                                    wire:click="editCategory({{ $category->id }})" aria-label="Editar categoria {{ $category->name }}"
+                                    title="Editar categoria" class="!size-12 !p-0 justify-center">
+                                    <x-ts-icon icon="pencil-square" outline class="size-7 text-white" />
+                                </x-ts-button>
+                                <x-ts-button :color="$category->is_active ? 'red' : 'emerald'" wire:click="toggleActive({{ $category->id }})"
+                                    :aria-label="$category->is_active ? 'Desativar categoria '.$category->name : 'Ativar categoria '.$category->name"
+                                    :title="$category->is_active ? 'Desativar categoria' : 'Ativar categoria'" class="!size-12 !p-0 justify-center">
+                                    <x-ts-icon :icon="$category->is_active ? 'no-symbol' : 'check-circle'" outline class="size-5 text-white" />
+                                </x-ts-button>
+                            </div>
+                        @endcan
                     </td>
                 </tr>
             @empty
-                <x-data-table.empty-state :colspan="4">
+                <x-data-table.empty-state :colspan="3">
                     <span class="text-lg">Nenhuma categoria encontrada.</span>
                 </x-data-table.empty-state>
             @endforelse
@@ -52,8 +62,10 @@
                         <h2 id="category-form-title" class="text-2xl font-bold text-slate-900">
                             {{ $editingCategoryId === null ? 'Nova categoria' : 'Editar categoria' }}
                         </h2>
-                        <button type="button" wire:click="closeForm" aria-label="Fechar formulário"
-                            class="rounded p-1 text-gray-500 hover:bg-gray-100 text-xl">&times;</button>
+                        <button type="button" wire:click="closeForm" aria-label="Fechar formulário" title="Fechar"
+                            class="inline-flex size-12 items-center justify-center rounded text-gray-500 hover:bg-gray-100">
+                            <x-ts-icon icon="x-mark" outline class="size-7" />
+                        </button>
                     </div>
 
                     <form wire:submit="save" class="space-y-4">
@@ -72,12 +84,13 @@
                         @enderror
 
                         <div class="flex justify-end gap-3 border-t border-gray-100 pt-4">
-                            <x-ts-button color="slate" type="button" wire:click="closeForm">Cancelar</x-ts-button>
+                            <x-ts-button color="slate" type="button" wire:click="closeForm" aria-label="Cancelar" title="Cancelar" class="!size-12 !p-0 justify-center"><x-ts-icon icon="x-mark" outline class="size-7" /></x-ts-button>
                             <x-ts-button color="blue" type="submit">Salvar categoria</x-ts-button>
                         </div>
                     </form>
                 </section>
             </div>
         @endif
-    </div>
+        </div>
+    @endif
 </div>

@@ -15,7 +15,7 @@ use Illuminate\Support\Facades\Event;
 use Livewire\Livewire;
 
 it('shows downloads, changes and access events only in their matching tabs', function () {
-    $actor = User::factory()->staff()->create();
+    $actor = User::factory()->staffInSchool()->create();
     $category = Category::factory()->create(['name' => 'Ciências']);
     $material = Material::factory()->for($category)->create(['title' => 'Livro de Ciências']);
     $version = MaterialVersion::factory()->for($material)->create(['version_number' => 3]);
@@ -92,7 +92,7 @@ it('filters downloads by user, material and period', function () {
 
 it('filters access events by user and period', function () {
     $admin = User::factory()->admin()->create();
-    $otherUser = User::factory()->staff()->create();
+    $otherUser = User::factory()->staffInSchool()->create();
     ActivityLog::factory()->withoutMaterial()->create([
         'user_id' => $admin->getKey(),
         'action' => ActivityAction::AUTH_LOGIN,
@@ -202,7 +202,7 @@ it('shows each tab filters and clears only the active tab filters', function () 
 });
 
 it('registers login and logout events without logging credentials', function () {
-    $user = User::factory()->staff()->create();
+    $user = User::factory()->staffInSchool()->create();
 
     Event::dispatch(new Login('web', $user, false));
     Event::dispatch(new Logout('web', $user));
@@ -228,7 +228,7 @@ it('registers login and logout events without logging credentials', function () 
 });
 
 it('does not create access logs for failed login attempts', function () {
-    $user = User::factory()->staff()->create();
+    $user = User::factory()->staffInSchool()->create();
 
     Event::dispatch(new Failed('web', $user, [
         'email' => $user->email,
@@ -239,7 +239,8 @@ it('does not create access logs for failed login attempts', function () {
 });
 
 it('does not log logout after the user record has already been removed', function () {
-    $user = User::factory()->staff()->create();
+    $user = User::factory()->staffInSchool()->create();
+    $user->schools()->detach();
     $user->delete();
 
     Event::dispatch(new Logout('web', $user));

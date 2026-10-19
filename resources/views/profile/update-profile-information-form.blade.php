@@ -1,7 +1,7 @@
-<div class="contents">
+<div class="flex h-full min-w-0 flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
 
-    {{-- Card de resumo + foto --}}
-    <div x-data="{ photoPreview: null }" class="bg-white shadow rounded-2xl p-6 lg:col-start-1 lg:row-start-1">
+    {{-- Resumo da conta --}}
+    <div x-data="{ photoPreview: null }" class="p-5 sm:p-6">
         @if (Laravel\Jetstream\Jetstream::managesProfilePhotos())
             <input type="file" id="photo" class="hidden" wire:model.live="photo" x-ref="photo"
                 x-on:change="
@@ -13,44 +13,33 @@
                    " />
         @endif
 
-        <div class="flex items-center gap-5">
+        <div class="flex flex-col items-start gap-5 sm:flex-row sm:items-center">
             <div class="shrink-0">
                 <img x-show="! photoPreview" src="{{ $this->user->profile_photo_url }}" alt="{{ $this->user->name }}"
-                    class="size-28 rounded-full object-cover ring-2 ring-blue-100">
+                    class="size-16 rounded-full object-cover ring-2 ring-blue-100">
 
                 <span x-show="photoPreview" style="display: none;"
-                    class="block size-28 rounded-full bg-cover bg-center bg-no-repeat ring-2 ring-blue-100"
+                    class="block size-16 rounded-full bg-cover bg-center bg-no-repeat ring-2 ring-blue-100"
                     x-bind:style="'background-image: url(\'' + photoPreview + '\');'"></span>
             </div>
 
-            <div class="min-w-0">
-                <h2 class="text-2xl font-bold text-gray-900 truncate">{{ $this->user->name }}</h2>
-                <p class="text-sm text-gray-500 truncate">{{ $this->user->email }}</p>
-
-                {{-- Badge opcional, adapte à forma como você guarda o perfil/role:
-                <span class="inline-flex items-center mt-2 px-3 py-1 rounded-full bg-blue-50 text-xs font-semibold text-blue-900">Admin</span>
-                --}}
+            <div class="min-w-0 max-w-full">
+                <h2 class="break-words text-2xl font-bold text-gray-900">{{ $this->user->name }}</h2>
+                <p class="break-all text-sm text-gray-500">{{ $this->user->email }}</p>
             </div>
         </div>
 
         @if (Laravel\Jetstream\Jetstream::managesProfilePhotos())
             <div class="mt-5 flex flex-wrap items-center gap-3">
-                <button type="button" x-on:click.prevent="$refs.photo.click()"
-                    class="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-blue-900 bg-white border border-gray-200 rounded-lg hover:bg-gray-50">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                        stroke="currentColor" class="size-4">
-                        <path stroke-linecap="round" stroke-linejoin="round"
-                            d="M6.827 6.175A2.31 2.31 0 015.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 00-1.134-.175 2.31 2.31 0 01-1.64-1.055l-.822-1.316a2.192 2.192 0 00-1.736-1.039 48.774 48.774 0 00-5.232 0 2.192 2.192 0 00-1.736 1.039l-.821 1.316z" />
-                        <path stroke-linecap="round" stroke-linejoin="round"
-                            d="M16.5 12.75a4.5 4.5 0 11-9 0 4.5 4.5 0 019 0z" />
-                    </svg>
-                    Alterar foto
+                <button type="button" x-on:click.prevent="$refs.photo.click()" aria-label="Alterar foto" title="Alterar foto"
+                    class="inline-flex size-12 items-center justify-center rounded-lg border border-gray-200 bg-white text-blue-900 hover:bg-gray-50">
+                    <x-ts-icon icon="camera" outline class="size-7" />
                 </button>
 
                 @if ($this->user->profile_photo_path)
-                    <button type="button" wire:click="deleteProfilePhoto"
-                        class="px-4 py-2 text-sm font-semibold text-red-600 bg-white border border-gray-200 rounded-lg hover:bg-red-50">
-                        Remover foto
+                    <button type="button" wire:click="deleteProfilePhoto" aria-label="Remover foto" title="Remover foto"
+                        class="inline-flex size-12 items-center justify-center rounded-lg border border-gray-200 bg-white text-red-600 hover:bg-red-50">
+                        <x-ts-icon icon="trash" outline class="size-7" />
                     </button>
                 @endif
 
@@ -65,9 +54,9 @@
         @endif
     </div>
 
-    {{-- Card de informações --}}
-    <div class="bg-white shadow rounded-2xl p-6 flex flex-col lg:col-start-1 lg:row-start-2">
-        <div class="mt-auto flex items-center justify-end pt-2">
+    {{-- Informações do perfil --}}
+    <div class="flex min-w-0 flex-1 flex-col border-t border-slate-200 p-5 sm:p-6">
+        <div class="flex items-start gap-4">
             <div class="flex items-center justify-center size-12 shrink-0 rounded-xl bg-blue-50 text-blue-900">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
                     stroke="currentColor" class="size-6">
@@ -81,7 +70,7 @@
             </div>
         </div>
 
-        <form wire:submit="updateProfileInformation" class="mt-5 space-y-5">
+        <form wire:submit="updateProfileInformation" class="mt-5 flex flex-1 flex-col gap-5">
             <div>
                 <label for="name" class="block text-sm font-semibold text-gray-800">Nome</label>
                 <div class="relative mt-1">
@@ -113,9 +102,9 @@
                         !$this->user->hasVerifiedEmail())
                     <p class="text-sm mt-2 text-gray-600">
                         Seu e-mail ainda não foi verificado.
-                        <button type="button" class="underline hover:text-gray-900"
+                        <button type="button" class="inline-flex size-12 items-center justify-center rounded text-gray-700 hover:bg-gray-100" aria-label="Reenviar e-mail de verificação" title="Reenviar e-mail de verificação"
                             wire:click.prevent="sendEmailVerification">
-                            Clique aqui para reenviar o e-mail de verificação.
+                            <x-ts-icon icon="envelope" outline class="size-7" />
                         </button>
                     </p>
 
@@ -127,7 +116,7 @@
                 @endif
             </div>
 
-            <div class="flex items-center justify-end gap-3 pt-2">
+            <div class="mt-auto flex flex-wrap items-center justify-end gap-3 pt-2">
                 <x-action-message class="me-1" on="saved">
                     <span
                         class="inline-flex items-center gap-2 rounded-lg border border-green-200 bg-green-50 px-3 py-2 text-sm font-semibold text-green-700 shadow-sm">

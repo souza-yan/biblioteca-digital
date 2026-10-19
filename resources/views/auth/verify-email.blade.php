@@ -26,17 +26,16 @@
             </form>
 
             <div>
-                <a
-                    href="{{ route('profile.show') }}"
-                    class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                >
-                    {{ __('Edit Profile') }}</a>
+                <a href="{{ route('profile.show') }}" aria-label="Editar perfil" title="Editar perfil"
+                    class="inline-flex size-12 items-center justify-center rounded-md text-gray-600 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    <x-ts-icon icon="pencil-square" outline class="size-7" />
+                </a>
 
                 <form method="POST" action="{{ route('logout') }}" class="inline">
                     @csrf
 
-                    <button type="submit" class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 ms-2">
-                        {{ __('Log Out') }}
+                    <button type="submit" aria-label="Sair" title="Sair" class="ms-2 inline-flex size-12 items-center justify-center rounded-md text-gray-600 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        <x-ts-icon icon="arrow-right-start-on-rectangle" outline class="size-7" />
                     </button>
                 </form>
             </div>

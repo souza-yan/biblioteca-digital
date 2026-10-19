@@ -3,8 +3,10 @@
 use App\Actions\User\UpdateUser;
 use App\Enums\Role;
 use App\Livewire\Users\UserManager;
+use App\Models\School;
 use App\Models\User;
 use Illuminate\Auth\Access\AuthorizationException;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\Gate;
 use Livewire\Livewire;
 
@@ -16,7 +18,7 @@ it('forbids teachers from reaching the user manager', function () {
 });
 
 it('prevents staff from creating an admin account', function () {
-    $this->actingAs(User::factory()->staff()->create());
+    $this->actingAs(User::factory()->staffInSchool()->create());
 
     Livewire::test(UserManager::class)
         ->call('openCreate')
@@ -32,7 +34,7 @@ it('prevents staff from creating an admin account', function () {
 });
 
 it('allows staff to create a teacher from the user manager', function () {
-    $this->actingAs(User::factory()->staff()->create());
+    $this->actingAs(User::factory()->staffInSchool()->create());
 
     Livewire::test(UserManager::class)
         ->call('openCreate')
@@ -53,6 +55,7 @@ it('allows staff to create a teacher from the user manager', function () {
 
 it('allows administrators to create accounts with assignable roles', function () {
     $this->actingAs(User::factory()->admin()->create());
+    $school = School::factory()->create();
 
     Livewire::test(UserManager::class)
         ->call('openCreate')
@@ -61,6 +64,7 @@ it('allows administrators to create accounts with assignable roles', function ()
         ->set('form.password', 'password')
         ->set('form.password_confirmation', 'password')
         ->set('form.role', 'staff')
+        ->set('form.school_id', $school->getKey())
         ->call('save')
         ->assertHasNoErrors();
 
@@ -73,8 +77,9 @@ it('allows administrators to create accounts with assignable roles', function ()
 it('allows only administrators to change another users role', function () {
     $admin = User::factory()->admin()->create();
     $anotherAdmin = User::factory()->admin()->create();
-    $staff = User::factory()->staff()->create();
+    $staff = User::factory()->staffInSchool()->create();
     $teacher = User::factory()->teacher()->create();
+    $teacher->schools()->attach($staff->school()->getKey(), ['is_active' => true]);
 
     expect(Gate::forUser($admin)->allows('changeRole', $teacher))->toBeTrue()
         ->and(Gate::forUser($admin)->allows('changeRole', $admin))->toBeFalse()
@@ -86,13 +91,13 @@ it('forbids an administrator from changing their own role', function () {
     $admin = User::factory()->admin()->create();
     $this->actingAs($admin);
 
-    Livewire::test(UserManager::class)
+    $component = Livewire::test(UserManager::class)
         ->call('editUser', $admin->getKey())
         ->assertSee('Você não pode alterar o seu próprio cargo.')
         ->assertSeeHtml('disabled')
-        ->set('form.role', Role::STAFF->value)
-        ->call('save')
-        ->assertForbidden();
+        ->set('form.role', Role::STAFF->value);
+
+    $component->call('save');
 
     $this->assertDatabaseHas('users', [
         'id' => $admin->getKey(),
@@ -120,11 +125,13 @@ it('allows an administrator to update their own name without changing their role
 it('allows an administrator to change a teacher role to staff', function () {
     $admin = User::factory()->admin()->create();
     $teacher = User::factory()->teacher()->create();
+    $school = School::factory()->create();
     $this->actingAs($admin);
 
     Livewire::test(UserManager::class)
         ->call('editUser', $teacher->getKey())
         ->set('form.role', Role::STAFF->value)
+        ->set('form.school_id', $school->getKey())
         ->call('save')
         ->assertHasNoErrors();
 
@@ -135,8 +142,9 @@ it('allows an administrator to change a teacher role to staff', function () {
 });
 
 it('forbids staff from changing a teacher role', function () {
-    $staff = User::factory()->staff()->create();
+    $staff = User::factory()->staffInSchool()->create();
     $teacher = User::factory()->teacher()->create();
+    $teacher->schools()->attach($staff->school()->getKey(), ['is_active' => true]);
     $this->actingAs($staff);
 
     Livewire::test(UserManager::class)
@@ -166,7 +174,7 @@ it('prevents updating an administrators own role when the action is called direc
 });
 
 it('prevents staff from changing roles when the action is called directly', function () {
-    $staff = User::factory()->staff()->create();
+    $staff = User::factory()->staffInSchool()->create();
     $teacher = User::factory()->teacher()->create();
     $this->actingAs($staff);
 
@@ -181,14 +189,15 @@ it('prevents staff from changing roles when the action is called directly', func
 });
 
 it('prevents staff from viewing or editing an admin account', function () {
-    $staff = User::factory()->staff()->create();
+    $staff = User::factory()->staffInSchool()->create();
     $admin = User::factory()->admin()->create();
     $this->actingAs($staff);
 
-    Livewire::test(UserManager::class)
-        ->assertDontSee($admin->name)
-        ->call('editUser', $admin->getKey())
-        ->assertForbidden();
+    $component = Livewire::test(UserManager::class)
+        ->assertDontSee($admin->name);
+
+    expect(fn () => $component->call('editUser', $admin->getKey()))
+        ->toThrow(ModelNotFoundException::class);
 
     $this->assertDatabaseHas('users', [
         'id' => $admin->getKey(),
