@@ -25,7 +25,9 @@
 
             <div wire:key="filters-{{ $activeTab }}">
                 <x-activity.filters :fields="$filterFields" :option-groups="$filterOptions"
-                    :clear-method="$clearFiltersMethod" :grid-columns="$filterGridColumns" />
+                    :clear-method="$clearFiltersMethod" :grid-columns="$filterGridColumns"
+                    :user-suggestions="$userSuggestions" :active-tab="$activeTab"
+                    :selected-user-filter="$selectedUserFilter" :user-search-value="$userSearchValue" />
             </div>
 
             <div wire:key="table-{{ $activeTab }}">

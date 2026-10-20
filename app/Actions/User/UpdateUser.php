@@ -35,9 +35,10 @@ class UpdateUser
         }
 
         $schoolId = $attributes['school_id'] ?? null;
+        $schoolIds = $attributes['school_ids'] ?? [];
         $attributes = array_intersect_key($attributes, array_flip(['name', 'email', 'password', 'role']));
 
-        return DB::transaction(function () use ($actor, $user, $attributes, $schoolId, $requestedRoleValue, $hasGlobalAccountAttributes): User {
+        return DB::transaction(function () use ($actor, $user, $attributes, $schoolId, $schoolIds, $requestedRoleValue, $hasGlobalAccountAttributes): User {
             $lockedUsers = User::query()
                 ->whereKey(collect([$actor->getKey(), $user->getKey()])->unique()->sort()->values())
                 ->orderBy('id')
@@ -50,7 +51,7 @@ class UpdateUser
             abort_unless($lockedActor instanceof User && $target instanceof User, 404);
             Gate::forUser($lockedActor)->authorize('manage', $target);
 
-            if (! $lockedActor->isAdmin() && ($schoolId !== null || $hasGlobalAccountAttributes)) {
+            if (! $lockedActor->isAdmin() && ($schoolId !== null || $schoolIds !== [] || $hasGlobalAccountAttributes)) {
                 throw new AuthorizationException;
             }
 
@@ -71,6 +72,7 @@ class UpdateUser
             }
 
             $school = null;
+            $teacherSchools = collect();
 
             if ($lockedActor->isAdmin() && $finalRole === Role::STAFF) {
                 if ($schoolId !== null) {
@@ -88,12 +90,26 @@ class UpdateUser
                         ]);
                     }
                 }
-            } elseif ($lockedActor->isAdmin() && $schoolId !== null && $finalRole !== Role::ADMIN) {
-                $school = School::query()
-                    ->whereKey($schoolId)
+            }
+
+            if ($finalRole === Role::TEACHER && $schoolId !== null) {
+                $schoolIds[] = $schoolId;
+                $schoolIds = array_values(array_unique($schoolIds));
+            }
+
+            if ($lockedActor->isAdmin() && $finalRole === Role::TEACHER && $schoolIds !== []) {
+                $teacherSchools = School::query()
+                    ->whereIn('id', $schoolIds)
                     ->where('is_active', true)
+                    ->orderBy('id')
                     ->lockForUpdate()
-                    ->firstOrFail();
+                    ->get();
+
+                if ($teacherSchools->count() !== count(array_unique($schoolIds))) {
+                    throw ValidationException::withMessages([
+                        'school_ids' => 'Selecione somente escolas ativas e válidas.',
+                    ]);
+                }
             }
 
             if ($school !== null && $lockedActor->isAdmin() && $finalRole === Role::STAFF) {
@@ -104,10 +120,18 @@ class UpdateUser
                 $target->schools()->syncWithoutDetaching([
                     $school->getKey() => ['is_active' => true],
                 ]);
-            } elseif ($school !== null && $lockedActor->isAdmin() && $finalRole !== Role::ADMIN) {
-                $target->schools()->syncWithoutDetaching([
-                    $school->getKey() => ['is_active' => true],
-                ]);
+            } elseif ($lockedActor->isAdmin() && $finalRole === Role::TEACHER) {
+                $target->schools()->newPivotStatement()
+                    ->where('user_id', $target->getKey())
+                    ->update(['is_active' => false]);
+
+                if ($teacherSchools->isNotEmpty()) {
+                    $target->schools()->syncWithoutDetaching(
+                        $teacherSchools->mapWithKeys(
+                            fn (School $teacherSchool): array => [$teacherSchool->getKey() => ['is_active' => true]]
+                        )->all()
+                    );
+                }
             } elseif (
                 $lockedActor->isAdmin()
                 && $target->role !== Role::ADMIN

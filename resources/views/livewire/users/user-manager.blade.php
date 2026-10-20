@@ -16,7 +16,7 @@
             </div>
 
             <x-ts-button color="blue" wire:click="openCreate">
-                <span class="text-white text-base">{{ $actor->isStaff() ? 'Vincular professor' : 'Novo usuário' }}</span>
+                <span class="text-white text-base">{{ $actor->isStaff() ? 'Novo professor' : 'Novo usuário' }}</span>
             </x-ts-button>
         </div>
 
@@ -66,38 +66,31 @@
                 <tr wire:key="user-{{ $user->id }}">
                     <td class="whitespace-nowrap px-5 py-4 text-lg font-medium text-black">{{ $user->name }}</td>
                     <td class="whitespace-nowrap px-5 py-4 text-lg text-black">{{ $user->email }}</td>
-                    <td class="whitespace-nowrap px-5 py-4 text-lg text-black">{{ $user->role->label() }}</td>
-                    <td class="whitespace-nowrap px-5 py-4 text-lg">
-                        <span @class([
-                            'inline-flex rounded px-2.5 py-1 text-base font-medium',
-                            'bg-emerald-100 text-emerald-800' => $user->is_active,
-                            'bg-gray-100 text-gray-700' => !$user->is_active,
-                        ])>
-                            {{ $user->is_active ? 'Ativo' : 'Inativo' }}
-                        </span>
-                    </td>
-                    @if ($actor->isStaff())
+                    @if ($actor->isAdmin())
+                        <td class="whitespace-nowrap px-5 py-4 text-lg text-black">{{ $user->role->label() }}</td>
                         <td class="whitespace-nowrap px-5 py-4 text-lg">
                             <span @class([
                                 'inline-flex rounded px-2.5 py-1 text-base font-medium',
-                                'bg-emerald-100 text-emerald-800' => $localMembershipIsActive,
-                                'bg-gray-100 text-gray-700' => !$localMembershipIsActive,
+                                'bg-emerald-100 text-emerald-800' => $user->is_active,
+                                'bg-gray-100 text-gray-700' => !$user->is_active,
                             ])>
-                                {{ $localMembershipIsActive ? 'Ativo' : 'Inativo' }}
+                                {{ $user->is_active ? 'Ativo' : 'Inativo' }}
                             </span>
                         </td>
                     @endif
                     <td class="whitespace-nowrap px-5 py-4 text-right text-lg">
                         <div class="flex justify-end gap-2">
-                            <x-ts-button color="blue" wire:click="editUser({{ $user->id }})"
-                                aria-label="Editar usuário {{ $user->name }}" title="Editar usuário" class="!size-12 !p-0 justify-center">
-                                <x-ts-icon icon="pencil-square" outline class="size-7 text-white" />
-                            </x-ts-button>
+                            @if ($actor->isAdmin())
+                                <x-ts-button color="blue" wire:click="editUser({{ $user->id }})"
+                                    aria-label="Editar usuário {{ $user->name }}" title="Editar usuário" class="!size-12 !p-0 justify-center">
+                                    <x-ts-icon icon="pencil-square" outline class="size-7 text-white" />
+                                </x-ts-button>
+                            @endif
                             @can('resetPassword', $user)
-                                <x-ts-button color="slate" wire:click="sendPasswordResetLink({{ $user->id }})"
-                                    wire:loading.attr="disabled" wire:target="sendPasswordResetLink"
-                                    aria-label="Enviar redefinição de senha para {{ $user->name }}"
-                                    title="Enviar redefinição de senha" class="!size-12 !p-0 justify-center">
+                                <x-ts-button color="slate" wire:click="openPasswordResetConfirmation({{ $user->id }})"
+                                    wire:loading.attr="disabled" wire:target="openPasswordResetConfirmation"
+                                    aria-label="Redefinir a senha de {{ $user->name }}"
+                                    title="Redefinir senha para o padrão" class="!size-12 !p-0 justify-center">
                                     <x-ts-icon icon="key" outline class="size-7 text-white" />
                                 </x-ts-button>
                             @endcan
@@ -131,7 +124,9 @@
                     <div class="mb-6 flex items-start justify-between gap-4">
                         <div>
                             <h2 id="user-form-title" class="text-2xl font-bold text-slate-900">
-                                {{ $editingUserId === null ? 'Novo usuário' : 'Editar usuário' }}
+                                {{ $editingUserId === null
+                                    ? ($actor->isStaff() ? 'Novo professor' : 'Novo usuário')
+                                    : 'Editar usuário' }}
                             </h2>
                         </div>
                         <button type="button" wire:click="closeForm" aria-label="Fechar formulário" title="Fechar"
@@ -142,8 +137,8 @@
 
                     <form wire:submit="save" class="space-y-4">
                         @if ($actor->isAdmin() || $editingUserId === null)
-                            <x-ts-input wire:model="form.name" label="Nome" autocomplete="name" />
-                            <x-ts-input wire:model="form.email" label="E-mail" type="email" autocomplete="email" />
+                            <x-ts-input wire:model="form.name" label="Nome *" autocomplete="name" required />
+                            <x-ts-input wire:model="form.email" label="E-mail *" type="email" autocomplete="email" required />
                         @else
                             <div class="rounded-md bg-gray-50 p-3 text-sm text-gray-700" role="note">
                                 <p><span class="font-medium">Nome:</span> {{ $editingUser?->name }}</p>
@@ -152,26 +147,47 @@
                                 <p class="mt-2">A Gestão pode alterar somente o vínculo do professor com esta escola.</p>
                             </div>
                         @endif
-                        @if ($actor->isAdmin() || $editingUserId === null)
-                            <x-ts-select.styled wire:model="form.role" label="Cargo" placeholder="Selecione um cargo"
+                        @if ($actor->isAdmin())
+                            <x-ts-select.styled wire:model.live="form.role" label="Cargo *" placeholder="Selecione um cargo"
                                 :options="$roleOptions" select="label:label|value:value" :disabled="$editingUser?->is($actor) ?? false" required />
                         @endif
-                        @if ($actor->isAdmin())
-                            <x-ts-select.styled wire:model="form.school_id" label="Escola" placeholder="Selecione uma escola"
+                        @if ($actor->isAdmin() && $form->role === \App\Enums\Role::STAFF->value)
+                            <x-ts-select.styled wire:model="form.school_id" label="Escola *" placeholder="Selecione uma escola"
                                 :options="$schoolOptions" select="label:label|value:value" />
+                        @endif
+                        @if ($actor->isAdmin() && $form->role === \App\Enums\Role::TEACHER->value)
+                            <fieldset class="rounded-xl border border-slate-200 p-4">
+                                <legend class="px-1 text-sm font-semibold text-slate-800">Escolas do professor</legend>
+                                <p class="mb-3 text-sm text-slate-500">
+                                    Selecione todas as escolas em que este professor atua.
+                                </p>
+                                <div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                                    @forelse ($schoolOptions as $schoolOption)
+                                        <label class="flex cursor-pointer items-start gap-3 rounded-lg border border-slate-200 p-3 transition hover:bg-slate-50">
+                                            <input type="checkbox" wire:model="form.school_ids"
+                                                value="{{ $schoolOption['value'] }}"
+                                                class="mt-0.5 size-5 rounded border-slate-300 text-blue-700 focus:ring-blue-600">
+                                            <span class="min-w-0 break-words text-sm font-medium text-slate-700">
+                                                {{ $schoolOption['label'] }}
+                                            </span>
+                                        </label>
+                                    @empty
+                                        <p class="text-sm text-slate-500 sm:col-span-2">Nenhuma escola ativa disponível.</p>
+                                    @endforelse
+                                </div>
+                                @error('form.school_ids')
+                                    <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                                @enderror
+                                @error('form.school_ids.*')
+                                    <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                                @enderror
+                            </fieldset>
                         @endif
                         @if ($editingUser?->is($actor))
                             @cannot('changeRole', $editingUser)
                                 <p class="text-base text-gray-600">Você não pode alterar o seu próprio cargo.</p>
                             @endcannot
                         @endif
-                        @if ($actor->isAdmin() || $editingUserId === null)
-                            <x-ts-input wire:model="form.password" label="Senha" type="password"
-                                autocomplete="new-password" :hint="$editingUserId === null ? null : 'Deixe em branco para manter a senha atual.'" />
-                            <x-ts-input wire:model="form.password_confirmation" label="Confirmar senha" type="password"
-                                autocomplete="new-password" />
-                        @endif
-
                         @error('user')
                             <p class="text-base text-red-600">{{ $message }}</p>
                         @enderror
@@ -182,11 +198,8 @@
                                     Fechar
                                 </x-ts-button>
                             @else
-                                <x-ts-button color="slate" type="button" wire:click="closeForm" aria-label="Cancelar" title="Cancelar" class="!size-12 !p-0 justify-center">
-                                    <x-ts-icon icon="x-mark" outline class="size-7" />
-                                </x-ts-button>
                                 <x-ts-button color="blue" type="submit">
-                                    Salvar usuário
+                                    {{ $actor->isStaff() ? 'Salvar professor' : 'Salvar usuário' }}
                                 </x-ts-button>
                             @endif
                         </div>
@@ -195,4 +208,24 @@
             </div>
         @endif
     </div>
+
+    <x-ts-modal wire="showPasswordResetConfirmation" title="Redefinir senha" size="md" center>
+        <p class="text-base font-semibold text-slate-900">
+            Deseja redefinir a senha de {{ $passwordResetUser?->name ?? 'este usuário' }}?
+        </p>
+        <p class="mt-2 text-sm text-slate-600">
+            A senha voltará ao padrão <strong>“password”</strong>. Todas as sessões abertas desse usuário serão encerradas.
+        </p>
+
+        <x-slot:footer>
+            <x-ts-button color="slate" type="button" wire:click="closePasswordResetConfirmation">
+                Cancelar
+            </x-ts-button>
+            <x-ts-button color="red" type="button" wire:click="resetPassword"
+                wire:loading.attr="disabled" wire:target="resetPassword">
+                <span wire:loading.remove wire:target="resetPassword">Redefinir senha</span>
+                <span wire:loading wire:target="resetPassword">Redefinindo...</span>
+            </x-ts-button>
+        </x-slot:footer>
+    </x-ts-modal>
 </div>

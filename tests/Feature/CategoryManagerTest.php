@@ -127,10 +127,30 @@ it('does not render category slugs in the category table', function () {
         ->assertDontSee($category->slug);
 });
 
-it('renders the published materials view on the legacy category route for staff', function () {
+it('renders category submission for staff without management actions', function () {
     $this->actingAs(User::factory()->staffInSchool()->create())
         ->get('/painel/categorias')
         ->assertOk()
-        ->assertSee('Materiais publicados')
-        ->assertDontSee('Nova categoria');
+        ->assertSee('Categorias')
+        ->assertSee('Nova categoria')
+        ->assertDontSee('Editar categoria');
+});
+
+it('forces categories submitted by staff to remain inactive for admin review', function () {
+    $staff = User::factory()->staffInSchool()->create();
+
+    Livewire::actingAs($staff)
+        ->test(CategoryManager::class)
+        ->call('openCreate')
+        ->assertSee('Enviada como inativa')
+        ->set('form.name', 'Categoria enviada pela gestão')
+        ->set('form.description', 'Aguardando revisão administrativa')
+        ->set('form.is_active', true)
+        ->call('save')
+        ->assertHasNoErrors();
+
+    $this->assertDatabaseHas('categories', [
+        'name' => 'Categoria enviada pela gestão',
+        'is_active' => false,
+    ]);
 });

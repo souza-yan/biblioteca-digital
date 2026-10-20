@@ -84,6 +84,10 @@ class CategoryManager extends Component
 
         if ($category === null) {
             Gate::authorize('create', Category::class);
+
+            if ($actor->isStaff()) {
+                $this->form->is_active = false;
+            }
         }
 
         $this->form->categoryId = $category?->getKey();

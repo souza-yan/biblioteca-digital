@@ -64,7 +64,8 @@
             <x-ts-icon icon="arrow-right-start-on-rectangle" outline class="size-7" />
         </button>
 
-        <x-action-message class="ms-3 min-w-0 break-words" on="loggedOut">Concluído.</x-action-message>
+        <x-saved-toast on="loggedOut" title="Sessões encerradas!"
+            message="As outras sessões foram encerradas com sucesso." />
     </div>
 
     <!-- Modal de confirmação -->

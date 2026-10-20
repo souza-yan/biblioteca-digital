@@ -42,7 +42,7 @@ it('opens a read-only category library for teachers with links to published mate
     $this->get(route('painel.library.categories'))
         ->assertOk()
         ->assertSee('Robótica Criativa')
-        ->assertSee('robotica-criativa')
+        ->assertDontSee('robotica-criativa')
         ->assertSee('material publicado')
         ->assertSee(route('painel.library', ['categoryFilter' => $activeCategory->getKey()]), false)
         ->assertDontSee('Categoria sem materiais')
@@ -148,7 +148,7 @@ it('allows admins to update and deactivate a category', function () {
     ]);
 });
 
-it('grants category management only to admins', function (string $role, bool $canManage) {
+it('allows staff to submit categories while keeping updates and activation exclusive to admins', function (string $role, bool $canCreate, bool $canManage) {
     $user = match ($role) {
         'admin' => User::factory()->admin()->create(),
         'staff' => User::factory()->staffInSchool()->create(),
@@ -156,11 +156,11 @@ it('grants category management only to admins', function (string $role, bool $ca
     };
     $category = Category::factory()->make();
 
-    expect(Gate::forUser($user)->allows('create', Category::class))->toBe($canManage)
+    expect(Gate::forUser($user)->allows('create', Category::class))->toBe($canCreate)
         ->and(Gate::forUser($user)->allows('update', $category))->toBe($canManage)
         ->and(Gate::forUser($user)->allows('toggleActive', $category))->toBe($canManage);
 })->with([
-    'admin' => ['admin', true],
-    'staff' => ['staff', false],
-    'teacher' => ['teacher', false],
+    'admin' => ['admin', true, true],
+    'staff' => ['staff', true, false],
+    'teacher' => ['teacher', false, false],
 ]);

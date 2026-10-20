@@ -4,10 +4,11 @@ use App\Actions\Category\CreateCategory;
 use App\Actions\Dashboard\BuildDashboard;
 use App\Actions\Material\CreateMaterial;
 use App\Actions\User\CreateUser;
-use App\Actions\User\SendUserPasswordResetLink;
+use App\Actions\User\ResetUserPasswordToDefault;
 use App\Actions\User\ToggleUserActive;
 use App\Actions\User\UpdateUser;
 use App\Enums\ActivityAction;
+use App\Enums\MaterialStatus;
 use App\Enums\Role;
 use App\Livewire\Activity\ActivityLogIndex;
 use App\Livewire\Users\UserManager;
@@ -21,7 +22,6 @@ use App\Models\User;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\Gate;
-use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Livewire;
 
@@ -68,24 +68,32 @@ it('lets staff deactivate a local teacher membership without changing the global
     $this->assertDatabaseHas('school_user', ['school_id' => $schoolB->getKey(), 'user_id' => $teacher->getKey(), 'is_active' => true]);
 });
 
-it('does not allow staff to write materials or categories through direct actions', function () {
+it('allows staff to submit draft materials and inactive categories through direct actions', function () {
     Storage::fake('local');
     $staff = User::factory()->staffInSchool()->create();
 
-    expect(fn () => app(CreateMaterial::class)->handle($staff, [
-        'title' => 'Tentativa',
+    $material = app(CreateMaterial::class)->handle($staff, [
+        'title' => 'Material da gestão',
         'description' => 'Teste',
         'category_id' => Category::factory()->create()->getKey(),
         'type' => 'Apostila',
         'author' => 'Equipe',
-    ]))->toThrow(AuthorizationException::class);
+        'status' => MaterialStatus::DRAFT,
+    ]);
 
-    expect(fn () => app(CreateCategory::class)->handle($staff, [
-        'name' => 'Tentativa', 'slug' => 'tentativa', 'description' => null, 'is_active' => true,
-    ]))->toThrow(AuthorizationException::class);
+    expect($material->created_by)->toBe($staff->getKey())
+        ->and($material->status)->toBe(MaterialStatus::DRAFT);
 
-    expect(Gate::forUser($staff)->allows('create', Material::class))->toBeFalse()
-        ->and(Gate::forUser($staff)->allows('create', Category::class))->toBeFalse();
+    $category = app(CreateCategory::class)->handle($staff, [
+        'name' => 'Categoria para revisão',
+        'slug' => 'categoria-para-revisao',
+        'description' => null,
+        'is_active' => true,
+    ]);
+
+    expect(Gate::forUser($staff)->allows('create', Material::class))->toBeTrue()
+        ->and(Gate::forUser($staff)->allows('create', Category::class))->toBeTrue()
+        ->and($category->is_active)->toBeFalse();
 });
 
 it('keeps school context methods correct when relations are already loaded', function () {
@@ -135,7 +143,7 @@ it('prevents staff from creating an administrator through the direct action', fu
     $this->assertDatabaseMissing('users', ['email' => 'staff-escalation@example.test']);
 });
 
-it('filters activity logs to users currently linked to the staff school', function () {
+it('forbids staff from opening activity logs directly', function () {
     $schoolA = School::factory()->create();
     $schoolB = School::factory()->create();
     $staff = User::factory()->staffInSchool($schoolA)->create();
@@ -154,19 +162,13 @@ it('filters activity logs to users currently linked to the staff school', functi
         'description' => 'Registro da escola externa',
     ]);
 
-    Livewire::actingAs($staff)
-        ->test(ActivityLogIndex::class)
-        ->call('selectTab', 'changes')
-        ->assertSee('Registro da escola local')
-        ->assertDontSee('Registro da escola externa');
+    $this->actingAs($staff)
+        ->get(route('painel.activities'))
+        ->assertForbidden();
 
     Livewire::actingAs($staff)
         ->test(ActivityLogIndex::class)
-        ->set('changesUserFilter', (string) $foreignTeacher->getKey())
-        ->assertHasErrors('changesUserFilter')
-        ->call('selectTab', 'changes')
-        ->assertSee('Registro da escola local')
-        ->assertDontSee('Registro da escola externa');
+        ->assertForbidden();
 });
 
 it('deactivates school links when a linked user is promoted to administrator', function () {
@@ -191,8 +193,7 @@ it('deactivates school links when a linked user is promoted to administrator', f
 
     Livewire::actingAs($staff)
         ->test(ActivityLogIndex::class)
-        ->call('selectTab', 'changes')
-        ->assertDontSee('Atividade anterior à promoção');
+        ->assertForbidden();
 
     Livewire::actingAs($admin)
         ->test(ActivityLogIndex::class)
@@ -273,22 +274,19 @@ it('keeps global account fields and all school links unchanged when staff tamper
 });
 
 it('does not let staff initiate a global password reset for a local teacher', function () {
-    Notification::fake();
     $school = School::factory()->create();
     $staff = User::factory()->staffInSchool($school)->create();
     $teacher = User::factory()->teacher()->create();
     $teacher->schools()->attach($school->getKey(), ['is_active' => true]);
 
-    expect(fn () => app(SendUserPasswordResetLink::class)->handle($staff, $teacher))
+    expect(fn () => app(ResetUserPasswordToDefault::class)->handle($staff, $teacher))
         ->toThrow(AuthorizationException::class);
 
     expect(Gate::forUser($staff)->allows('resetPassword', $teacher))->toBeFalse();
     Livewire::actingAs($staff)
         ->test(UserManager::class)
-        ->call('sendPasswordResetLink', $teacher->getKey())
+        ->call('openPasswordResetConfirmation', $teacher->getKey())
         ->assertForbidden();
-
-    Notification::assertNothingSent();
 });
 
 it('scopes staff dashboard download aggregates to its current school and keeps admin totals global', function () {
@@ -317,7 +315,7 @@ it('scopes staff dashboard download aggregates to its current school and keeps a
     $adminDashboard = app(BuildDashboard::class)->handle(User::factory()->admin()->create());
 
     expect($staffDashboard['recentDownloadsCount'])->toBe(1)
-        ->and($staffDashboard['activeUsersCount'])->toBe(2)
+        ->and($staffDashboard['activeUsersCount'])->toBe(1)
         ->and($staffDashboard['topDownloadedMaterials']->first()->downloads_count)->toBe(1)
         ->and($adminDashboard['recentDownloadsCount'])->toBe(2)
         ->and($adminDashboard['topDownloadedMaterials']->first()->downloads_count)->toBe(2);

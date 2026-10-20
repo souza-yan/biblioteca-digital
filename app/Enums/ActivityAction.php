@@ -8,6 +8,11 @@ enum ActivityAction: string
     case USER_UPDATED = 'user.updated';
     case USER_TOGGLED = 'user.toggled';
     case USER_PASSWORD_RESET_REQUESTED = 'user.password_reset_requested';
+    case USER_PASSWORD_RESET_TO_DEFAULT = 'user.password_reset_to_default';
+    case USER_PASSWORD_RESET_BY_ADMIN = 'user.password_reset_by_admin';
+    case SCHOOL_CREATED = 'school.created';
+    case SCHOOL_UPDATED = 'school.updated';
+    case SCHOOL_TOGGLED = 'school.toggled';
     case CATEGORY_CREATED = 'category.created';
     case CATEGORY_UPDATED = 'category.updated';
     case CATEGORY_TOGGLED = 'category.toggled';
@@ -28,6 +33,11 @@ enum ActivityAction: string
             self::USER_UPDATED => 'Usuário atualizado',
             self::USER_TOGGLED => 'Status do usuário alterado',
             self::USER_PASSWORD_RESET_REQUESTED => 'Redefinição de senha solicitada',
+            self::USER_PASSWORD_RESET_TO_DEFAULT => 'Senha redefinida para o padrão',
+            self::USER_PASSWORD_RESET_BY_ADMIN => 'Senha redefinida pelo administrador',
+            self::SCHOOL_CREATED => 'Escola criada',
+            self::SCHOOL_UPDATED => 'Escola atualizada',
+            self::SCHOOL_TOGGLED => 'Status da escola alterado',
             self::CATEGORY_CREATED => 'Categoria criada',
             self::CATEGORY_UPDATED => 'Categoria atualizada',
             self::CATEGORY_TOGGLED => 'Status da categoria alterado',

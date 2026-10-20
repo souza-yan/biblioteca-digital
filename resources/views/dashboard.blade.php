@@ -49,8 +49,7 @@
                             'text' => 'Encontre por título ou autor',
                             'box' => 'bg-blue-50 text-blue-600',
                             'border' => 'border-blue-100',
-                            'icon' =>
-                                '<circle cx="10.8" cy="10.8" r="6.8" /><path stroke-linecap="round" d="m16 16 4.5 4.5" />',
+                            'icon' => 'magnifying-glass',
                         ],
                         [
                             'href' => route('painel.library.categories'),
@@ -58,8 +57,7 @@
                             'text' => 'Filtre a biblioteca por categoria',
                             'box' => 'bg-violet-50 text-violet-600',
                             'border' => 'border-violet-100',
-                            'icon' =>
-                                '<path stroke-linecap="round" stroke-linejoin="round" d="M3 7.5A1.5 1.5 0 0 1 4.5 6H10l2 2h7.5A1.5 1.5 0 0 1 21 9.5v8a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 17.5v-10Z" />',
+                            'icon' => 'folder-open',
                         ],
                         [
                             'href' => route('painel.favorites'),
@@ -67,8 +65,7 @@
                             'text' => 'Acesse seus materiais salvos',
                             'box' => 'bg-rose-50 text-rose-600',
                             'border' => 'border-rose-100',
-                            'icon' =>
-                                '<path stroke-linecap="round" stroke-linejoin="round" d="M20.8 8.8c0 4.2-8.8 10.2-8.8 10.2S3.2 13 3.2 8.8A4.3 4.3 0 0 1 12 6.7a4.3 4.3 0 0 1 8.8 2.1Z" />',
+                            'icon' => 'bookmark',
                         ],
                         [
                             'href' => route('profile.show'),
@@ -76,8 +73,7 @@
                             'text' => 'Consulte seus dados da conta',
                             'box' => 'bg-amber-50 text-amber-600',
                             'border' => 'border-amber-100',
-                            'icon' =>
-                                '<circle cx="12" cy="8" r="3.5" /><path stroke-linecap="round" stroke-linejoin="round" d="M5 21v-1.5a7 7 0 0 1 14 0V21H5Z" />',
+                            'icon' => 'user',
                         ],
                     ];
                 @endphp
@@ -88,10 +84,7 @@
                             class="group flex items-center gap-4 rounded-2xl border {{ $link['border'] }} bg-white p-5 transition hover:bg-blue-50/40 sm:p-6">
                             <span
                                 class="flex size-14 shrink-0 items-center justify-center rounded-2xl {{ $link['box'] }}">
-                                <svg class="size-7" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                    stroke-width="1.7" aria-hidden="true">
-                                    {!! $link['icon'] !!}
-                                </svg>
+                                <x-ts-icon :icon="$link['icon']" outline class="size-7" />
                             </span>
 
                             <span class="min-w-0 flex-1">
@@ -268,9 +261,9 @@
 
             <section aria-label="Resumo da escola" class="grid grid-cols-1 gap-4 sm:grid-cols-3">
                 <article class="rounded-2xl border border-slate-200 bg-white p-5">
-                    <p class="text-sm font-semibold text-slate-500">Pessoas vinculadas</p>
+                    <p class="text-sm font-semibold text-slate-500">Professores vinculados</p>
                     <p class="mt-2 text-3xl font-bold tracking-tight text-slate-900">{{ number_format($activeUsersCount, 0, ',', '.') }}</p>
-                    <p class="mt-1 text-sm text-slate-500">contas ativas na escola</p>
+                    <p class="mt-1 text-sm text-slate-500">vínculos ativos na escola</p>
                 </article>
                 <article class="rounded-2xl border border-slate-200 bg-white p-5">
                     <p class="text-sm font-semibold text-slate-500">Materiais publicados</p>

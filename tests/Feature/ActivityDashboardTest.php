@@ -15,7 +15,7 @@ use Illuminate\Support\Facades\Event;
 use Livewire\Livewire;
 
 it('shows downloads, changes and access events only in their matching tabs', function () {
-    $actor = User::factory()->staffInSchool()->create();
+    $actor = User::factory()->admin()->create();
     $category = Category::factory()->create(['name' => 'Ciências']);
     $material = Material::factory()->for($category)->create(['title' => 'Livro de Ciências']);
     $version = MaterialVersion::factory()->for($material)->create(['version_number' => 3]);
@@ -158,7 +158,7 @@ it('shows each tab filters and clears only the active tab filters', function () 
 
     Livewire::actingAs($admin)
         ->test(ActivityLogIndex::class)
-        ->assertSee('wire:model.live="downloadsUserFilter"', false)
+        ->assertSee('wire:model.live.debounce.300ms="downloadsUserSearch"', false)
         ->assertSee('wire:model.live="downloadsMaterialFilter"', false)
         ->assertSee('wire:click="clearDownloadsFilters"', false)
         ->set('downloadsUserFilter', (string) $teacher->getKey())
@@ -166,6 +166,7 @@ it('shows each tab filters and clears only the active tab filters', function () 
         ->set('downloadsFromDate', '2026-10-01')
         ->set('downloadsUntilDate', '2026-10-02')
         ->set('activeTab', 'changes')
+        ->assertSee('wire:model.live.debounce.300ms="changesUserSearch"', false)
         ->assertSee('wire:model.live="changesActionFilter"', false)
         ->assertSee('wire:click="clearChangesFilters"', false)
         ->set('changesUserFilter', (string) $teacher->getKey())
@@ -173,7 +174,7 @@ it('shows each tab filters and clears only the active tab filters', function () 
         ->set('changesFromDate', '2026-10-03')
         ->set('changesUntilDate', '2026-10-04')
         ->set('activeTab', 'accesses')
-        ->assertSee('wire:model.live="accessesUserFilter"', false)
+        ->assertSee('wire:model.live.debounce.300ms="accessesUserSearch"', false)
         ->assertSee('wire:click="clearAccessesFilters"', false)
         ->set('accessesUserFilter', (string) $admin->getKey())
         ->set('accessesFromDate', '2026-10-05')
@@ -273,4 +274,43 @@ it('keeps access and changes pagination independent and rejects teacher access',
     Livewire::actingAs(User::factory()->teacher()->create())
         ->test(ActivityLogIndex::class)
         ->assertForbidden();
+});
+
+it('suggests at most three users by name or email and selects a validated user', function () {
+    $admin = User::factory()->admin()->create();
+    User::factory()->count(4)->teacher()->sequence(
+        ['name' => 'Professor Busca A', 'email' => 'a@example.test'],
+        ['name' => 'Professor Busca B', 'email' => 'b@example.test'],
+        ['name' => 'Professor Busca C', 'email' => 'c@example.test'],
+        ['name' => 'Professor Busca D', 'email' => 'busca.d@example.test'],
+    )->create();
+
+    Livewire::actingAs($admin)
+        ->test(ActivityLogIndex::class)
+        ->set('downloadsUserSearch', 'busca.d@example.test')
+        ->assertViewHas(
+            'userSuggestions',
+            fn ($users): bool => $users->count() === 1 && $users->first()->email === 'busca.d@example.test',
+        )
+        ->set('downloadsUserSearch', 'Busca')
+        ->assertViewHas('userSuggestions', fn ($users): bool => $users->count() === 3)
+        ->call('selectFilterUser', 'downloads', User::query()->where('email', 'a@example.test')->value('id'))
+        ->assertSet('downloadsUserSearch', 'Professor Busca A · a@example.test')
+        ->assertSet('downloadsUserFilter', (string) User::query()->where('email', 'a@example.test')->value('id'))
+        ->call('clearFilterUser', 'downloads')
+        ->assertSet('downloadsUserSearch', '')
+        ->assertSet('downloadsUserFilter', '');
+});
+
+it('paginates each activity table by ten records', function () {
+    $admin = User::factory()->admin()->create();
+    ActivityLog::factory()->count(11)->withoutMaterial()->create([
+        'user_id' => $admin->getKey(),
+        'action' => ActivityAction::AUTH_LOGIN,
+    ]);
+
+    Livewire::actingAs($admin)
+        ->test(ActivityLogIndex::class)
+        ->set('activeTab', 'accesses')
+        ->assertViewHas('records', fn ($records): bool => $records->perPage() === 10 && $records->total() === 11);
 });

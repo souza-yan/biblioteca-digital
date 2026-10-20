@@ -14,9 +14,11 @@ use Livewire\Attributes\Layout;
 use Livewire\Attributes\Url;
 use Livewire\Component;
 use Livewire\WithPagination;
+use TallStackUi\Traits\Interactions;
 
 class MaterialLibrary extends Component
 {
+    use Interactions;
     use InteractsWithCurrentUser;
     use WithPagination;
 
@@ -63,6 +65,17 @@ class MaterialLibrary extends Component
         $user = $this->currentUser();
 
         $toggleFavorite->handle($user, $material);
+
+        $isFavorited = $user->favorites()->whereKey($material->getKey())->exists();
+
+        $this->toast()
+            ->success(
+                $isFavorited ? 'Material favoritado!' : 'Material removido dos favoritos!',
+                $isFavorited
+                    ? 'O material foi adicionado aos seus favoritos.'
+                    : 'O material foi removido dos seus favoritos.'
+            )
+            ->send();
     }
 
     #[Layout('layouts.app')]

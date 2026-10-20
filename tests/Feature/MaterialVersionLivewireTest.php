@@ -1,6 +1,7 @@
 <?php
 
 use App\Livewire\Materials\MaterialDetail;
+use App\Models\Category;
 use App\Models\Material;
 use App\Models\MaterialVersion;
 use App\Models\User;
@@ -89,6 +90,41 @@ it('uses the material upload mimes and maximum on temporary Livewire uploads', f
     expect($rules)
         ->toContain('mimes:'.implode(',', config('materials.upload.allowed_mimes')))
         ->toContain('max:'.config('materials.upload.max_size_kilobytes'));
+});
+
+it('allows an admin to edit material data from its detail page', function () {
+    $admin = User::factory()->admin()->create();
+    $material = Material::factory()->create(['title' => 'Título anterior']);
+    $category = Category::factory()->create();
+
+    Livewire::actingAs($admin)
+        ->test(MaterialDetail::class, ['material' => $material])
+        ->call('openEditForm')
+        ->assertSet('showEditForm', true)
+        ->set('materialForm.title', 'Título atualizado nos detalhes')
+        ->set('materialForm.author', 'Equipe atualizada')
+        ->set('materialForm.category_id', (string) $category->getKey())
+        ->call('saveMaterial')
+        ->assertHasNoErrors()
+        ->assertSet('showEditForm', false);
+
+    $this->assertDatabaseHas('materials', [
+        'id' => $material->getKey(),
+        'title' => 'Título atualizado nos detalhes',
+        'author' => 'Equipe atualizada',
+        'category_id' => $category->getKey(),
+    ]);
+});
+
+it('does not expose or execute detail editing for staff', function () {
+    $staff = User::factory()->staffInSchool()->create();
+    $material = Material::factory()->published()->create();
+
+    Livewire::actingAs($staff)
+        ->test(MaterialDetail::class, ['material' => $material])
+        ->assertDontSee('Editar material')
+        ->call('openEditForm')
+        ->assertForbidden();
 });
 
 it('shows management links only to admins and staff and library to teachers', function () {

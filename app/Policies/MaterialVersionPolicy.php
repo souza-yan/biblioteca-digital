@@ -11,11 +11,18 @@ class MaterialVersionPolicy
     public function viewAny(User $user, Material $material): bool
     {
         return $user->is_active && ($user->isAdmin()
-            || ($user->isStaff() && $material->status === MaterialStatus::PUBLISHED));
+            || ($user->isStaff() && (
+                $material->status === MaterialStatus::PUBLISHED
+                || ($material->status === MaterialStatus::DRAFT && $material->created_by === $user->getKey())
+            )));
     }
 
     public function create(User $user, Material $material): bool
     {
-        return $user->is_active && $user->isAdmin();
+        return $user->is_active && ($user->isAdmin()
+            || ($user->isStaff()
+                && $user->hasExactlyOneActiveSchool()
+                && $material->status === MaterialStatus::DRAFT
+                && $material->created_by === $user->getKey()));
     }
 }

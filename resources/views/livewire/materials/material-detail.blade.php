@@ -40,6 +40,11 @@
                     @endif
 
                     @if ($canManageVersions)
+                        <x-ts-button color="blue" wire:click="openEditForm" aria-label="Editar material"
+                            title="Editar material" class="!size-12 !p-0 shrink-0 justify-center">
+                            <x-ts-icon icon="pencil-square" outline class="size-7 text-white" />
+                        </x-ts-button>
+
                         @if ($material->status !== \App\Enums\MaterialStatus::PUBLISHED)
                             <x-ts-button color="emerald" wire:click="publish" aria-label="Publicar material"
                                 title="Publicar material" class="!size-12 !p-0 shrink-0 justify-center">
@@ -83,6 +88,44 @@
                     </div>
                 @endif
             </dl>
+
+            @if ($showEditForm && $canEditMaterial)
+                <form wire:submit="saveMaterial" class="mt-6 space-y-4 border-t border-slate-200 pt-6">
+                    <div class="flex items-center justify-between gap-4">
+                        <div>
+                            <h2 class="text-lg font-semibold text-slate-900">Editar material</h2>
+                            <p class="mt-1 text-sm text-slate-500">Atualize os dados do material mantendo suas versões.</p>
+                        </div>
+                        <button type="button" wire:click="closeEditForm" aria-label="Fechar edição" title="Fechar edição"
+                            class="inline-flex size-11 items-center justify-center rounded-lg text-slate-500 hover:bg-slate-100">
+                            <x-ts-icon icon="x-mark" outline class="size-6" />
+                        </button>
+                    </div>
+
+                    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                        <x-form.input id="detail-material-title" label="Título" :required="true"
+                            error="materialForm.title" wire:model="materialForm.title" />
+                        <x-form.input id="detail-material-author" label="Autor" :required="true"
+                            error="materialForm.author" wire:model="materialForm.author" />
+                        <x-form.select id="detail-material-category" label="Categoria" :required="true"
+                            error="materialForm.category_id" wire:model="materialForm.category_id">
+                            <option value="">Selecione uma categoria ativa</option>
+                            @foreach ($activeCategories as $category)
+                                <option value="{{ $category->id }}">{{ $category->name }}</option>
+                            @endforeach
+                        </x-form.select>
+                        <x-form.input id="detail-material-description" label="Descrição"
+                            error="materialForm.description" wire:model="materialForm.description" />
+                    </div>
+
+                    <div class="flex justify-end border-t border-slate-100 pt-4">
+                        <x-ts-button color="blue" type="submit" wire:loading.attr="disabled" wire:target="saveMaterial">
+                            <span wire:loading.remove wire:target="saveMaterial">Salvar alterações</span>
+                            <span wire:loading wire:target="saveMaterial">Salvando...</span>
+                        </x-ts-button>
+                    </div>
+                </form>
+            @endif
 
             @if ($material->currentVersion)
                 @include('livewire.materials.partials.file-preview', [
@@ -177,9 +220,10 @@
 
                     <div>
                         <label for="version-file" class="mb-1.5 block text-sm font-medium text-slate-700">
-                            Arquivo
+                            Arquivo <span aria-hidden="true" class="font-bold text-red-600">*</span>
+                            <span class="sr-only">(obrigatório)</span>
                         </label>
-                        <input id="version-file" type="file" wire:model="versionForm.file"
+                        <input id="version-file" type="file" wire:model="versionForm.file" required
                             accept="{{ implode(',', array_map(fn($mime) => '.' . $mime, config('materials.upload.allowed_mimes'))) }}"
                             class="block w-full cursor-pointer rounded-lg border border-slate-300 bg-white text-sm text-slate-700
                    shadow-xs transition

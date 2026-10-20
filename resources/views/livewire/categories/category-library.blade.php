@@ -24,7 +24,7 @@
                     <x-search-field
                         model="search"
                         label="Pesquisar categorias"
-                        placeholder="Nome, descrição ou slug"
+                        placeholder="Nome ou descrição"
                     />
                 </div>
             </div>

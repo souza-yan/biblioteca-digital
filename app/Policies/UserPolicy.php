@@ -22,6 +22,11 @@ class UserPolicy
         return $actor->is_active && $actor->isAdmin();
     }
 
+    public function resetOwnPasswordToDefault(User $actor, User $target): bool
+    {
+        return $actor->is_active && $actor->is($target);
+    }
+
     public function manage(User $actor, User $target): bool
     {
         // Admin mexe em qualquer um

@@ -247,3 +247,48 @@ it('renders the material manager route for admins', function () {
         ->assertOk()
         ->assertSee('Materiais');
 });
+
+it('paginates published materials by ten for staff', function () {
+    $staff = User::factory()->staffInSchool()->create();
+    Material::factory()->published()->count(11)->create();
+
+    Livewire::actingAs($staff)
+        ->test(MaterialManager::class)
+        ->assertViewHas('materials', fn ($materials): bool => $materials->perPage() === 10 && $materials->total() === 11)
+        ->assertSee('wire:click="nextPage(\'page\')"', false);
+});
+
+it('shows the material creation flow to staff as a draft submission', function () {
+    $staff = User::factory()->staffInSchool()->create();
+
+    Livewire::actingAs($staff)
+        ->test(MaterialManager::class)
+        ->assertSee('Novo material')
+        ->call('openCreate')
+        ->assertSet('showForm', true)
+        ->assertSee('Enviado como rascunho')
+        ->assertSee('O material ficará disponível para revisão do administrador.');
+});
+
+it('shows staff a download action for published materials with a current version', function () {
+    $staff = User::factory()->staffInSchool()->create();
+    $material = Material::factory()->published()->create(['title' => 'Material disponível para baixar']);
+    $version = MaterialVersion::factory()->for($material)->create();
+    $material->update(['current_version_id' => $version->getKey()]);
+
+    Livewire::actingAs($staff)
+        ->test(MaterialManager::class)
+        ->assertSee('Baixar '.$material->title)
+        ->assertSee(route('downloads.show', $material), false);
+});
+
+it('uses the edit button to open material details instead of making the title a link', function () {
+    $admin = User::factory()->admin()->create();
+    $material = Material::factory()->published()->create(['title' => 'Material para editar']);
+
+    Livewire::actingAs($admin)
+        ->test(MaterialManager::class)
+        ->assertSee(route('painel.materials.show', $material), false)
+        ->assertSee('Editar material '.$material->title)
+        ->assertDontSee('<a class="text-blue-700 hover:underline"', false);
+});

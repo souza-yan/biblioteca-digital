@@ -5,9 +5,12 @@ namespace App\Livewire\Materials;
 use App\Actions\Favorite\ToggleFavorite;
 use App\Actions\Material\ArchiveMaterial;
 use App\Actions\Material\PublishMaterial;
+use App\Actions\Material\UpdateMaterial;
 use App\Actions\MaterialVersion\CreateMaterialVersion;
 use App\Livewire\Concerns\InteractsWithCurrentUser;
+use App\Livewire\Forms\MaterialForm;
 use App\Livewire\Forms\MaterialVersionForm;
+use App\Models\Category;
 use App\Models\Material;
 use App\Models\MaterialVersion;
 use Illuminate\Contracts\View\View;
@@ -18,13 +21,19 @@ use Livewire\Attributes\Locked;
 use Livewire\Component;
 use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 use Livewire\WithFileUploads;
+use TallStackUi\Traits\Interactions;
 
 class MaterialDetail extends Component
 {
+    use Interactions;
     use InteractsWithCurrentUser;
     use WithFileUploads;
 
+    public MaterialForm $materialForm;
+
     public MaterialVersionForm $versionForm;
+
+    public bool $showEditForm = false;
 
     #[Locked]
     public int $materialId;
@@ -49,6 +58,10 @@ class MaterialDetail extends Component
         }
 
         $publishMaterial->handle($actor, $material);
+
+        $this->toast()
+            ->success('Material publicado!', 'O material já está disponível na biblioteca.')
+            ->send();
     }
 
     public function archive(ArchiveMaterial $archiveMaterial): void
@@ -59,6 +72,57 @@ class MaterialDetail extends Component
         Gate::authorize('archive', $material);
 
         $archiveMaterial->handle($actor, $material);
+
+        $this->toast()
+            ->success('Material arquivado!', 'O material foi arquivado com sucesso.')
+            ->send();
+    }
+
+    public function openEditForm(): void
+    {
+        $material = $this->findViewableMaterial();
+        Gate::authorize('update', $material);
+
+        $this->materialForm->reset();
+        $this->materialForm->materialId = $material->getKey();
+        $this->materialForm->title = $material->title;
+        $this->materialForm->description = $material->description ?? '';
+        $this->materialForm->category_id = (string) $material->category_id;
+        $this->materialForm->type = $material->type;
+        $this->materialForm->author = $material->author;
+        $this->resetValidation();
+        $this->showEditForm = true;
+    }
+
+    public function closeEditForm(): void
+    {
+        $material = $this->findViewableMaterial();
+        Gate::authorize('update', $material);
+
+        $this->materialForm->reset();
+        $this->resetValidation();
+        $this->showEditForm = false;
+    }
+
+    public function saveMaterial(UpdateMaterial $updateMaterial): void
+    {
+        $actor = $this->currentUser();
+        $material = $this->findViewableMaterial();
+        Gate::authorize('update', $material);
+
+        $this->materialForm->materialId = $material->getKey();
+        $this->materialForm->type = $material->type;
+        $attributes = $this->materialForm->validate();
+
+        $updateMaterial->handle($actor, $material, $attributes);
+
+        $this->materialForm->reset();
+        $this->resetValidation();
+        $this->showEditForm = false;
+
+        $this->toast()
+            ->success('Material atualizado!', 'As alterações foram salvas corretamente.')
+            ->send();
     }
 
     public function toggleFavorite(ToggleFavorite $toggleFavorite): void
@@ -69,6 +133,17 @@ class MaterialDetail extends Component
         $actor = $this->currentUser();
 
         $toggleFavorite->handle($actor, $material);
+
+        $isFavorited = $actor->favorites()->whereKey($material->getKey())->exists();
+
+        $this->toast()
+            ->success(
+                $isFavorited ? 'Material favoritado!' : 'Material removido dos favoritos!',
+                $isFavorited
+                    ? 'O material foi adicionado aos seus favoritos.'
+                    : 'O material foi removido dos seus favoritos.'
+            )
+            ->send();
     }
 
     public function saveVersion(CreateMaterialVersion $createMaterialVersion): void
@@ -97,6 +172,10 @@ class MaterialDetail extends Component
                 $attributes['change_note'] ?: null,
             );
 
+            $this->toast()
+                ->success('Nova versão cadastrada!', 'O arquivo foi adicionado ao histórico do material.')
+                ->send();
+
             $this->versionForm->reset();
             $this->resetValidation();
         } finally {
@@ -114,6 +193,7 @@ class MaterialDetail extends Component
         $material = $this->findViewableMaterial();
         $actor = $this->currentUser();
         $canManageVersions = $actor->isAdmin();
+        $canEditMaterial = Gate::allows('update', $material);
         $canViewVersionHistory = $actor->isAdmin() || $actor->isStaff();
         $isFavorited = $actor->isTeacher()
             && $actor->favorites()->whereKey($material->getKey())->exists();
@@ -132,7 +212,11 @@ class MaterialDetail extends Component
             'isTeacher' => $actor->isTeacher(),
             'isFavorited' => $isFavorited,
             'canManageVersions' => $canManageVersions,
+            'canEditMaterial' => $canEditMaterial,
             'canViewVersionHistory' => $canViewVersionHistory,
+            'activeCategories' => $canEditMaterial
+                ? Category::query()->where('is_active', true)->orderBy('name')->get(['id', 'name'])
+                : collect(),
             'versions' => $versions,
         ]);
     }

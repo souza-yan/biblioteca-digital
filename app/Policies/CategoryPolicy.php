@@ -14,7 +14,8 @@ class CategoryPolicy
 
     public function create(User $user): bool
     {
-        return $user->is_active && $user->isAdmin();
+        return $user->is_active && ($user->isAdmin()
+            || ($user->isStaff() && $user->hasExactlyOneActiveSchool()));
     }
 
     public function update(User $user, Category $category): bool

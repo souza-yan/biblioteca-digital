@@ -10,10 +10,11 @@
                     <x-ts-icon icon="arrow-left" outline class="size-7" />
                 </span>
             @else
-                <a href="{{ $paginator->previousPageUrl() }}" rel="prev" aria-label="Página anterior" title="Página anterior"
+                <button type="button" wire:click="previousPage('{{ $paginator->getPageName() }}')" wire:loading.attr="disabled"
+                    aria-label="Página anterior" title="Página anterior"
                     class="inline-flex size-10 items-center justify-center rounded-md text-gray-700 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-600">
                     <x-ts-icon icon="arrow-left" outline class="size-7" />
-                </a>
+                </button>
             @endif
 
             @foreach ($elements as $element)
@@ -26,17 +27,20 @@
                         @if ($page == $paginator->currentPage())
                             <span aria-current="page" aria-label="Página {{ $page }}" class="inline-flex size-10 items-center justify-center rounded-md bg-blue-800 text-sm font-semibold text-white">{{ $page }}</span>
                         @else
-                            <a href="{{ $url }}" aria-label="Ir para página {{ $page }}" class="inline-flex size-10 items-center justify-center rounded-md text-sm text-gray-700 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-600">{{ $page }}</a>
+                            <button type="button" wire:click="gotoPage({{ $page }}, '{{ $paginator->getPageName() }}')"
+                                wire:loading.attr="disabled" aria-label="Ir para página {{ $page }}"
+                                class="inline-flex size-10 items-center justify-center rounded-md text-sm text-gray-700 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-600">{{ $page }}</button>
                         @endif
                     @endforeach
                 @endif
             @endforeach
 
             @if ($paginator->hasMorePages())
-                <a href="{{ $paginator->nextPageUrl() }}" rel="next" aria-label="Próxima página" title="Próxima página"
+                <button type="button" wire:click="nextPage('{{ $paginator->getPageName() }}')" wire:loading.attr="disabled"
+                    aria-label="Próxima página" title="Próxima página"
                     class="inline-flex size-10 items-center justify-center rounded-md text-gray-700 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-600">
                     <x-ts-icon icon="arrow-right" outline class="size-7" />
-                </a>
+                </button>
             @else
                 <span aria-disabled="true" aria-label="Próxima página" class="inline-flex size-10 items-center justify-center rounded-md text-gray-400">
                     <x-ts-icon icon="arrow-right" outline class="size-7" />

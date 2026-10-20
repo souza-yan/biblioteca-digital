@@ -3,7 +3,7 @@
 namespace App\Livewire\Users;
 
 use App\Actions\User\CreateUser;
-use App\Actions\User\SendUserPasswordResetLink;
+use App\Actions\User\ResetUserPasswordToDefault;
 use App\Actions\User\ToggleUserActive;
 use App\Actions\User\UpdateUser;
 use App\Enums\Role;
@@ -15,7 +15,6 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Support\Facades\Gate;
-use Illuminate\Support\Facades\Password;
 use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Locked;
@@ -38,8 +37,13 @@ class UserManager extends Component
 
     public bool $showForm = false;
 
+    public bool $showPasswordResetConfirmation = false;
+
     #[Locked]
     public ?int $editingUserId = null;
+
+    #[Locked]
+    public ?int $passwordResetUserId = null;
 
     public function mount(): void
     {
@@ -51,6 +55,27 @@ class UserManager extends Component
         $this->authorizeManager();
         $this->selectedUserId = null;
         $this->resetPage();
+    }
+
+    public function updatedFormRole(string $role): void
+    {
+        $actor = $this->authorizeManager();
+
+        if (! $actor->isAdmin()) {
+            return;
+        }
+
+        if ($role === Role::STAFF->value) {
+            $this->form->school_ids = [];
+
+            return;
+        }
+
+        $this->form->school_id = null;
+
+        if ($role !== Role::TEACHER->value) {
+            $this->form->school_ids = [];
+        }
     }
 
     public function selectUser(int $userId): void
@@ -73,9 +98,12 @@ class UserManager extends Component
 
     public function openCreate(): void
     {
-        $this->authorizeManager();
+        $actor = $this->authorizeManager();
         Gate::authorize('create', User::class);
         $this->resetForm();
+        if ($actor->isStaff()) {
+            $this->form->role = Role::TEACHER->value;
+        }
         $this->showForm = true;
     }
 
@@ -88,7 +116,7 @@ class UserManager extends Component
 
     public function editUser(int $userId): void
     {
-        $this->authorizeManager();
+        $actor = $this->authorizeManager();
         $user = $this->findManagedUser($userId);
         $this->resetValidation();
 
@@ -102,6 +130,13 @@ class UserManager extends Component
         $this->form->school_id = $user->isStaff()
             ? $user->school()?->getKey()
             : null;
+        $this->form->school_ids = $actor->isAdmin() && $user->isTeacher()
+            ? $user->schools()
+                ->where('schools.is_active', true)
+                ->wherePivot('is_active', true)
+                ->pluck('schools.id')
+                ->all()
+            : [];
         $this->showForm = true;
     }
 
@@ -125,8 +160,10 @@ class UserManager extends Component
 
             $this->toast()
                 ->success(
-                    'Usuário cadastrado!',
-                    'O usuário foi cadastrado com sucesso.'
+                    $actor->isStaff() ? 'Professor cadastrado!' : 'Usuário cadastrado!',
+                    $actor->isStaff()
+                        ? 'O professor foi cadastrado e vinculado à escola.'
+                        : 'O usuário foi cadastrado com sucesso.'
                 )
                 ->send();
         } else {
@@ -183,37 +220,36 @@ class UserManager extends Component
             ->send();
     }
 
-    public function sendPasswordResetLink(
-        int $userId,
-        SendUserPasswordResetLink $sendUserPasswordResetLink,
-    ): void {
-        $actor = $this->authorizeManager();
+    public function openPasswordResetConfirmation(int $userId): void
+    {
         $user = $this->findManagedUser($userId);
-
         Gate::authorize('resetPassword', $user);
 
-        try {
-            $status = $sendUserPasswordResetLink->handle($actor, $user);
-        } catch (\Throwable $exception) {
-            report($exception);
+        $this->passwordResetUserId = $user->getKey();
+        $this->showPasswordResetConfirmation = true;
+    }
 
-            $this->toast()
-                ->error('Não foi possível iniciar a redefinição de senha.')
-                ->send();
+    public function closePasswordResetConfirmation(): void
+    {
+        $this->authorizeManager();
+        $this->passwordResetUserId = null;
+        $this->showPasswordResetConfirmation = false;
+    }
 
-            return;
-        }
+    public function resetPassword(ResetUserPasswordToDefault $resetUserPasswordToDefault): void
+    {
+        $actor = $this->authorizeManager();
+        $userId = $this->passwordResetUserId;
+        abort_if($userId === null, 404);
+        $user = $this->findManagedUser($userId);
+        Gate::authorize('resetPassword', $user);
 
-        if ($status === Password::RESET_LINK_SENT) {
-            $this->toast()
-                ->success('Solicitação de redefinição de senha enviada.')
-                ->send();
-
-            return;
-        }
+        $resetUserPasswordToDefault->handle($actor, $user);
+        $this->passwordResetUserId = null;
+        $this->showPasswordResetConfirmation = false;
 
         $this->toast()
-            ->error('Não foi possível iniciar a redefinição de senha.')
+            ->success('Senha redefinida!', 'A senha voltou ao padrão “password” e as sessões foram encerradas.')
             ->send();
     }
 
@@ -281,9 +317,6 @@ class UserManager extends Component
                 ? [
                     ['label' => 'Nome', 'class' => 'text-lg'],
                     ['label' => 'E-mail', 'class' => 'text-lg'],
-                    ['label' => 'Cargo', 'class' => 'text-lg'],
-                    ['label' => 'Conta global', 'class' => 'text-lg'],
-                    ['label' => 'Vínculo nesta escola', 'class' => 'text-lg'],
                     ['label' => 'Ações', 'align' => 'right', 'class' => 'text-lg'],
                 ]
                 : [
@@ -297,6 +330,9 @@ class UserManager extends Component
             'schoolOptions' => $schoolOptions,
             'actor' => $actor,
             'editingUser' => $editingUser,
+            'passwordResetUser' => $this->passwordResetUserId === null
+                ? null
+                : User::query()->find($this->passwordResetUserId),
         ]);
     }
 

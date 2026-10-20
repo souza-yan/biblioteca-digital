@@ -22,31 +22,140 @@ use LogicException;
 
 class DatabaseSeeder extends Seeder
 {
+    /** Senha conhecida: por isso o seeder só roda em local/testing. */
+    private const SEED_PASSWORD = 'password';
+
     public function run(): void
     {
-        $seededUsers = $this->seedUsers();
-        $staff = $seededUsers['gestao@example.com'];
-        $schools = $this->seedSchools();
-        $staff->schools()->sync([
-            $schools[SchoolRegion::North->value]->getKey() => ['is_active' => true],
-        ]);
-        $seededUsers['gestao2@example.com']->schools()->sync([
-            $schools[SchoolRegion::Center->value]->getKey() => ['is_active' => true],
-        ]);
-
-        foreach (array_values(array_filter(
-            $seededUsers,
-            fn (User $user): bool => $user->isTeacher(),
-        )) as $index => $teacher) {
-            $schoolKeys = [$schools[SchoolRegion::Center->value]->getKey()];
-
-            if ($index % 2 === 0) {
-                $schoolKeys[] = $schools[SchoolRegion::South->value]->getKey();
-            }
-
-            $teacher->schools()->syncWithoutDetaching(array_fill_keys($schoolKeys, ['is_active' => true]));
+        if (! app()->environment(['local', 'testing'])) {
+            throw new LogicException('Os dados de exemplo só podem ser semeados em local ou testing.');
         }
 
+        $schools = $this->seedSchools();
+        $users = $this->seedUsers();
+
+        $this->assignMemberships($users, $schools);
+        $this->seedLibrary($users['gestao@example.com']);
+        $this->seedLibraryActivity($users);
+    }
+
+    /**
+     * @return array<string, School> indexadas pela chave da escola (norte, centro, sul, vale)
+     */
+    private function seedSchools(): array
+    {
+        $definitions = [
+            'norte' => ['name' => 'EMEF Norte', 'region' => SchoolRegion::North],
+            'centro' => ['name' => 'EMEF Centro', 'region' => SchoolRegion::Center],
+            'sul' => ['name' => 'EMEF Sul', 'region' => SchoolRegion::South],
+            'vale' => ['name' => 'EMEF do Vale', 'region' => SchoolRegion::Center],
+        ];
+
+        $schools = [];
+
+        foreach ($definitions as $key => $definition) {
+            $schools[$key] = School::query()->updateOrCreate(
+                ['name' => $definition['name']],
+                [
+                    'type' => SchoolType::Emef,
+                    'region' => $definition['region'],
+                    'address' => "Endereço de exemplo — {$definition['name']}",
+                    'phone' => null,
+                    'is_active' => true,
+                ],
+            );
+        }
+
+        return $schools;
+    }
+
+    /**
+     * @return array<string, User> indexados pelo e-mail
+     */
+    private function seedUsers(): array
+    {
+        $definitions = [
+            ['name' => 'Admin', 'email' => 'admin@example.com', 'role' => Role::ADMIN],
+            ['name' => 'Gestão Norte', 'email' => 'gestao@example.com', 'role' => Role::STAFF],
+            ['name' => 'Gestão Centro', 'email' => 'gestao2@example.com', 'role' => Role::STAFF],
+            ['name' => 'Gestão Sul', 'email' => 'gestao3@example.com', 'role' => Role::STAFF],
+            ['name' => 'Gestão Vale', 'email' => 'gestao4@example.com', 'role' => Role::STAFF],
+        ];
+
+        for ($n = 1; $n <= 10; $n++) {
+            $definitions[] = [
+                'name' => $n === 1 ? 'Professor' : "Professor {$n}",
+                'email' => $n === 1 ? 'professor@example.com' : "professor{$n}@example.com",
+                'role' => Role::TEACHER,
+            ];
+        }
+
+        $users = [];
+
+        foreach ($definitions as $definition) {
+            $users[$definition['email']] = User::query()->updateOrCreate(
+                ['email' => $definition['email']],
+                [
+                    'name' => $definition['name'],
+                    'password' => Hash::make(self::SEED_PASSWORD),
+                    'role' => $definition['role'],
+                    'is_active' => true,
+                    'email_verified_at' => now(),
+                ],
+            );
+        }
+
+        return $users;
+    }
+
+    /**
+     * @param  array<string, User>  $users
+     * @param  array<string, School>  $schools
+     */
+    private function assignMemberships(array $users, array $schools): void
+    {
+        // Admin não pertence a nenhuma escola.
+
+        // Um gestor por escola.
+        $staffSchools = [
+            'gestao@example.com' => 'norte',
+            'gestao2@example.com' => 'centro',
+            'gestao3@example.com' => 'sul',
+            'gestao4@example.com' => 'vale',
+        ];
+
+        foreach ($staffSchools as $email => $schoolKey) {
+            $users[$email]->schools()->sync([
+                $schools[$schoolKey]->getKey() => ['is_active' => true],
+            ]);
+        }
+
+        // Professores: o primeiro é multiescola (norte + centro);
+        // os demais se distribuem entre as 4 escolas.
+        $schoolKeys = array_keys($schools);
+        $index = 0;
+
+        foreach ($users as $user) {
+            if (! $user->isTeacher()) {
+                continue;
+            }
+
+            $keys = $index === 0
+                ? ['norte', 'centro']
+                : [$schoolKeys[$index % count($schoolKeys)]];
+
+            $user->schools()->sync(
+                collect($keys)
+                    ->mapWithKeys(fn (string $key): array => [$schools[$key]->getKey() => ['is_active' => true]])
+                    ->all(),
+            );
+
+            $index++;
+        }
+    }
+
+    private function seedLibrary(User $publisher): void
+    {
         foreach ($this->library() as $categoryName => $materials) {
             $category = Category::query()->updateOrCreate(
                 ['slug' => Str::slug($categoryName)],
@@ -54,7 +163,7 @@ class DatabaseSeeder extends Seeder
                     'name' => $categoryName,
                     'description' => "Materiais de {$categoryName} para a biblioteca de robótica.",
                     'is_active' => true,
-                ]
+                ],
             );
 
             foreach ($materials as [$title, $type, $author, $status]) {
@@ -69,44 +178,15 @@ class DatabaseSeeder extends Seeder
                     'category_id' => $category->id,
                     'type' => $type,
                     'author' => $author,
-                    'created_by' => $staff->id,
+                    'created_by' => $publisher->id,
                 ]);
 
-                // Material publicado precisa de uma versão, senão o professor não tem o que baixar
+                // Material publicado precisa de uma versão, senão o professor não tem o que baixar.
                 if ($status === 'published') {
-                    $this->attachPlaceholderVersion($material, $staff);
+                    $this->attachPlaceholderVersion($material, $publisher);
                 }
             }
         }
-
-        $this->seedLibraryActivity($seededUsers);
-    }
-
-    /**
-     * @return array<string, School>
-     */
-    private function seedSchools(): array
-    {
-        $schools = [];
-
-        foreach ([
-            SchoolRegion::North->value => ['name' => 'EMEF Norte', 'address' => 'Endereço de exemplo - Região Norte'],
-            SchoolRegion::Center->value => ['name' => 'EMEF Centro', 'address' => 'Endereço de exemplo - Região Centro'],
-            SchoolRegion::South->value => ['name' => 'EMEF Sul', 'address' => 'Endereço de exemplo - Região Sul'],
-        ] as $region => $attributes) {
-            $schools[$region] = School::query()->updateOrCreate(
-                ['name' => $attributes['name']],
-                [
-                    'type' => SchoolType::Emef,
-                    'region' => SchoolRegion::from($region),
-                    'address' => $attributes['address'],
-                    'phone' => null,
-                    'is_active' => true,
-                ],
-            );
-        }
-
-        return $schools;
     }
 
     /** Categoria => [título, tipo, autor, status] */
@@ -157,41 +237,6 @@ class DatabaseSeeder extends Seeder
         ];
     }
 
-    private function seedUsers(): array
-    {
-        $users = [
-            ['name' => 'Admin', 'email' => 'admin@example.com', 'role' => Role::ADMIN],
-            ['name' => 'Gestão', 'email' => 'gestao@example.com', 'role' => Role::STAFF],
-            ['name' => 'Gestão2', 'email' => 'gestao2@example.com', 'role' => Role::STAFF],
-        ];
-
-        for ($n = 1; $n <= 10; $n++) {
-            $users[] = [
-                'name' => $n === 1 ? 'Professor' : "Professor {$n}",
-                'email' => $n === 1 ? 'professor@example.com' : "professor{$n}@example.com",
-                'role' => Role::TEACHER,
-            ];
-        }
-
-        $password = env('SEED_PASSWORD', 'password');
-        $seeded = [];
-
-        foreach ($users as $data) {
-            $seeded[$data['email']] = User::updateOrCreate(
-                ['email' => $data['email']],
-                [
-                    'name' => $data['name'],
-                    'password' => Hash::make($password),
-                    'role' => $data['role'],
-                    'is_active' => true,
-                    'email_verified_at' => now(),
-                ]
-            );
-        }
-
-        return $seeded;
-    }
-
     private function attachPlaceholderVersion(Material $material, User $publisher): void
     {
         $name = Str::slug($material->title).'.txt';
@@ -215,9 +260,9 @@ class DatabaseSeeder extends Seeder
     }
 
     /**
-     * @param  array<string, User>  $seededUsers
+     * @param  array<string, User>  $users
      */
-    private function seedLibraryActivity(array $seededUsers): void
+    private function seedLibraryActivity(array $users): void
     {
         $materials = Material::query()
             ->where('status', MaterialStatus::PUBLISHED)
@@ -230,10 +275,10 @@ class DatabaseSeeder extends Seeder
             ->get()
             ->keyBy('title');
 
-        $teacher = $seededUsers['professor@example.com'];
-        $secondTeacher = $seededUsers['professor2@example.com'];
-        $staff = $seededUsers['gestao@example.com'];
-        $admin = $seededUsers['admin@example.com'];
+        $teacher = $users['professor@example.com'];
+        $secondTeacher = $users['professor2@example.com'];
+        $staff = $users['gestao@example.com'];
+        $admin = $users['admin@example.com'];
 
         foreach ([
             [$teacher, 'Introdução ao Arduino Uno'],
@@ -254,7 +299,7 @@ class DatabaseSeeder extends Seeder
                     'material_id' => $material->getKey(),
                     'material_version_id' => $material->currentVersion->getKey(),
                 ],
-                ['downloaded_at' => now()->subDays(2)]
+                ['downloaded_at' => now()->subDays(2)],
             );
         }
 
@@ -264,13 +309,14 @@ class DatabaseSeeder extends Seeder
             [$staff, ActivityAction::MATERIAL_CREATED, 'Material de exemplo criado.', $materials->get('Introdução ao Arduino Uno')],
             [$teacher, ActivityAction::MATERIAL_DOWNLOADED, 'Material de exemplo baixado.', $materials->get('Introdução ao Arduino Uno')],
         ] as [$actor, $action, $description, $material]) {
-            $activity = ActivityLog::query()
+            $exists = ActivityLog::query()
                 ->where('user_id', $actor->getKey())
                 ->where('action', $action)
                 ->where('description', $description)
-                ->where('material_id', $material?->getKey());
+                ->where('material_id', $material?->getKey())
+                ->exists();
 
-            if (! $activity->exists()) {
+            if (! $exists) {
                 ActivityLog::query()->create([
                     'user_id' => $actor->getKey(),
                     'material_id' => $material?->getKey(),

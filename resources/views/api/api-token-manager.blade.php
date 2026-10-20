@@ -35,9 +35,8 @@
         </x-slot>
 
         <x-slot name="actions">
-            <x-action-message class="me-3" on="created">
-                {{ __('Created.') }}
-            </x-action-message>
+            <x-saved-toast on="created" title="Token criado!"
+                message="O token de API foi criado com sucesso." />
 
             <x-button>
                 {{ __('Create') }}

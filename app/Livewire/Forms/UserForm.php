@@ -29,6 +29,9 @@ class UserForm extends Form
 
     public ?int $school_id = null;
 
+    /** @var array<int, int|string> */
+    public array $school_ids = [];
+
     /**
      * @return array<string, array<int, mixed>>
      */
@@ -44,6 +47,12 @@ class UserForm extends Form
                 'integer',
                 Rule::exists((new School)->getTable(), 'id')->where('is_active', true),
             ];
+        $schoolIdsRules = $actor->isStaff() || $this->role !== Role::TEACHER->value
+            ? ['prohibited']
+            : ['array'];
+        $passwordRules = $this->userId === null || $staffEditingExistingUser
+            ? ['exclude']
+            : ['nullable', 'confirmed', Password::defaults()];
 
         return [
             'name' => $staffEditingExistingUser ? ['exclude'] : ['required', 'string', 'max:255'],
@@ -53,18 +62,19 @@ class UserForm extends Form
                 'max:255',
                 Rule::unique('users', 'email')->ignore($this->userId),
             ],
-            'password' => [
-                $staffEditingExistingUser
-                    ? 'exclude'
-                    : ($this->userId === null ? 'required' : 'nullable'),
-                'confirmed',
-                Password::defaults(),
-            ],
+            'password' => $passwordRules,
+            'password_confirmation' => [$this->userId === null ? 'exclude' : 'nullable'],
             'role' => [
                 $this->userId === null ? 'required' : 'sometimes',
                 Rule::enum(Role::class)->only($actor->assignableRoles()),
             ],
             'school_id' => $schoolRules,
+            'school_ids' => $schoolIdsRules,
+            'school_ids.*' => [
+                'integer',
+                'distinct',
+                Rule::exists((new School)->getTable(), 'id')->where('is_active', true),
+            ],
         ];
     }
 

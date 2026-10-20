@@ -32,6 +32,12 @@
                     'icon' => 'users',
                 ],
                 [
+                    'label' => 'Escolas',
+                    'route' => 'painel.schools',
+                    'active' => request()->routeIs('painel.schools'),
+                    'icon' => 'school',
+                ],
+                [
                     'label' => 'Atividades',
                     'route' => 'painel.activities',
                     'active' => request()->routeIs('painel.activities'),
@@ -69,7 +75,7 @@
                     'label' => 'Favoritos',
                     'route' => 'painel.favorites',
                     'active' => request()->routeIs('painel.favorites'),
-                    'icon' => 'heart',
+                    'icon' => 'bookmark',
                 ],
             ];
         }
@@ -189,13 +195,18 @@
                                         d="M16 20v-1.5a3.5 3.5 0 0 0-3.5-3.5h-5A3.5 3.5 0 0 0 4 18.5V20m6-8a4 4 0 1 0-0-8 4 4 0 0 0 0 8Zm6-7.7a4 4 0 0 1 0 7.4m4 8.3v-1.5a3.5 3.5 0 0 0-2.5-3.35" />
                                 @break
 
+                                @case('school')
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="M3 21h18M5 21V8l7-4 7 4v13M9 21v-5h6v5M8 11h.01M12 11h.01M16 11h.01" />
+                                @break
+
                                 @case('activity')
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M3 12h4l2.2-6 4.1 12 2.2-6H21" />
                                 @break
 
-                                @case('heart')
+                                @case('bookmark')
                                     <path stroke-linecap="round" stroke-linejoin="round"
-                                        d="M20.8 8.8c0 4.2-8.8 10.2-8.8 10.2S3.2 13 3.2 8.8A4.3 4.3 0 0 1 12 6.7a4.3 4.3 0 0 1 8.8 2.1Z" />
+                                        d="M6.75 3.75h10.5a1.5 1.5 0 0 1 1.5 1.5v15L12 16.5l-6.75 3.75v-15a1.5 1.5 0 0 1 1.5-1.5Z" />
                                 @break
                             @endswitch
                         </svg>

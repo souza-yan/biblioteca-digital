@@ -8,7 +8,6 @@ class ActivityLogPolicy
 {
     public function viewAny(User $user): bool
     {
-        return $user->is_active && ($user->isAdmin()
-            || ($user->isStaff() && $user->hasExactlyOneActiveSchool()));
+        return $user->is_active && $user->isAdmin();
     }
 }

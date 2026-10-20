@@ -4,6 +4,7 @@ namespace App\Actions\Dashboard;
 
 use App\Enums\ActivityAction;
 use App\Enums\MaterialStatus;
+use App\Enums\Role;
 use App\Models\ActivityLog;
 use App\Models\Category;
 use App\Models\Download;
@@ -76,6 +77,7 @@ class BuildDashboard
             'isTeacher' => false,
             'activeUsersCount' => User::query()
                 ->where('is_active', true)
+                ->when($school !== null, fn ($query) => $query->where('role', Role::TEACHER))
                 ->when($school !== null, fn ($query) => $query->whereHas(
                     'schools',
                     fn ($schools) => $schools

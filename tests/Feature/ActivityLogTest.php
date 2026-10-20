@@ -152,7 +152,7 @@ it('prevents activity logs from being updated or deleted', function () {
     ]);
 });
 
-it('allows admins and staff to view all activity logs and forbids teachers', function (string $role) {
+it('allows only admins to view activity logs', function (string $role) {
     $user = match ($role) {
         'admin' => User::factory()->admin()->create(),
         'staff' => User::factory()->staffInSchool()->create(),
@@ -162,7 +162,7 @@ it('allows admins and staff to view all activity logs and forbids teachers', fun
 
     $this->actingAs($user);
 
-    if ($role === 'teacher') {
+    if ($role !== 'admin') {
         $this->get(route('painel.activities'))->assertForbidden();
         Livewire::test(ActivityLogIndex::class)->assertForbidden();
 
@@ -243,13 +243,17 @@ it('filters change activity logs by user, action and date period', function () {
         ->assertDontSee('Fora do período');
 });
 
-it('shows the activity navigation link only to admins and staff', function () {
+it('shows the activity navigation link only to admins', function () {
     $this->actingAs(User::factory()->teacher()->create())
         ->get(route('painel.library'))
         ->assertOk()
         ->assertDontSee('Atividades');
 
     $this->actingAs(User::factory()->staffInSchool()->create())
+        ->get(route('painel.activities'))
+        ->assertForbidden();
+
+    $this->actingAs(User::factory()->admin()->create())
         ->get(route('painel.activities'))
         ->assertOk()
         ->assertSee('Atividades');

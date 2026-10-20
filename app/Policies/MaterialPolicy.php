@@ -21,13 +21,17 @@ class MaterialPolicy
     public function view(User $user, Material $material): bool
     {
         return $user->is_active && ($user->isAdmin()
-            || ($user->isStaff() && $material->status === MaterialStatus::PUBLISHED)
+            || ($user->isStaff() && (
+                $material->status === MaterialStatus::PUBLISHED
+                || ($material->status === MaterialStatus::DRAFT && $material->created_by === $user->getKey())
+            ))
             || ($user->isTeacher() && $material->status === MaterialStatus::PUBLISHED));
     }
 
     public function create(User $user): bool
     {
-        return $user->is_active && $user->isAdmin();
+        return $user->is_active && ($user->isAdmin()
+            || ($user->isStaff() && $user->hasExactlyOneActiveSchool()));
     }
 
     public function update(User $user, Material $material): bool

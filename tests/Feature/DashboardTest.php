@@ -146,18 +146,19 @@ it('shows admins and staff totals and the latest ten activities', function (stri
     $response = $this->actingAs($actor)
         ->get(route('dashboard'))
         ->assertOk()
-        ->assertSee('2')
         ->assertViewHas('downloadPeriod', '30');
 
     if ($role === 'staff') {
         $response
-            ->assertSee('Pessoas vinculadas')
+            ->assertViewHas('activeUsersCount', 1)
+            ->assertSee('Professores vinculados')
             ->assertSee('Materiais publicados')
             ->assertSee('Downloads da escola')
             ->assertDontSee('Atividades recentes')
             ->assertDontSee('Atividade 11');
     } else {
         $response
+            ->assertViewHas('activeUsersCount', 2)
             ->assertSee('Usuários ativos')
             ->assertSee('Materiais por status')
             ->assertSee('Rascunho')

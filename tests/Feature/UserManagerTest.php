@@ -1,17 +1,15 @@
 <?php
 
-use App\Actions\Activity\LogActivity;
-use App\Actions\User\SendUserPasswordResetLink;
+use App\Actions\User\ResetUserPasswordToDefault;
 use App\Enums\ActivityAction;
 use App\Livewire\Users\UserManager;
 use App\Models\School;
 use App\Models\User;
-use Illuminate\Auth\Notifications\ResetPassword;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Notification;
-use Illuminate\Support\Facades\Password;
 use Livewire\Features\SupportLockedProperties\CannotUpdateLockedPropertyException;
 use Livewire\Livewire;
 
@@ -22,10 +20,11 @@ it('allows staff to create a teacher from the user manager', function () {
 
     Livewire::test(UserManager::class)
         ->call('openCreate')
+        ->assertSet('form.role', 'teacher')
+        ->assertSee('Novo professor')
+        ->assertDontSee('wire:model="form.role"', false)
         ->set('form.name', 'Ana Professora')
         ->set('form.email', 'ana.professora@example.com')
-        ->set('form.password', 'password')
-        ->set('form.password_confirmation', 'password')
         ->set('form.role', 'teacher')
         ->call('save')
         ->assertHasNoErrors();
@@ -35,6 +34,23 @@ it('allows staff to create a teacher from the user manager', function () {
         'email' => 'ana.professora@example.com',
         'role' => 'teacher',
     ]);
+    expect(Hash::check('password', User::query()->where('email', 'ana.professora@example.com')->value('password')))
+        ->toBeTrue();
+});
+
+it('shows staff only the local teacher identification and membership status action', function () {
+    $staff = User::factory()->staffInSchool()->create();
+    $teacher = User::factory()->teacher()->create();
+    $teacher->schools()->attach($staff->school()->getKey(), ['is_active' => true]);
+
+    Livewire::actingAs($staff)
+        ->test(UserManager::class)
+        ->assertSee($teacher->name)
+        ->assertSee($teacher->email)
+        ->assertDontSee('Conta global')
+        ->assertDontSee('Vínculo nesta escola')
+        ->assertDontSee('Editar usuário '.$teacher->name)
+        ->assertSee('Desativar usuário '.$teacher->name);
 });
 
 it('allows only admins and staff to create users by policy', function () {
@@ -50,8 +66,6 @@ it('rejects an admin role in the staff user form', function () {
         ->call('openCreate')
         ->set('form.name', 'Conta Administrativa')
         ->set('form.email', 'admin.candidate@example.com')
-        ->set('form.password', 'password')
-        ->set('form.password_confirmation', 'password')
         ->set('form.role', 'admin')
         ->call('save')
         ->assertHasErrors('form.role');
@@ -206,25 +220,38 @@ it('limits staff suggestions to local teachers and rejects selecting a foreign u
         ->toThrow(ModelNotFoundException::class);
 });
 
-it('sends an admin initiated password reset through Fortify without changing school links', function () {
-    Notification::fake();
+it('lets an admin reset a password to the default and invalidate stored sessions without changing school links', function () {
     $schoolA = School::factory()->create();
     $schoolB = School::factory()->create();
     $admin = User::factory()->admin()->create();
-    $teacher = User::factory()->teacher()->create();
+    $teacher = User::factory()->teacher()->create(['password' => Hash::make('senha-anterior')]);
     $teacher->schools()->attach([
         $schoolA->getKey() => ['is_active' => true],
         $schoolB->getKey() => ['is_active' => true],
     ]);
 
+    DB::table('sessions')->insert([
+        'id' => 'teacher-active-session',
+        'user_id' => $teacher->getKey(),
+        'payload' => 'test-payload',
+        'last_activity' => now()->timestamp,
+    ]);
+    config()->set('session.driver', 'database');
+
     Livewire::actingAs($admin)
         ->test(UserManager::class)
-        ->call('sendPasswordResetLink', $teacher->getKey());
+        ->call('openPasswordResetConfirmation', $teacher->getKey())
+        ->assertSet('showPasswordResetConfirmation', true)
+        ->assertSee('password')
+        ->call('resetPassword')
+        ->assertHasNoErrors()
+        ->assertSet('showPasswordResetConfirmation', false);
 
-    Notification::assertSentTo($teacher, ResetPassword::class);
+    expect(Hash::check('password', $teacher->fresh()->password))->toBeTrue();
+    $this->assertDatabaseMissing('sessions', ['id' => 'teacher-active-session']);
     $this->assertDatabaseHas('activity_logs', [
         'user_id' => $admin->getKey(),
-        'action' => ActivityAction::USER_PASSWORD_RESET_REQUESTED->value,
+        'action' => ActivityAction::USER_PASSWORD_RESET_BY_ADMIN->value,
     ]);
     $this->assertDatabaseHas('school_user', [
         'school_id' => $schoolA->getKey(), 'user_id' => $teacher->getKey(), 'is_active' => true,
@@ -234,18 +261,49 @@ it('sends an admin initiated password reset through Fortify without changing sch
     ]);
 });
 
-it('returns the successful broker status when activity logging fails after the broker sends the notification', function () {
-    Notification::fake();
-    $admin = User::factory()->admin()->create();
+it('refuses a direct password reset by staff', function () {
+    $staff = User::factory()->staffInSchool()->create();
     $teacher = User::factory()->teacher()->create();
-    $logger = Mockery::mock(LogActivity::class);
-    $logger->shouldReceive('handle')->once()->andThrow(new RuntimeException('Activity log unavailable.'));
-    app()->instance(LogActivity::class, $logger);
+    $originalPassword = $teacher->password;
 
-    $status = app(SendUserPasswordResetLink::class)->handle($admin, $teacher);
+    expect(fn () => app(ResetUserPasswordToDefault::class)->handle($staff, $teacher))
+        ->toThrow(AuthorizationException::class);
+    expect($teacher->fresh()->password)->toBe($originalPassword);
+});
 
-    expect($status)->toBe(Password::RESET_LINK_SENT);
-    Notification::assertSentTo($teacher, ResetPassword::class);
+it('shows and updates every active school membership for a teacher', function () {
+    $admin = User::factory()->admin()->create();
+    $schoolA = School::factory()->create(['name' => 'EMEF Escola A']);
+    $schoolB = School::factory()->create(['name' => 'EMEF Escola B']);
+    $schoolC = School::factory()->create(['name' => 'EMEF Escola C']);
+    $teacher = User::factory()->teacher()->create();
+    $teacher->schools()->attach([
+        $schoolA->getKey() => ['is_active' => true],
+        $schoolB->getKey() => ['is_active' => true],
+    ]);
+
+    Livewire::actingAs($admin)
+        ->test(UserManager::class)
+        ->call('editUser', $teacher->getKey())
+        ->assertSet('form.school_ids', fn (array $ids): bool => collect($ids)->sort()->values()->all() === collect([
+            $schoolA->getKey(),
+            $schoolB->getKey(),
+        ])->sort()->values()->all())
+        ->assertSee($schoolA->name)
+        ->assertSee($schoolB->name)
+        ->set('form.school_ids', [$schoolB->getKey(), $schoolC->getKey()])
+        ->call('save')
+        ->assertHasNoErrors();
+
+    $this->assertDatabaseHas('school_user', [
+        'school_id' => $schoolA->getKey(), 'user_id' => $teacher->getKey(), 'is_active' => false,
+    ]);
+    $this->assertDatabaseHas('school_user', [
+        'school_id' => $schoolB->getKey(), 'user_id' => $teacher->getKey(), 'is_active' => true,
+    ]);
+    $this->assertDatabaseHas('school_user', [
+        'school_id' => $schoolC->getKey(), 'user_id' => $teacher->getKey(), 'is_active' => true,
+    ]);
 });
 
 it('allows admins to update global account fields without changing school links', function () {

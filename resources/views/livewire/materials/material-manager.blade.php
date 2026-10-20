@@ -2,6 +2,7 @@
         @php
             $actor = auth()->user();
             $canManageMaterials = $actor?->isAdmin() ?? false;
+            $canCreateMaterials = $actor ? \Illuminate\Support\Facades\Gate::allows('create', \App\Models\Material::class) : false;
             $materialColumns = [
                 ['label' => 'Título', 'class' => 'text-lg'],
                 ['label' => 'Categoria', 'class' => 'text-lg'],
@@ -9,7 +10,7 @@
                 ['label' => 'Status', 'class' => 'text-lg'],
             ];
 
-            if ($canManageMaterials) {
+            if ($actor?->isAdmin() || $actor?->isStaff()) {
                 $materialColumns[] = ['label' => 'Ações', 'align' => 'right', 'class' => 'text-lg'];
             }
         @endphp
@@ -17,22 +18,32 @@
             <div class="mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
                 <div class="min-w-0">
                     <p class="text-sm font-semibold uppercase tracking-[0.14em] text-blue-700">
-                        {{ $canManageMaterials ? 'Acervo global' : 'Biblioteca compartilhada' }}
+                        {{ $canManageMaterials ? 'Acervo global' : 'Gestão de conteúdos' }}
                     </p>
                     <h1 class="mt-1 text-3xl font-bold tracking-tight text-blue-800 sm:text-4xl">
-                        {{ $canManageMaterials ? 'Materiais' : 'Materiais publicados' }}
+                        Materiais
                     </h1>
                     <p class="mt-2 max-w-2xl text-base text-slate-500">
                         {{ $canManageMaterials
                             ? 'Cadastre, publique e mantenha os conteúdos da biblioteca digital.'
-                            : 'Consulte os conteúdos disponíveis para os professores da sua escola.' }}
+                            : 'Consulte a biblioteca e envie novos materiais para revisão e publicação.' }}
                     </p>
                 </div>
-                @can('create', \App\Models\Material::class)
-                    <x-ts-button color="blue" wire:click="openCreate">
-                        <span class="text-white text-base">Novo material</span>
-                    </x-ts-button>
-                @endcan
+                <div class="flex flex-col gap-2 sm:flex-row">
+                    @if ($actor?->isStaff())
+                        <x-ts-button color="slate" href="{{ route('painel.categories') }}"
+                            class="w-full justify-center sm:w-auto">
+                            <x-ts-icon icon="folder-plus" outline class="size-5" />
+                            Nova categoria
+                        </x-ts-button>
+                    @endif
+                    @if ($canCreateMaterials)
+                        <x-ts-button color="blue" wire:click="openCreate" class="w-full justify-center sm:w-auto">
+                            <x-ts-icon icon="plus" outline class="size-5" />
+                            Novo material
+                        </x-ts-button>
+                    @endif
+                </div>
             </div>
 
             @error('publish')
@@ -41,35 +52,44 @@
 
             <div @class([
                 'mb-5 grid grid-cols-1 gap-4',
-                'md:grid-cols-3' => $canManageMaterials,
-                'md:grid-cols-2' => ! $canManageMaterials,
+                'md:grid-cols-3',
             ])>
                 <x-search-field model="search" label="Buscar material" placeholder="Título ou autor" />
-                @if ($canManageMaterials)
-                    <x-ts-select.styled wire:model.live="statusFilter" label="Status" :options="$statusOptions"
-                        select="label:label|value:value" required />
-                @endif
-                <x-ts-select.styled wire:model.live="categoryFilter" label="Categoria" placeholder="Todas as categorias"
-                    :options="$categories
-                        ->map(fn($category) => ['label' => $category->name, 'value' => $category->id])
-                        ->all()" select="label:label|value:value" />
+                <x-form.select id="managed-material-status" label="Status" wire:model.live="statusFilter">
+                    @foreach ($statusOptions as $option)
+                        <option value="{{ $option['value'] }}">{{ $option['label'] }}</option>
+                    @endforeach
+                </x-form.select>
+                <x-form.select id="managed-material-category" label="Categoria" wire:model.live="categoryFilter">
+                    <option value="">Todas as categorias</option>
+                    @foreach ($categories as $category)
+                        <option value="{{ $category->id }}">{{ $category->name }}</option>
+                    @endforeach
+                </x-form.select>
             </div>
 
             <x-data-table :columns="$materialColumns">
                 @forelse ($materials as $material)
                     <tr wire:key="material-{{ $material->id }}">
-                        <td class="px-5 py-4 text-lg font-medium text-gray-900">
-                            <a class="text-blue-700 hover:underline"
-                                href="{{ route('painel.materials.show', $material) }}">{{ $material->title }}</a>
-                        </td>
+                        <td class="px-5 py-4 text-lg font-medium text-black">{{ $material->title }}</td>
                         <td class="px-5 py-4 text-lg text-black">{{ $material->category->name }}</td>
                         <td class="px-5 py-4 text-lg text-black">{{ $material->type }}</td>
                         <td class="px-5 py-4 text-lg text-black">{{ $material->status->label() }}</td>
-                        @if ($canManageMaterials)
+                        @if ($actor?->isAdmin() || $actor?->isStaff())
                             <td class="px-5 py-4 text-right text-lg">
-                            @can('update', $material)
                                 <div class="flex flex-row flex-nowrap items-center justify-end gap-2">
-                                    <x-ts-button color="blue" wire:click="editMaterial({{ $material->id }})"
+                                @if ($actor?->isStaff() && $material->currentVersion)
+                                    @can('download', $material)
+                                        <x-ts-button color="emerald" href="{{ route('downloads.show', $material) }}"
+                                            aria-label="Baixar {{ $material->title }}" title="Baixar material"
+                                            class="!size-12 !p-0 shrink-0 justify-center">
+                                            <x-ts-icon icon="document-arrow-down" outline class="size-7 text-white" />
+                                        </x-ts-button>
+                                    @endcan
+                                @endif
+
+                                @can('update', $material)
+                                    <x-ts-button color="blue" href="{{ route('painel.materials.show', $material) }}"
                                         aria-label="Editar material {{ $material->title }}" title="Editar material"
                                         class="!size-12 !p-0 shrink-0 justify-center">
                                         <x-ts-icon icon="pencil-square" outline class="size-7 text-white" />
@@ -90,8 +110,8 @@
                                         <x-ts-icon icon="archive-box" outline class="size-7 text-white" />
                                     </x-ts-button>
                                 @endif
+                                @endcan
                                 </div>
-                            @endcan
                             </td>
                         @endif
                     </tr>
@@ -104,7 +124,7 @@
 
             <x-pagination :paginator="$materials" class="mt-4" />
 
-            @if ($showForm && auth()->user()->isAdmin())
+            @if ($showForm && $canCreateMaterials)
                 <div
                     class="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-gray-900/50 px-4 py-8 sm:items-center">
                     <section role="dialog" aria-modal="true" aria-labelledby="material-form-title"
@@ -118,21 +138,28 @@
                         </div>
 
                         <form wire:submit="save" class="space-y-4">
-                            <x-ts-input wire:model="form.title" label="Título *" />
+                            <x-ts-input wire:model="form.title" label="Título *" required />
                             <x-ts-input wire:model="form.description" label="Descrição" />
                             <x-ts-select.styled wire:model="form.category_id" label="Categoria *"
                                 placeholder="Selecione uma categoria ativa" :options="$activeCategories
                                     ->map(fn($category) => ['label' => $category->name, 'value' => $category->id])
                                     ->all()"
                                 select="label:label|value:value" required />
-                            <x-ts-input wire:model="form.author" label="Autor *" />
+                            <x-ts-input wire:model="form.author" label="Autor *" required />
 
                             @if ($editingMaterialId === null)
                                 <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                                    <x-ts-select.styled wire:model="form.initialStatus" label="Status inicial *"
-                                        :options="collect($creationStatuses)
-                                            ->map(fn($status) => ['label' => $status->label(), 'value' => $status->value])
-                                            ->all()" select="label:label|value:value" required />
+                                    @if ($actor->isAdmin())
+                                        <x-ts-select.styled wire:model="form.initialStatus" label="Status inicial *"
+                                            :options="collect($creationStatuses)
+                                                ->map(fn($status) => ['label' => $status->label(), 'value' => $status->value])
+                                                ->all()" select="label:label|value:value" required />
+                                    @else
+                                        <div class="rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+                                            <span class="font-semibold">Enviado como rascunho</span>
+                                            <span class="mt-1 block">O material ficará disponível para revisão do administrador.</span>
+                                        </div>
+                                    @endif
                                     <div class="flex items-end">
                                         <div
                                             class="w-full rounded-md border border-blue-100 bg-blue-50 px-4 py-3 text-base text-blue-900">
@@ -180,7 +207,6 @@
                             @endif
 
                             <div class="flex justify-end gap-3 border-t border-gray-100 pt-4">
-                                <x-ts-button color="slate" type="button" wire:click="closeForm" aria-label="Cancelar" title="Cancelar" class="!size-12 !p-0 justify-center"><x-ts-icon icon="x-mark" outline class="size-7" /></x-ts-button>
                                 <x-ts-button color="blue" type="submit" wire:loading.attr="disabled"
                                     wire:target="save">
                                     <span wire:loading.remove wire:target="save">Salvar material</span>

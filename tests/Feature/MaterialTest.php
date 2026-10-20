@@ -35,7 +35,7 @@ it('forbids teachers from opening draft material details', function () {
 
 it('allows staff to create a material owned by the authenticated user', function () {
     Storage::fake('local');
-    $staff = User::factory()->admin()->create();
+    $staff = User::factory()->staffInSchool()->create();
     $category = Category::factory()->create();
     $this->actingAs($staff);
 
@@ -47,8 +47,10 @@ it('allows staff to create a material owned by the authenticated user', function
         ->set('form.type', 'pdf')
         ->set('form.author', 'Equipe Pedagógica')
         ->set('form.file', UploadedFile::fake()->create('material.pdf', 100, 'application/pdf'))
+        ->set('form.initialStatus', MaterialStatus::PUBLISHED->value)
         ->call('save')
-        ->assertHasNoErrors();
+        ->assertHasNoErrors()
+        ->assertSet('statusFilter', MaterialStatus::DRAFT->value);
 
     $this->assertDatabaseHas('materials', [
         'title' => 'Apostila de Ciências',
@@ -145,7 +147,7 @@ it('allows teachers to view and download only published materials', function (Ma
     'archived' => [MaterialStatus::ARCHIVED, false],
 ]);
 
-it('allows only admins to manage materials', function (string $role, bool $canManage) {
+it('allows staff to create drafts while keeping global material management exclusive to admins', function (string $role, bool $canCreate, bool $canManage) {
     $user = match ($role) {
         'admin' => User::factory()->admin()->create(),
         'staff' => User::factory()->staffInSchool()->create(),
@@ -153,12 +155,12 @@ it('allows only admins to manage materials', function (string $role, bool $canMa
     };
     $material = Material::factory()->make();
 
-    expect(Gate::forUser($user)->allows('create', Material::class))->toBe($canManage)
+    expect(Gate::forUser($user)->allows('create', Material::class))->toBe($canCreate)
         ->and(Gate::forUser($user)->allows('update', $material))->toBe($canManage)
         ->and(Gate::forUser($user)->allows('archive', $material))->toBe($canManage)
         ->and(Gate::forUser($user)->allows('publish', $material))->toBe($canManage);
 })->with([
-    'admin' => ['admin', true],
-    'staff' => ['staff', false],
-    'teacher' => ['teacher', false],
+    'admin' => ['admin', true, true],
+    'staff' => ['staff', true, false],
+    'teacher' => ['teacher', false, false],
 ]);

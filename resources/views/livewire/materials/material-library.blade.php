@@ -7,23 +7,19 @@
             <h1 class="mt-3 text-3xl font-bold tracking-tight text-blue-800 sm:text-4xl">Materiais publicados</h1>
         </div>
 
-        <div class="mb-5 grid grid-cols-1 gap-4 md:grid-cols-3 items-end">
+        <div class="mb-5 grid grid-cols-1 items-end gap-4 md:grid-cols-3">
             <x-search-field model="search" label="Buscar material" placeholder="Título, autor ou descrição" />
-            <x-ts-select.styled wire:model.live="categoryFilter" label="Categoria" placeholder="Todas as categorias"
-                :options="$categories
-                    ->map(fn($category) => ['label' => $category->name, 'value' => $category->id])
-                    ->all()" select="label:label|value:value" />
-            <div>
-                <label for="material-sort-order" class="block text-sm font-semibold text-black mb-1">
-                    Ordenar por
-                </label>
-                <select id="material-sort-order" wire:model.live="sortOrder"
-                    class="block w-full rounded-lg border-slate-300 text-base shadow-sm py-2.5 px-3 focus:border-blue-500 focus:ring-blue-500">
+            <x-form.select id="material-category-filter" label="Categoria" wire:model.live="categoryFilter">
+                <option value="">Todas as categorias</option>
+                @foreach ($categories as $category)
+                    <option value="{{ $category->id }}">{{ $category->name }}</option>
+                @endforeach
+            </x-form.select>
+            <x-form.select id="material-sort-order" label="Ordenar por" wire:model.live="sortOrder">
                     @foreach ($sortOptions as $value => $label)
                         <option value="{{ $value }}">{{ $label }}</option>
                     @endforeach
-                </select>
-            </div>
+            </x-form.select>
         </div>
 
         <x-data-table :columns="[

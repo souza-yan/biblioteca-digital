@@ -59,16 +59,14 @@ class MaterialManager extends Component
 
     public function updatedStatusFilter($value): void
     {
-        $this->authorizeManager();
+        $actor = $this->authorizeManager();
 
-        if (! $this->currentUser()->isAdmin()) {
-            $this->statusFilter = MaterialStatus::PUBLISHED->value;
-            $this->resetPage();
+        $allowedStatuses = $actor->isAdmin()
+            ? MaterialStatus::cases()
+            : [MaterialStatus::PUBLISHED, MaterialStatus::DRAFT];
+        $requestedStatus = MaterialStatus::tryFrom((string) $value);
 
-            return;
-        }
-
-        if (MaterialStatus::tryFrom((string) $value) === null) {
+        if ($requestedStatus === null || ! in_array($requestedStatus, $allowedStatuses, true)) {
             $this->statusFilter = MaterialStatus::PUBLISHED->value;
         }
 
@@ -137,6 +135,10 @@ class MaterialManager extends Component
                 );
             }
 
+            if ($material === null && $actor->isStaff()) {
+                $this->form->initialStatus = MaterialStatus::DRAFT->value;
+            }
+
             $attributes = $this->form->validate();
 
             if ($material === null) {
@@ -170,6 +172,10 @@ class MaterialManager extends Component
                     $changeNote,
                     $initialStatus
                 );
+
+                if ($actor->isStaff()) {
+                    $this->statusFilter = MaterialStatus::DRAFT->value;
+                }
 
                 $this->toast()
                     ->success(
@@ -225,6 +231,7 @@ class MaterialManager extends Component
         $this->toast()
             ->success(
                 'Material publicado!',
+                'O material já está disponível na biblioteca.'
             )
             ->send();
 
@@ -254,9 +261,14 @@ class MaterialManager extends Component
     public function render(): View
     {
         $actor = $this->authorizeManager();
-        $status = $actor->isAdmin()
-            ? MaterialStatus::tryFrom($this->statusFilter) ?? MaterialStatus::PUBLISHED
-            : MaterialStatus::PUBLISHED;
+        $allowedStatuses = $actor->isAdmin()
+            ? MaterialStatus::cases()
+            : [MaterialStatus::PUBLISHED, MaterialStatus::DRAFT];
+        $status = MaterialStatus::tryFrom($this->statusFilter);
+
+        if ($status === null || ! in_array($status, $allowedStatuses, true)) {
+            $status = MaterialStatus::PUBLISHED;
+        }
 
         $materials = Material::query()
             ->with(['category', 'currentVersion'])
@@ -269,6 +281,10 @@ class MaterialManager extends Component
             })
             ->where('status', $status->value)
             ->when(
+                $actor->isStaff() && $status === MaterialStatus::DRAFT,
+                fn (Builder $query): Builder => $query->where('created_by', $actor->getKey())
+            )
+            ->when(
                 filled($this->categoryFilter),
                 fn (Builder $query): Builder => $query->where(
                     'category_id',
@@ -276,7 +292,7 @@ class MaterialManager extends Component
                 )
             )
             ->orderBy('title')
-            ->paginate(15);
+            ->paginate($actor->isStaff() ? 10 : 15);
 
         foreach ($materials as $material) {
             Gate::authorize('view', $material);
@@ -295,13 +311,13 @@ class MaterialManager extends Component
                         'label' => $status->label(),
                         'value' => $status->value,
                     ],
-                    $actor->isAdmin() ? MaterialStatus::cases() : [MaterialStatus::PUBLISHED],
+                    $allowedStatuses,
                 ),
             ],
             'creationStatuses' => $actor->isAdmin() ? [
                 MaterialStatus::DRAFT,
                 MaterialStatus::PUBLISHED,
-            ] : [],
+            ] : [MaterialStatus::DRAFT],
         ]);
     }
 
