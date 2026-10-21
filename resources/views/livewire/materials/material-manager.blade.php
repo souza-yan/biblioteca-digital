@@ -6,7 +6,6 @@
             $materialColumns = [
                 ['label' => 'Título', 'class' => 'text-lg'],
                 ['label' => 'Categoria', 'class' => 'text-lg'],
-                ['label' => 'Tipo', 'class' => 'text-lg'],
                 ['label' => 'Status', 'class' => 'text-lg'],
             ];
 
@@ -76,7 +75,6 @@
                     <tr wire:key="material-{{ $material->id }}">
                         <td class="px-5 py-4 text-lg font-medium text-black">{{ $material->title }}</td>
                         <td class="px-5 py-4 text-lg text-black">{{ $material->category->name }}</td>
-                        <td class="px-5 py-4 text-lg text-black">{{ $material->type }}</td>
                         <td class="px-5 py-4 text-lg text-black">{{ $material->status->label() }}</td>
                         @if ($actor?->isAdmin() || $actor?->isStaff())
                             <td class="px-5 py-4 text-right text-lg">
