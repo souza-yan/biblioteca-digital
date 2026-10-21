@@ -57,25 +57,24 @@ class UserManager extends Component
         $this->resetPage();
     }
 
-    public function updatedFormRole(string $role): void
+    public function addSchool(): void
     {
         $actor = $this->authorizeManager();
+        abort_unless($actor->isAdmin() && $this->form->role === Role::TEACHER->value, 403);
 
-        if (! $actor->isAdmin()) {
-            return;
+        if (count($this->form->school_ids) < 2) {
+            $this->form->school_ids = array_pad($this->form->school_ids, 2, null);
         }
+    }
 
-        if ($role === Role::STAFF->value) {
-            $this->form->school_ids = [];
+    public function removeSchool(int $index): void
+    {
+        $actor = $this->authorizeManager();
+        abort_unless($actor->isAdmin() && $this->form->role === Role::TEACHER->value, 403);
 
-            return;
-        }
-
-        $this->form->school_id = null;
-
-        if ($role !== Role::TEACHER->value) {
-            $this->form->school_ids = [];
-        }
+        unset($this->form->school_ids[$index]);
+        $this->form->school_ids = array_values($this->form->school_ids);
+        $this->resetValidation();
     }
 
     public function selectUser(int $userId): void
@@ -101,9 +100,7 @@ class UserManager extends Component
         $actor = $this->authorizeManager();
         Gate::authorize('create', User::class);
         $this->resetForm();
-        if ($actor->isStaff()) {
-            $this->form->role = Role::TEACHER->value;
-        }
+        $this->form->role = Role::TEACHER->value;
         $this->showForm = true;
     }
 
@@ -127,12 +124,9 @@ class UserManager extends Component
         $this->form->password = '';
         $this->form->password_confirmation = '';
         $this->form->role = $user->role->value;
-        $this->form->school_id = $user->isStaff()
-            ? $user->school()?->getKey()
-            : null;
-        $this->form->school_ids = $actor->isAdmin() && $user->isTeacher()
+        $this->form->school_id = null;
+        $this->form->school_ids = $actor->isAdmin()
             ? $user->schools()
-                ->where('schools.is_active', true)
                 ->wherePivot('is_active', true)
                 ->pluck('schools.id')
                 ->all()
@@ -154,6 +148,10 @@ class UserManager extends Component
 
         $this->form->userId = $user?->getKey();
         $attributes = $this->form->validate();
+        $attributes['school_ids'] = array_values(array_filter(
+            $attributes['school_ids'] ?? [],
+            fn (mixed $schoolId): bool => $schoolId !== null && $schoolId !== ''
+        ));
 
         if ($user === null) {
             $createUser->handle($actor, $attributes);
@@ -294,14 +292,8 @@ class UserManager extends Component
             Gate::authorize('manage', $user);
         }
 
-        $roleOptions = collect($actor->assignableRoles())
-            ->map(fn (Role $role): array => [
-                'label' => $role->label(),
-                'value' => $role->value,
-            ])
-            ->all();
         $schoolOptions = $actor->isAdmin()
-            ? School::query()->active()->orderBy('name')->get(['id', 'name'])
+            ? School::query()->orderBy('name')->get(['id', 'name'])
                 ->map(fn (School $school): array => [
                     'label' => $school->name,
                     'value' => $school->getKey(),
@@ -309,25 +301,29 @@ class UserManager extends Component
                 ->all()
             : [];
 
+        $teacherSchoolOptions = [];
+
+        foreach (range(0, max(1, count($this->form->school_ids)) - 1) as $index) {
+            $otherSchoolIds = $this->form->school_ids;
+            unset($otherSchoolIds[$index]);
+
+            $teacherSchoolOptions[$index] = array_values(array_filter(
+                $schoolOptions,
+                fn (array $option): bool => ! in_array($option['value'], $otherSchoolIds)
+            ));
+        }
+
         return view('livewire.users.user-manager', [
             'users' => $users,
             'suggestions' => $suggestions,
             'selectedUser' => $selectedUser,
-            'columns' => $actor->isStaff()
-                ? [
-                    ['label' => 'Nome', 'class' => 'text-lg'],
-                    ['label' => 'E-mail', 'class' => 'text-lg'],
-                    ['label' => 'Ações', 'align' => 'right', 'class' => 'text-lg'],
-                ]
-                : [
-                    ['label' => 'Nome', 'class' => 'text-lg'],
-                    ['label' => 'E-mail', 'class' => 'text-lg'],
-                    ['label' => 'Cargo', 'class' => 'text-lg'],
-                    ['label' => 'Situação', 'class' => 'text-lg'],
-                    ['label' => 'Ações', 'align' => 'right', 'class' => 'text-lg'],
-                ],
-            'roleOptions' => $roleOptions,
+            'columns' => [
+                ['label' => 'Nome', 'class' => 'text-lg'],
+                ['label' => 'E-mail', 'class' => 'text-lg'],
+                ['label' => 'Ações', 'align' => 'right', 'class' => 'text-lg'],
+            ],
             'schoolOptions' => $schoolOptions,
+            'teacherSchoolOptions' => $teacherSchoolOptions,
             'actor' => $actor,
             'editingUser' => $editingUser,
             'passwordResetUser' => $this->passwordResetUserId === null
@@ -357,6 +353,8 @@ class UserManager extends Component
 
     private function scopeToManageableUsers(Builder $query, User $actor): Builder
     {
+        $query->where('role', Role::TEACHER);
+
         if (! $actor->isStaff()) {
             return $query;
         }
@@ -368,11 +366,9 @@ class UserManager extends Component
         return $query
             ->where('role', Role::TEACHER)
             ->whereHas('schools', fn (Builder|BelongsToMany $schools): Builder|BelongsToMany => $schools
-                ->where('schools.id', $school->getKey())
-                ->where('schools.is_active', true))
+                ->where('schools.id', $school->getKey()))
             ->with(['schools' => fn (Builder|BelongsToMany $schools): Builder|BelongsToMany => $schools
-                ->where('schools.id', $school->getKey())
-                ->where('schools.is_active', true)]);
+                ->where('schools.id', $school->getKey())]);
     }
 
     private function resetForm(): void

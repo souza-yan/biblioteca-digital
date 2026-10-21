@@ -53,7 +53,6 @@ class BuildMaterialDownloadRanking
                     if ($school !== null) {
                         $query->whereHas('user.schools', fn (Builder $schools): Builder => $schools
                             ->where('schools.id', $school->getKey())
-                            ->where('schools.is_active', true)
                             ->where('school_user.is_active', true));
                     }
 

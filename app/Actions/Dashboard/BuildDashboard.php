@@ -82,7 +82,6 @@ class BuildDashboard
                     'schools',
                     fn ($schools) => $schools
                         ->where('schools.id', $school->getKey())
-                        ->where('schools.is_active', true)
                         ->where('school_user.is_active', true),
                 ))
                 ->count(),
@@ -96,7 +95,6 @@ class BuildDashboard
                     'user.schools',
                     fn ($schools) => $schools
                         ->where('schools.id', $school->getKey())
-                        ->where('schools.is_active', true)
                         ->where('school_user.is_active', true),
                 ))
                 ->count(),
@@ -106,7 +104,6 @@ class BuildDashboard
                     'user.schools',
                     fn ($schools) => $schools
                         ->where('schools.id', $school->getKey())
-                        ->where('schools.is_active', true)
                         ->where('school_user.is_active', true),
                 ))
                 ->orderByDesc('created_at')

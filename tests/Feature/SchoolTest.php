@@ -6,15 +6,14 @@ use App\Models\School;
 use App\Models\User;
 use Illuminate\Database\QueryException;
 
-it('persists schools with enum casts and the active default', function () {
+it('persists schools with enum casts', function () {
     $school = School::factory()->create([
         'type' => SchoolType::Emef,
         'region' => SchoolRegion::North,
     ]);
 
     expect($school->type)->toBe(SchoolType::Emef)
-        ->and($school->region)->toBe(SchoolRegion::North)
-        ->and($school->is_active)->toBeTrue();
+        ->and($school->region)->toBe(SchoolRegion::North);
 });
 
 it('rejects a duplicate school name', function () {
@@ -24,13 +23,14 @@ it('rejects a duplicate school name', function () {
         ->toThrow(QueryException::class);
 });
 
-it('returns only active schools from the active scope', function () {
+it('returns schools regardless of the legacy status value', function () {
     $activeSchool = School::factory()->create();
-    $inactiveSchool = School::factory()->inactive()->create();
+    $legacySchool = School::factory()->create();
+    $legacySchool->forceFill(['is_active' => false])->save();
 
-    expect(School::query()->active()->get()->modelKeys())
+    expect(School::query()->get()->modelKeys())
         ->toContain($activeSchool->getKey())
-        ->not->toContain($inactiveSchool->getKey());
+        ->toContain($legacySchool->getKey());
 });
 
 it('allows a teacher to belong to two schools', function () {
@@ -110,12 +110,10 @@ it('rejects duplicate school memberships', function () {
         ->toThrow(QueryException::class);
 });
 
-it('keeps school memberships when a school is deactivated', function () {
+it('keeps school memberships for every registered school', function () {
     $teacher = User::factory()->teacher()->create();
     $school = School::factory()->create();
     $teacher->schools()->attach($school->getKey());
-
-    $school->update(['is_active' => false]);
 
     $this->assertDatabaseHas('school_user', [
         'school_id' => $school->getKey(),

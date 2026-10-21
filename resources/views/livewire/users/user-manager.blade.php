@@ -6,17 +6,17 @@
                     <p class="text-sm font-semibold uppercase tracking-[0.14em] text-blue-700">Gestão escolar</p>
                 @endif
                 <h1 class="mt-1 text-3xl font-bold tracking-tight text-blue-800 sm:text-4xl">
-                    {{ $actor->isStaff() ? 'Professores da escola' : 'Gerenciamento de usuários' }}
+                    {{ $actor->isStaff() ? 'Professores da escola' : 'Professores' }}
                 </h1>
                 <p class="mt-2 max-w-2xl text-base text-slate-500">
                     {{ $actor->isStaff()
                         ? 'Gerencie somente o vínculo dos professores com a sua escola. Os dados da conta continuam globais.'
-                        : 'Cadastre usuários e gerencie seus dados, cargos e situação no sistema.' }}
+                        : 'Cadastre professores e gerencie seus dados e vínculos com as escolas.' }}
                 </p>
             </div>
 
             <x-ts-button color="blue" wire:click="openCreate">
-                <span class="text-white text-base">{{ $actor->isStaff() ? 'Novo professor' : 'Novo usuário' }}</span>
+                <span class="text-white text-base">Novo professor</span>
             </x-ts-button>
         </div>
 
@@ -66,18 +66,6 @@
                 <tr wire:key="user-{{ $user->id }}">
                     <td class="whitespace-nowrap px-5 py-4 text-lg font-medium text-black">{{ $user->name }}</td>
                     <td class="whitespace-nowrap px-5 py-4 text-lg text-black">{{ $user->email }}</td>
-                    @if ($actor->isAdmin())
-                        <td class="whitespace-nowrap px-5 py-4 text-lg text-black">{{ $user->role->label() }}</td>
-                        <td class="whitespace-nowrap px-5 py-4 text-lg">
-                            <span @class([
-                                'inline-flex rounded px-2.5 py-1 text-base font-medium',
-                                'bg-emerald-100 text-emerald-800' => $user->is_active,
-                                'bg-gray-100 text-gray-700' => !$user->is_active,
-                            ])>
-                                {{ $user->is_active ? 'Ativo' : 'Inativo' }}
-                            </span>
-                        </td>
-                    @endif
                     <td class="whitespace-nowrap px-5 py-4 text-right text-lg">
                         <div class="flex justify-end gap-2">
                             @if ($actor->isAdmin())
@@ -125,8 +113,8 @@
                         <div>
                             <h2 id="user-form-title" class="text-2xl font-bold text-slate-900">
                                 {{ $editingUserId === null
-                                    ? ($actor->isStaff() ? 'Novo professor' : 'Novo usuário')
-                                    : 'Editar usuário' }}
+                                    ? 'Novo professor'
+                                    : 'Editar professor' }}
                             </h2>
                         </div>
                         <button type="button" wire:click="closeForm" aria-label="Fechar formulário" title="Fechar"
@@ -148,32 +136,28 @@
                             </div>
                         @endif
                         @if ($actor->isAdmin())
-                            <x-ts-select.styled wire:model.live="form.role" label="Cargo *" placeholder="Selecione um cargo"
-                                :options="$roleOptions" select="label:label|value:value" :disabled="$editingUser?->is($actor) ?? false" required />
-                        @endif
-                        @if ($actor->isAdmin() && $form->role === \App\Enums\Role::STAFF->value)
-                            <x-ts-select.styled wire:model="form.school_id" label="Escola *" placeholder="Selecione uma escola"
-                                :options="$schoolOptions" select="label:label|value:value" />
-                        @endif
-                        @if ($actor->isAdmin() && $form->role === \App\Enums\Role::TEACHER->value)
                             <fieldset class="rounded-xl border border-slate-200 p-4">
                                 <legend class="px-1 text-sm font-semibold text-slate-800">Escolas do professor</legend>
-                                <p class="mb-3 text-sm text-slate-500">
-                                    Selecione todas as escolas em que este professor atua.
-                                </p>
-                                <div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
-                                    @forelse ($schoolOptions as $schoolOption)
-                                        <label class="flex cursor-pointer items-start gap-3 rounded-lg border border-slate-200 p-3 transition hover:bg-slate-50">
-                                            <input type="checkbox" wire:model="form.school_ids"
-                                                value="{{ $schoolOption['value'] }}"
-                                                class="mt-0.5 size-5 rounded border-slate-300 text-blue-700 focus:ring-blue-600">
-                                            <span class="min-w-0 break-words text-sm font-medium text-slate-700">
-                                                {{ $schoolOption['label'] }}
-                                            </span>
-                                        </label>
-                                    @empty
-                                        <p class="text-sm text-slate-500 sm:col-span-2">Nenhuma escola ativa disponível.</p>
-                                    @endforelse
+                                <div class="space-y-4">
+                                    @foreach (range(0, max(1, count($form->school_ids)) - 1) as $index)
+                                        <div wire:key="teacher-school-{{ $index }}-{{ md5(json_encode($teacherSchoolOptions[$index])) }}" class="space-y-2">
+                                            <x-ts-select.styled wire:model.live="form.school_ids.{{ $index }}"
+                                                searchable label="{{ $index === 0 ? 'Escola' : 'Outra escola' }}"
+                                                placeholder="Busque e selecione uma escola"
+                                                :options="$teacherSchoolOptions[$index]" select="label:label|value:value" />
+                                            @if ($index > 0)
+                                                <x-ts-button type="button" color="slate" wire:click="removeSchool({{ $index }})">
+                                                    Remover escola
+                                                </x-ts-button>
+                                            @endif
+                                        </div>
+                                    @endforeach
+                                    @if (count($form->school_ids) < 2)
+                                        <x-ts-button type="button" color="blue" wire:click="addSchool"
+                                            wire:loading.attr="disabled" wire:target="addSchool">
+                                            Adicionar outra escola
+                                        </x-ts-button>
+                                    @endif
                                 </div>
                                 @error('form.school_ids')
                                     <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
@@ -182,11 +166,6 @@
                                     <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
                                 @enderror
                             </fieldset>
-                        @endif
-                        @if ($editingUser?->is($actor))
-                            @cannot('changeRole', $editingUser)
-                                <p class="text-base text-gray-600">Você não pode alterar o seu próprio cargo.</p>
-                            @endcannot
                         @endif
                         @error('user')
                             <p class="text-base text-red-600">{{ $message }}</p>
@@ -199,7 +178,7 @@
                                 </x-ts-button>
                             @else
                                 <x-ts-button color="blue" type="submit">
-                                    {{ $actor->isStaff() ? 'Salvar professor' : 'Salvar usuário' }}
+                                    Salvar professor
                                 </x-ts-button>
                             @endif
                         </div>

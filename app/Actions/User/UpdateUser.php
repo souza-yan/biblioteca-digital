@@ -78,7 +78,6 @@ class UpdateUser
                 if ($schoolId !== null) {
                     $school = School::query()
                         ->whereKey($schoolId)
-                        ->where('is_active', true)
                         ->lockForUpdate()
                         ->firstOrFail();
                 } else {
@@ -86,7 +85,7 @@ class UpdateUser
 
                     if ($school === null) {
                         throw ValidationException::withMessages([
-                            'school_id' => 'Selecione uma escola ativa para a equipe de gestão.',
+                            'school_id' => 'Selecione uma escola válida para a equipe de gestão.',
                         ]);
                     }
                 }
@@ -100,14 +99,13 @@ class UpdateUser
             if ($lockedActor->isAdmin() && $finalRole === Role::TEACHER && $schoolIds !== []) {
                 $teacherSchools = School::query()
                     ->whereIn('id', $schoolIds)
-                    ->where('is_active', true)
                     ->orderBy('id')
                     ->lockForUpdate()
                     ->get();
 
                 if ($teacherSchools->count() !== count(array_unique($schoolIds))) {
                     throw ValidationException::withMessages([
-                        'school_ids' => 'Selecione somente escolas ativas e válidas.',
+                        'school_ids' => 'Selecione somente escolas válidas.',
                     ]);
                 }
             }

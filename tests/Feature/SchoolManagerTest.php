@@ -78,6 +78,28 @@ it('creates a staff manager with one active school membership', function () {
         ->and(Hash::check('password', $manager->password))->toBeTrue();
 });
 
+it('creates managers from schools without exposing a school status', function () {
+    $admin = User::factory()->admin()->create();
+    $school = School::factory()->create(['name' => 'EMEF Sem Situação']);
+    $school->forceFill(['is_active' => false])->save();
+
+    Livewire::actingAs($admin)
+        ->test(SchoolManager::class)
+        ->assertSee('Adicionar gestor à escola EMEF Sem Situação')
+        ->assertDontSee('Ativa')
+        ->assertDontSee('Inativa')
+        ->call('openManagerForm', $school->getKey())
+        ->set('managerName', 'Gestora sem situação')
+        ->set('managerEmail', 'gestora.sem.situacao@example.com')
+        ->call('saveManager')
+        ->assertHasNoErrors();
+
+    $this->assertDatabaseHas('users', [
+        'email' => 'gestora.sem.situacao@example.com',
+        'role' => Role::STAFF->value,
+    ]);
+});
+
 it('rejects duplicate school names and manager emails', function () {
     $admin = User::factory()->admin()->create();
     $school = School::factory()->create(['name' => 'EMEF Nome Único']);

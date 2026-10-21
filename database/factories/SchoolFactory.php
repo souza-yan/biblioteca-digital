@@ -25,12 +25,6 @@ class SchoolFactory extends Factory
             'region' => fake()->randomElement(SchoolRegion::cases()),
             'address' => fake()->address(),
             'phone' => fake()->optional()->numerify('(##) ####-####'),
-            'is_active' => true,
         ];
-    }
-
-    public function inactive(): static
-    {
-        return $this->state(fn () => ['is_active' => false]);
     }
 }

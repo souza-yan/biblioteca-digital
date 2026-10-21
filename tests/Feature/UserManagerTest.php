@@ -75,6 +75,26 @@ it('rejects an admin role in the staff user form', function () {
     ]);
 });
 
+it('shows administrators only teachers and rejects management registration from the professor form', function () {
+    $admin = User::factory()->admin()->create();
+    $teacher = User::factory()->teacher()->create(['name' => 'Professora exibida']);
+    $manager = User::factory()->staffInSchool()->create(['name' => 'Gestora não exibida']);
+
+    Livewire::actingAs($admin)
+        ->test(UserManager::class)
+        ->assertSee('Professores')
+        ->assertSee($teacher->name)
+        ->assertDontSee($manager->name)
+        ->call('openCreate')
+        ->set('form.name', 'Gestora inválida')
+        ->set('form.email', 'gestora.invalida@example.com')
+        ->set('form.role', 'staff')
+        ->call('save')
+        ->assertHasErrors('form.role');
+
+    $this->assertDatabaseMissing('users', ['email' => 'gestora.invalida@example.com']);
+});
+
 it('prevents clients from changing the user manager target id to an admin', function (string $property) {
     $staff = User::factory()->staffInSchool()->create();
     $teacher = User::factory()->teacher()->create();
@@ -124,14 +144,14 @@ it('forbids teachers from reaching the user manager route', function () {
         ->assertForbidden();
 });
 
-it('does not allow an administrator to deactivate their own account', function () {
+it('does not allow an administrator account to be managed from the professor screen', function () {
     $admin = User::factory()->admin()->create();
 
     $this->actingAs($admin);
 
-    Livewire::test(UserManager::class)
-        ->call('toggleActive', $admin->getKey())
-        ->assertHasErrors('user');
+    expect(fn () => Livewire::test(UserManager::class)
+        ->call('toggleActive', $admin->getKey()))
+        ->toThrow(ModelNotFoundException::class);
 
     $this->assertDatabaseHas('users', [
         'id' => $admin->getKey(),
@@ -289,8 +309,9 @@ it('shows and updates every active school membership for a teacher', function ()
             $schoolA->getKey(),
             $schoolB->getKey(),
         ])->sort()->values()->all())
-        ->assertSee($schoolA->name)
-        ->assertSee($schoolB->name)
+        ->assertViewHas('schoolOptions', fn (array $options): bool => collect($options)->pluck('label')->all() === [
+            $schoolA->name, $schoolB->name, $schoolC->name,
+        ])
         ->set('form.school_ids', [$schoolB->getKey(), $schoolC->getKey()])
         ->call('save')
         ->assertHasNoErrors();
@@ -341,4 +362,101 @@ it('allows admins to update global account fields without changing school links'
     $this->assertDatabaseHas('school_user', [
         'school_id' => $schoolB->getKey(), 'user_id' => $teacher->getKey(), 'is_active' => true,
     ]);
+});
+
+it('creates a teacher with two schools using the additional selector', function () {
+    $schools = School::factory()->count(2)->create();
+
+    Livewire::actingAs(User::factory()->admin()->create())
+        ->test(UserManager::class)
+        ->call('openCreate')
+        ->set('form.role', 'teacher')
+        ->set('form.name', 'Professor de duas escolas')
+        ->set('form.email', 'duas.escolas@example.com')
+        ->set('form.school_ids.0', $schools[0]->id)
+        ->call('addSchool')
+        ->assertSee('Outra escola')
+        ->assertDontSee('Adicionar outra escola')
+        ->set('form.school_ids.1', $schools[1]->id)
+        ->call('save')
+        ->assertHasNoErrors();
+
+    $teacher = User::where('email', 'duas.escolas@example.com')->firstOrFail();
+    expect($teacher->schools()->pluck('schools.id')->sort()->values()->all())
+        ->toBe($schools->pluck('id')->sort()->values()->all());
+});
+
+it('saves only the selected school when the second selector is empty or removed', function (bool $remove) {
+    $school = School::factory()->create();
+    $component = Livewire::actingAs(User::factory()->admin()->create())
+        ->test(UserManager::class)
+        ->call('openCreate')
+        ->set('form.role', 'teacher')
+        ->set('form.name', 'Professor de uma escola')
+        ->set('form.email', 'uma.escola@example.com')
+        ->set('form.school_ids.0', $school->id)
+        ->call('addSchool');
+
+    if ($remove) {
+        $component->set('form.school_ids.1', School::factory()->create()->id)
+            ->call('removeSchool', 1)
+            ->assertDontSee('Outra escola')
+            ->assertSee('Adicionar outra escola');
+    }
+
+    $component->call('save')->assertHasNoErrors();
+
+    expect(User::where('email', 'uma.escola@example.com')->firstOrFail()->schools()->pluck('schools.id')->all())
+        ->toBe([$school->id]);
+})->with(['empty' => false, 'removed' => true]);
+
+it('rejects duplicate schools in the teacher selectors', function () {
+    $school = School::factory()->create();
+
+    Livewire::actingAs(User::factory()->admin()->create())
+        ->test(UserManager::class)
+        ->call('openCreate')
+        ->set('form.role', 'teacher')
+        ->set('form.name', 'Professor')
+        ->set('form.email', 'duplicada@example.com')
+        ->set('form.school_ids.0', $school->id)
+        ->call('addSchool')
+        ->set('form.school_ids.1', $school->id)
+        ->call('save')
+        ->assertHasErrors(['form.school_ids.0' => 'distinct', 'form.school_ids.1' => 'distinct']);
+
+    $this->assertDatabaseMissing('users', ['email' => 'duplicada@example.com']);
+});
+
+it('prevents staff from managing teacher school selectors', function (string $method, array $arguments) {
+    Livewire::actingAs(User::factory()->staffInSchool()->create())
+        ->test(UserManager::class)
+        ->call('openCreate')
+        ->call($method, ...$arguments)
+        ->assertForbidden();
+})->with([
+    'add' => ['addSchool', []],
+    'remove' => ['removeSchool', [1]],
+]);
+
+it('excludes schools selected in other fields and restores them when changed or removed', function () {
+    $schoolA = School::factory()->create(['name' => 'Escola A']);
+    $schoolB = School::factory()->create(['name' => 'Escola B']);
+    $schoolC = School::factory()->create(['name' => 'Escola C']);
+
+    Livewire::actingAs(User::factory()->admin()->create())
+        ->test(UserManager::class)
+        ->call('openCreate')
+        ->set('form.role', 'teacher')
+        ->set('form.school_ids.0', (string) $schoolA->id)
+        ->call('addSchool')
+        ->assertViewHas('teacherSchoolOptions', fn (array $options): bool => array_column($options[1], 'value') === [$schoolB->id, $schoolC->id])
+        ->set('form.school_ids.1', $schoolB->id)
+        ->assertViewHas('teacherSchoolOptions', fn (array $options): bool => array_column($options[0], 'value') === [$schoolA->id, $schoolC->id])
+        ->set('form.school_ids.0', $schoolC->id)
+        ->assertViewHas('teacherSchoolOptions', fn (array $options): bool => array_column($options[1], 'value') === [$schoolA->id, $schoolB->id])
+        ->set('form.school_ids.0', null)
+        ->assertViewHas('teacherSchoolOptions', fn (array $options): bool => array_column($options[1], 'value') === [$schoolA->id, $schoolB->id, $schoolC->id])
+        ->call('removeSchool', 1)
+        ->assertViewHas('teacherSchoolOptions', fn (array $options): bool => array_column($options[0], 'value') === [$schoolA->id, $schoolB->id, $schoolC->id]);
 });

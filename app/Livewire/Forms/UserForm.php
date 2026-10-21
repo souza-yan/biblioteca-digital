@@ -29,7 +29,7 @@ class UserForm extends Form
 
     public ?int $school_id = null;
 
-    /** @var array<int, int|string> */
+    /** @var array<int, int|string|null> */
     public array $school_ids = [];
 
     /**
@@ -40,13 +40,7 @@ class UserForm extends Form
         $actor = $this->currentUser();
         $staffEditingExistingUser = $actor->isStaff() && $this->userId !== null;
 
-        $schoolRules = $actor->isStaff()
-            ? ['prohibited']
-            : [
-                $this->role === Role::STAFF->value ? 'required' : 'nullable',
-                'integer',
-                Rule::exists((new School)->getTable(), 'id')->where('is_active', true),
-            ];
+        $schoolRules = ['prohibited'];
         $schoolIdsRules = $actor->isStaff() || $this->role !== Role::TEACHER->value
             ? ['prohibited']
             : ['array'];
@@ -66,14 +60,15 @@ class UserForm extends Form
             'password_confirmation' => [$this->userId === null ? 'exclude' : 'nullable'],
             'role' => [
                 $this->userId === null ? 'required' : 'sometimes',
-                Rule::enum(Role::class)->only($actor->assignableRoles()),
+                Rule::enum(Role::class)->only([Role::TEACHER]),
             ],
             'school_id' => $schoolRules,
             'school_ids' => $schoolIdsRules,
             'school_ids.*' => [
+                'nullable',
                 'integer',
                 'distinct',
-                Rule::exists((new School)->getTable(), 'id')->where('is_active', true),
+                Rule::exists((new School)->getTable(), 'id'),
             ],
         ];
     }

@@ -26,7 +26,7 @@
                     'icon' => 'folder',
                 ],
                 [
-                    'label' => 'Usuários',
+                    'label' => 'Professores',
                     'route' => 'painel.users',
                     'active' => request()->routeIs('painel.users'),
                     'icon' => 'users',
@@ -49,7 +49,7 @@
             $navigationItems = [
                 ...$navigationItems,
                 [
-                    'label' => 'Usuários',
+                    'label' => 'Professores',
                     'route' => 'painel.users',
                     'active' => request()->routeIs('painel.users'),
                     'icon' => 'users',

@@ -21,7 +21,7 @@ class EnsureStaffHasActiveSchool
         abort_unless(
             ! $user instanceof User || ! $user->isStaff() || $user->hasExactlyOneActiveSchool(),
             403,
-            'Sua conta de gestão precisa estar vinculada a exatamente uma escola ativa.',
+            'Sua conta de gestão precisa estar vinculada a exatamente uma escola.',
         );
 
         return $next($request);

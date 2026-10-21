@@ -138,7 +138,6 @@ class User extends Authenticatable
         return $this->schools()
             ->whereKey($school->getKey())
             ->wherePivot('is_active', true)
-            ->where('schools.is_active', true)
             ->exists();
     }
 
@@ -146,7 +145,6 @@ class User extends Authenticatable
     {
         return $this->schools()
             ->whereKey($school->getKey())
-            ->where('schools.is_active', true)
             ->exists();
     }
 
@@ -162,14 +160,13 @@ class User extends Authenticatable
     }
 
     /**
-     * Returns the sole active school, or null for zero or multiple active schools.
+     * Returns the sole school with an active membership, or null for zero or multiple memberships.
      * This method never chooses a context from a user's first related school.
      */
     public function school(): ?School
     {
         $activeSchools = $this->schools()
             ->wherePivot('is_active', true)
-            ->where('schools.is_active', true)
             ->limit(2)
             ->get();
 

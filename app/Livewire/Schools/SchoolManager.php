@@ -3,7 +3,6 @@
 namespace App\Livewire\Schools;
 
 use App\Actions\School\CreateSchool;
-use App\Actions\School\ToggleSchoolActive;
 use App\Actions\School\UpdateSchool;
 use App\Actions\User\CreateUser;
 use App\Enums\Role;
@@ -117,25 +116,9 @@ class SchoolManager extends Component
         $this->toast()->success($title, $message)->send();
     }
 
-    public function toggleActive(int $schoolId, ToggleSchoolActive $toggleSchoolActive): void
-    {
-        $actor = $this->currentUser();
-        $school = $this->findAuthorizedSchool($schoolId);
-        $school = $toggleSchoolActive->handle($actor, $school);
-
-        $this->toast()
-            ->success(
-                'Status atualizado!',
-                'A escola foi '.($school->is_active ? 'ativada' : 'desativada').' com sucesso.'
-            )
-            ->send();
-    }
-
     public function openManagerForm(int $schoolId): void
     {
         $school = $this->findAuthorizedSchool($schoolId);
-        abort_unless($school->is_active, 422);
-
         Gate::authorize('create', User::class);
         $this->resetManagerForm();
         $this->managerSchoolId = $school->getKey();
@@ -157,8 +140,6 @@ class SchoolManager extends Component
         $schoolId = $this->managerSchoolId;
         abort_if($schoolId === null, 404);
         $school = $this->findAuthorizedSchool($schoolId);
-        abort_unless($school->is_active, 422);
-
         $attributes = $this->validate([
             'managerName' => ['required', 'string', 'max:255'],
             'managerEmail' => ['required', 'email', 'max:255', Rule::unique('users', 'email')],

@@ -25,16 +25,7 @@
                     class="flex min-w-0 flex-col rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
                     <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                         <div class="min-w-0">
-                            <div class="flex flex-wrap items-center gap-2">
-                                <h2 class="break-words text-xl font-bold text-slate-900">{{ $school->name }}</h2>
-                                <span @class([
-                                    'rounded-full px-2.5 py-1 text-xs font-semibold',
-                                    'bg-emerald-100 text-emerald-800' => $school->is_active,
-                                    'bg-slate-100 text-slate-600' => ! $school->is_active,
-                                ])>
-                                    {{ $school->is_active ? 'Ativa' : 'Inativa' }}
-                                </span>
-                            </div>
+                            <h2 class="break-words text-xl font-bold text-slate-900">{{ $school->name }}</h2>
                             <p class="mt-2 text-sm text-slate-600">
                                 {{ $school->type->label() }} · Região {{ $school->region->label() }}
                             </p>
@@ -50,6 +41,11 @@
                                 class="!size-12 !p-0 justify-center">
                                 <x-ts-icon icon="pencil-square" outline class="size-7 text-white" />
                             </x-ts-button>
+                            <x-ts-button color="slate" wire:click="openManagerForm({{ $school->id }})"
+                                aria-label="Adicionar gestor à escola {{ $school->name }}" title="Adicionar gestor"
+                                class="!size-12 !p-0 justify-center">
+                                <x-ts-icon icon="user-plus" outline class="size-7 text-white" />
+                            </x-ts-button>
                         </div>
                     </div>
 
@@ -58,17 +54,10 @@
                             <div>
                                 <h3 class="font-semibold text-slate-900">Gestão vinculada</h3>
                                 <p class="text-sm text-slate-500">
-                                    {{ $school->users->count() }} {{ $school->users->count() === 1 ? 'gestor ativo' : 'gestores ativos' }}
+                                    {{ $school->users->count() }} {{ $school->users->count() === 1 ? 'gestor vinculado' : 'gestores vinculados' }}
                                 </p>
                             </div>
 
-                            @if ($school->is_active)
-                                <x-ts-button color="slate" wire:click="openManagerForm({{ $school->id }})"
-                                    class="w-full justify-center sm:w-auto">
-                                    <x-ts-icon icon="user-plus" outline class="size-5" />
-                                    Adicionar gestor
-                                </x-ts-button>
-                            @endif
                         </div>
 
                         <div class="mt-4 space-y-2">

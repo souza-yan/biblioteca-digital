@@ -53,9 +53,8 @@ it('allows staff to create a teacher from the user manager', function () {
     ]);
 });
 
-it('allows administrators to create accounts with assignable roles', function () {
+it('rejects management registration from the professor screen', function () {
     $this->actingAs(User::factory()->admin()->create());
-    $school = School::factory()->create();
 
     Livewire::test(UserManager::class)
         ->call('openCreate')
@@ -64,14 +63,10 @@ it('allows administrators to create accounts with assignable roles', function ()
         ->set('form.password', 'password')
         ->set('form.password_confirmation', 'password')
         ->set('form.role', 'staff')
-        ->set('form.school_id', $school->getKey())
         ->call('save')
-        ->assertHasNoErrors();
+        ->assertHasErrors('form.role');
 
-    $this->assertDatabaseHas('users', [
-        'email' => 'nova.gestao@example.com',
-        'role' => 'staff',
-    ]);
+    $this->assertDatabaseMissing('users', ['email' => 'nova.gestao@example.com']);
 });
 
 it('allows only administrators to change another users role', function () {
@@ -87,17 +82,13 @@ it('allows only administrators to change another users role', function () {
         ->and(Gate::forUser($teacher)->allows('changeRole', $anotherAdmin))->toBeFalse();
 });
 
-it('forbids an administrator from changing their own role', function () {
+it('does not expose administrator accounts in the professor screen', function () {
     $admin = User::factory()->admin()->create();
     $this->actingAs($admin);
 
-    $component = Livewire::test(UserManager::class)
-        ->call('editUser', $admin->getKey())
-        ->assertSee('Você não pode alterar o seu próprio cargo.')
-        ->assertSeeHtml('disabled')
-        ->set('form.role', Role::STAFF->value);
-
-    $component->call('save');
+    expect(fn () => Livewire::test(UserManager::class)
+        ->call('editUser', $admin->getKey()))
+        ->toThrow(ModelNotFoundException::class);
 
     $this->assertDatabaseHas('users', [
         'id' => $admin->getKey(),
@@ -105,24 +96,22 @@ it('forbids an administrator from changing their own role', function () {
     ]);
 });
 
-it('allows an administrator to update their own name without changing their role', function () {
+it('does not allow administrator accounts to be edited from the professor screen', function () {
     $admin = User::factory()->admin()->create(['name' => 'Nome antigo']);
     $this->actingAs($admin);
 
-    Livewire::test(UserManager::class)
-        ->call('editUser', $admin->getKey())
-        ->set('form.name', 'Nome atualizado')
-        ->call('save')
-        ->assertHasNoErrors();
+    expect(fn () => Livewire::test(UserManager::class)
+        ->call('editUser', $admin->getKey()))
+        ->toThrow(ModelNotFoundException::class);
 
     $this->assertDatabaseHas('users', [
         'id' => $admin->getKey(),
-        'name' => 'Nome atualizado',
+        'name' => 'Nome antigo',
         'role' => Role::ADMIN->value,
     ]);
 });
 
-it('allows an administrator to change a teacher role to staff', function () {
+it('prevents changing a teacher into management from the professor screen', function () {
     $admin = User::factory()->admin()->create();
     $teacher = User::factory()->teacher()->create();
     $school = School::factory()->create();
@@ -131,13 +120,12 @@ it('allows an administrator to change a teacher role to staff', function () {
     Livewire::test(UserManager::class)
         ->call('editUser', $teacher->getKey())
         ->set('form.role', Role::STAFF->value)
-        ->set('form.school_id', $school->getKey())
         ->call('save')
-        ->assertHasNoErrors();
+        ->assertHasErrors('form.role');
 
     $this->assertDatabaseHas('users', [
         'id' => $teacher->getKey(),
-        'role' => Role::STAFF->value,
+        'role' => Role::TEACHER->value,
     ]);
 });
 
@@ -205,13 +193,13 @@ it('prevents staff from viewing or editing an admin account', function () {
     ]);
 });
 
-it('does not allow an administrator to deactivate their own account', function () {
+it('does not expose administrator accounts to status changes from the professor screen', function () {
     $admin = User::factory()->admin()->create();
     $this->actingAs($admin);
 
-    Livewire::test(UserManager::class)
-        ->call('toggleActive', $admin->getKey())
-        ->assertHasErrors('user');
+    expect(fn () => Livewire::test(UserManager::class)
+        ->call('toggleActive', $admin->getKey()))
+        ->toThrow(ModelNotFoundException::class);
 
     $this->assertDatabaseHas('users', [
         'id' => $admin->getKey(),

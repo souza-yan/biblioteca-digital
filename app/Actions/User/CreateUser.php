@@ -50,25 +50,22 @@ class CreateUser
                 abort_unless($school !== null, 403);
                 $school = School::query()
                     ->whereKey($school->getKey())
-                    ->where('is_active', true)
                     ->lockForUpdate()
                     ->firstOrFail();
             } elseif ($role === Role::STAFF) {
                 if ($schoolId === null) {
                     throw ValidationException::withMessages([
-                        'school_id' => 'Selecione uma escola ativa para a equipe de gestão.',
+                        'school_id' => 'Selecione uma escola válida para a equipe de gestão.',
                     ]);
                 }
 
                 $school = School::query()
                     ->whereKey($schoolId)
-                    ->where('is_active', true)
                     ->lockForUpdate()
                     ->firstOrFail();
             } elseif ($schoolId !== null) {
                 $school = School::query()
                     ->whereKey($schoolId)
-                    ->where('is_active', true)
                     ->lockForUpdate()
                     ->firstOrFail();
             } else {
@@ -80,14 +77,13 @@ class CreateUser
             if ($lockedActor->isAdmin() && $role === Role::TEACHER && $schoolIds !== []) {
                 $teacherSchools = School::query()
                     ->whereIn('id', $schoolIds)
-                    ->where('is_active', true)
                     ->orderBy('id')
                     ->lockForUpdate()
                     ->get();
 
                 if ($teacherSchools->count() !== count(array_unique($schoolIds))) {
                     throw ValidationException::withMessages([
-                        'school_ids' => 'Selecione somente escolas ativas e válidas.',
+                        'school_ids' => 'Selecione somente escolas válidas.',
                     ]);
                 }
             }

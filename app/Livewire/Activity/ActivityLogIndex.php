@@ -266,7 +266,6 @@ class ActivityLogIndex extends Component
             'schools',
             fn (Builder $schools): Builder => $schools
                 ->where('schools.id', $school->getKey())
-                ->where('schools.is_active', true)
                 ->where('school_user.is_active', true),
         ));
     }
@@ -297,7 +296,6 @@ class ActivityLogIndex extends Component
                 'user.schools',
                 fn (Builder $schools): Builder => $schools
                     ->where('schools.id', $school->getKey())
-                    ->where('schools.is_active', true)
                     ->where('school_user.is_active', true),
             ))
             ->when($this->downloadsUserFilter !== '', fn (Builder $query): Builder => $query->where('user_id', $this->downloadsUserFilter))
@@ -323,7 +321,6 @@ class ActivityLogIndex extends Component
                 'user.schools',
                 fn (Builder $schools): Builder => $schools
                     ->where('schools.id', $school->getKey())
-                    ->where('schools.is_active', true)
                     ->where('school_user.is_active', true),
             ))
             ->when($this->changesUserFilter !== '', fn (Builder $query): Builder => $query->where('user_id', $this->changesUserFilter))
@@ -349,7 +346,6 @@ class ActivityLogIndex extends Component
                 'user.schools',
                 fn (Builder $schools): Builder => $schools
                     ->where('schools.id', $school->getKey())
-                    ->where('schools.is_active', true)
                     ->where('school_user.is_active', true),
             ))
             ->when($this->accessesUserFilter !== '', fn (Builder $query): Builder => $query->where('user_id', $this->accessesUserFilter))
