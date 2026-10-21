@@ -1,64 +1,31 @@
 <?php
 
 use App\Enums\Role;
-use App\Models\School;
 use App\Models\User;
-use Database\Seeders\DemoDataSeeder;
-use Illuminate\Support\Facades\DB;
+use Database\Seeders\CaraguatatubaSchoolsSeeder;
 use Illuminate\Support\Facades\Hash;
 
-test('creates repeatable demonstration schools and role consistent memberships', function () {
-    $existingSchool = School::factory()->create(['name' => 'EMEF preexistente']);
-    $existingTeacher = User::factory()->teacher()->create([
-        'email' => 'existing.teacher@example.com',
-    ]);
-    $existingTeacher->schools()->attach($existingSchool->getKey(), ['is_active' => true]);
-
-    $seeder = app(DemoDataSeeder::class);
+test('creates repeatable Caraguatatuba school accounts in the requested order', function () {
+    $seeder = app(CaraguatatubaSchoolsSeeder::class);
 
     $seeder->run();
     $seeder->run();
 
-    $this->assertDatabaseCount('schools', 5);
-    $this->assertDatabaseCount('users', 25);
-    $this->assertDatabaseCount('school_user', 25);
+    $this->assertDatabaseCount('schools', 16);
+    $this->assertDatabaseCount('users', 6);
+    $this->assertDatabaseCount('school_user', 5);
 
     expect(User::query()->where('role', Role::ADMIN)->count())->toBe(1)
-        ->and(User::query()->where('role', Role::STAFF)->count())->toBe(4)
-        ->and(User::query()->where('role', Role::TEACHER)->count())->toBe(20);
+        ->and(User::query()->where('role', Role::STAFF)->count())->toBe(2)
+        ->and(User::query()->where('role', Role::TEACHER)->count())->toBe(3);
 
-    $admin = User::query()->where('email', 'demo.admin@example.com')->firstOrFail();
+    $manager = User::query()->where('email', 'gestao2@example.com')->firstOrFail();
 
-    expect($admin->schools()->wherePivot('is_active', true)->count())->toBe(0)
-        ->and(Hash::check('DemoRobotics2026!', $admin->password))->toBeTrue()
-        ->and(DB::table('users')->where('email', 'like', 'demo.%@example.com')->count())->toBe(24)
-        ->and($existingTeacher->fresh()->belongsToSchool($existingSchool))->toBeTrue();
+    expect($manager->role)->toBe(Role::STAFF)
+        ->and($manager->schools()->wherePivot('is_active', true)->count())->toBe(1)
+        ->and(Hash::check('password', $manager->password))->toBeTrue();
 
-    $demoSchools = School::query()->where('name', 'like', 'EMEF Demonstração%')->orderBy('name')->get();
-
-    expect($demoSchools)->toHaveCount(4);
-
-    foreach ($demoSchools as $school) {
-        expect($school->users()
-            ->where('role', Role::STAFF)
-            ->wherePivot('is_active', true)
-            ->count())->toBe(1);
-
-        expect($school->users()
-            ->where('role', Role::TEACHER)
-            ->wherePivot('is_active', true)
-            ->count())->toBe(5);
-    }
-
-    foreach (User::query()->where('role', Role::STAFF)->get() as $staff) {
-        expect($staff->schools()->wherePivot('is_active', true)->count())->toBe(1)
-            ->and($staff->school())->not->toBeNull();
-    }
-
-    expect(User::query()
-        ->where('email', 'demo.professor.multiescola@example.com')
-        ->firstOrFail()
-        ->schools()
-        ->wherePivot('is_active', true)
-        ->count())->toBe(2);
+    expect(User::query()->where('email', 'professor1@example.com')->firstOrFail()->school()?->name)->toBe('EMEF Centro')
+        ->and(User::query()->where('email', 'professor2@example.com')->firstOrFail()->school()?->name)->toBe('EMEF Indaiá')
+        ->and(User::query()->where('email', 'professor3@example.com')->firstOrFail()->school()?->name)->toBe('EMEF Martim de Sá');
 });
