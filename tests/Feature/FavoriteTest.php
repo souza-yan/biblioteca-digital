@@ -1,5 +1,6 @@
 <?php
 
+use App\Livewire\Materials\FavoriteLibrary;
 use App\Livewire\Materials\MaterialDetail;
 use App\Livewire\Materials\MaterialLibrary;
 use App\Models\Material;
@@ -61,6 +62,23 @@ it('does not duplicate a favorite when a teacher toggles it repeatedly', functio
         ->call('toggleFavorite', $material->getKey());
 
     expect($teacher->favorites()->whereKey($material->getKey())->count())->toBe(0);
+});
+
+it('allows a teacher to remove a material from the favorites list', function () {
+    $teacher = User::factory()->teacher()->create();
+    $material = Material::factory()->published()->create(['title' => 'Favorito para remover']);
+    $teacher->favorites()->attach($material->getKey());
+    $this->actingAs($teacher);
+
+    Livewire::test(FavoriteLibrary::class)
+        ->assertSee('Remover '.$material->title.' dos favoritos')
+        ->call('removeFavorite', $material->getKey())
+        ->assertDontSee($material->title);
+
+    $this->assertDatabaseMissing('favorites', [
+        'user_id' => $teacher->getKey(),
+        'material_id' => $material->getKey(),
+    ]);
 });
 
 it('forbids a teacher from favoriting a draft material', function () {

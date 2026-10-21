@@ -33,6 +33,12 @@
                                 class="!size-12 !p-0 justify-center">
                                 <x-ts-icon icon="eye" outline class="size-7 text-white" />
                             </x-ts-button>
+                            <x-ts-button color="yellow" wire:click="removeFavorite({{ $material->id }})"
+                                wire:loading.attr="disabled" wire:target="removeFavorite({{ $material->id }})"
+                                aria-label="Remover {{ $material->title }} dos favoritos" title="Remover dos favoritos"
+                                class="!size-12 !p-0 justify-center">
+                                <x-ts-icon icon="bookmark" solid class="size-7 text-amber-950" />
+                            </x-ts-button>
                         </div>
                     </td>
                 </tr>
