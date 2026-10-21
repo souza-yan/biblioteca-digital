@@ -1,10 +1,12 @@
 <div>
     <div class="mx-auto w-full max-w-screen-2xl space-y-6 px-4 py-6 sm:px-6 lg:space-y-8 lg:px-8 lg:py-8">
         <div class="mb-8">
-            <a href="{{ route('painel.library.categories') }}" class="inline-flex items-center gap-2 rounded text-sm font-semibold text-blue-800 hover:underline focus-visible:outline-2 focus-visible:outline-blue-600">
-                <span aria-hidden="true">←</span> Materiais por categoria
-            </a>
-            <h1 class="mt-3 text-3xl font-bold tracking-tight text-blue-800 sm:text-4xl">Materiais publicados</h1>
+            <x-breadcrumb :items="[
+                ['label' => 'Início', 'url' => route('dashboard')],
+                ['label' => 'Materiais', 'url' => route('painel.library.categories')],
+                ['label' => 'Materiais publicados'],
+            ]" />
+            <h1 class="mt-1 text-3xl font-bold tracking-tight text-blue-800 sm:text-4xl">Materiais publicados</h1>
         </div>
 
         <div class="mb-5 grid grid-cols-1 items-end gap-4 md:grid-cols-3">
@@ -58,7 +60,10 @@
                                 </x-ts-button>
                             @endif
 
-                            <x-ts-button color="blue" href="{{ route('painel.library.show', $material) }}"
+                            <x-ts-button color="blue" href="{{ route('painel.library.show', [
+                                'material' => $material,
+                                'categoryFilter' => $categoryFilter ?: null,
+                            ]) }}"
                                 aria-label="Ver detalhes de {{ $material->title }}" title="Ver detalhes"
                                 class="!size-12 !p-0 shrink-0 justify-center">
                                 <x-ts-icon icon="eye" outline class="size-7 text-white" />

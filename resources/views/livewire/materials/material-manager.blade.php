@@ -17,6 +17,10 @@
         <div class="mx-auto w-full max-w-screen-2xl space-y-6 px-4 py-6 sm:px-6 lg:space-y-8 lg:px-8 lg:py-8">
             <div class="mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
                 <div class="min-w-0">
+                    <x-breadcrumb :items="[
+                        ['label' => 'Início', 'url' => route('dashboard')],
+                        ['label' => 'Materiais'],
+                    ]" />
                     <p class="text-sm font-semibold uppercase tracking-[0.14em] text-blue-700">
                         {{ $canManageMaterials ? 'Acervo global' : 'Gestão de conteúdos' }}
                     </p>

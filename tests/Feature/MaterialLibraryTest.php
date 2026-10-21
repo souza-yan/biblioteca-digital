@@ -141,6 +141,30 @@ it('opens the selected category from the teacher category library as a filtered 
         ->assertDontSee($other->title);
 });
 
+it('preserves the category filter when opening material details from the library', function () {
+    $teacher = User::factory()->teacher()->create();
+    $category = Category::factory()->create();
+    $material = Material::factory()->published()->for($category)->create();
+    $this->actingAs($teacher);
+
+    $filteredLibraryUrl = route('painel.library', ['categoryFilter' => $category->getKey()]);
+
+    $this->get($filteredLibraryUrl)
+        ->assertOk()
+        ->assertSee(route('painel.library.show', [
+            'material' => $material,
+            'categoryFilter' => $category->getKey(),
+        ]), false);
+
+    $this->get(route('painel.library.show', [
+        'material' => $material,
+        'categoryFilter' => $category->getKey(),
+    ]))
+        ->assertOk()
+        ->assertSee('Categorias')
+        ->assertSee($filteredLibraryUrl, false);
+});
+
 it('shows published material details and an enabled download link to teachers', function () {
     $teacher = User::factory()->teacher()->create();
     $material = Material::factory()->published()->create();

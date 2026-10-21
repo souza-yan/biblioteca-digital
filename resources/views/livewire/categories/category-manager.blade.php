@@ -14,11 +14,11 @@
         <div class="mx-auto w-full max-w-screen-2xl space-y-6 px-4 py-6 sm:px-6 lg:space-y-8 lg:px-8 lg:py-8">
         <div class="mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
             <div>
-                <a href="{{ route('painel.materials') }}"
-                    class="inline-flex items-center gap-2 text-sm font-semibold text-blue-800 hover:underline">
-                    <x-ts-icon icon="arrow-left" outline class="size-5" />
-                    Voltar aos materiais
-                </a>
+                <x-breadcrumb :items="[
+                    ['label' => 'Início', 'url' => route('dashboard')],
+                    ['label' => 'Materiais', 'url' => route('painel.materials')],
+                    ['label' => 'Categorias'],
+                ]" />
                 <h1 class="mt-1 text-3xl font-bold tracking-tight text-blue-800 sm:text-4xl">Categorias</h1>
                 @if ($actor?->isStaff())
                     <p class="mt-2 max-w-2xl text-base text-slate-500">

@@ -2,6 +2,10 @@
     <div class="mx-auto w-full max-w-screen-2xl space-y-6 px-4 py-6 sm:px-6 lg:space-y-8 lg:px-8 lg:py-8">
         <header class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
             <div>
+                <x-breadcrumb :items="[
+                    ['label' => 'Início', 'url' => route('dashboard')],
+                    ['label' => 'Escolas'],
+                ]" />
                 <p class="text-sm font-semibold uppercase tracking-[0.14em] text-blue-700">Administração</p>
                 <h1 class="mt-2 text-3xl font-bold tracking-tight text-blue-800 sm:text-4xl">Escolas</h1>
                 <p class="mt-2 max-w-2xl text-base text-slate-500">
