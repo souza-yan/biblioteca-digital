@@ -56,8 +56,10 @@
                 ],
                 [
                     'label' => 'Materiais',
-                    'route' => 'painel.materials',
-                    'active' => request()->routeIs('painel.materials*') || request()->routeIs('painel.categories'),
+                    'route' => 'painel.library.categories',
+                    'active' => request()->routeIs('painel.library*')
+                        || request()->routeIs('painel.materials*')
+                        || request()->routeIs('painel.categories'),
                     'icon' => 'book',
                 ],
             ];

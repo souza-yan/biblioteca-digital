@@ -31,13 +31,12 @@
                 </div>
                 <div class="flex flex-col gap-2 sm:flex-row">
                     @if ($actor?->isStaff())
-                        <x-ts-button color="slate" href="{{ route('painel.categories') }}"
+                        <x-ts-button color="slate" href="{{ route('painel.library.categories') }}"
                             class="w-full justify-center sm:w-auto">
-                            <x-ts-icon icon="folder-plus" outline class="size-5" />
-                            Nova categoria
+                            <x-ts-icon icon="eye" outline class="size-5" />
+                            Visualizar conteúdos
                         </x-ts-button>
-                    @endif
-                    @if ($canCreateMaterials)
+                    @elseif ($canCreateMaterials)
                         <x-ts-button color="blue" wire:click="openCreate" class="w-full justify-center sm:w-auto">
                             <x-ts-icon icon="plus" outline class="size-5" />
                             Novo material

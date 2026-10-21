@@ -131,10 +131,15 @@ it('shows management links only to admins and staff and library to teachers', fu
     $staff = User::factory()->staffInSchool()->create();
     $this->actingAs($staff)
         ->get('/painel/materiais')
-        ->assertSee('Usuários')
-        ->assertDontSee(route('painel.categories'), false)
+        ->assertSee('Professores')
+        ->assertSee(route('painel.library.categories'), false)
         ->assertSee('Materiais')
-        ->assertDontSee(route('painel.library'), false);
+        ->assertSee('Visualizar conteúdos');
+
+    $this->get(route('painel.library.categories'))
+        ->assertOk()
+        ->assertSee('Materiais')
+        ->assertSee(route('painel.library.categories'), false);
 
     $teacher = User::factory()->teacher()->create();
     $this->actingAs($teacher)
@@ -142,7 +147,7 @@ it('shows management links only to admins and staff and library to teachers', fu
         ->assertSee('Biblioteca')
         ->assertSee(route('painel.library'), false)
         ->assertSee(route('painel.library.categories'), false)
-        ->assertDontSee('Usuários')
+        ->assertDontSee('Professores')
         ->assertDontSee(route('painel.materials'), false)
         ->assertDontSee(route('painel.categories'), false);
 });

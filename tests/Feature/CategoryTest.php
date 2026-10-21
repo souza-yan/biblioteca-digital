@@ -1,12 +1,15 @@
 <?php
 
+use App\Enums\MaterialStatus;
 use App\Livewire\Categories\CategoryLibrary;
 use App\Livewire\Categories\CategoryManager;
 use App\Livewire\Materials\MaterialLibrary;
 use App\Models\Category;
 use App\Models\Material;
 use App\Models\User;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Storage;
 use Livewire\Livewire;
 
 it('shows teachers active categories that have published materials only', function () {
@@ -78,10 +81,64 @@ it('searches the teacher category library by name, slug, or description', functi
         ->assertDontSee($other->name);
 });
 
-it('forbids staff from the teacher category library route', function () {
-    $this->actingAs(User::factory()->staffInSchool()->create())
+it('allows staff to browse categories and access creation actions', function () {
+    $staff = User::factory()->staffInSchool()->create();
+    $category = Category::factory()->create(['name' => 'Categoria da gestão']);
+    Material::factory()->published()->for($category)->create();
+
+    $this->actingAs($staff)
         ->get(route('painel.library.categories'))
-        ->assertForbidden();
+        ->assertOk()
+        ->assertSee($category->name)
+        ->assertSee('Nova categoria')
+        ->assertSee('Novo material')
+        ->assertSee('wire:click="openCategoryForm"', false)
+        ->assertSee('wire:click="openMaterialForm"', false)
+        ->assertDontSee(route('painel.materials', ['create' => 1]), false);
+
+    Livewire::actingAs($staff)
+        ->test(CategoryLibrary::class)
+        ->call('openCategoryForm')
+        ->assertSet('showCategoryForm', true)
+        ->assertSee('Enviada como inativa')
+        ->call('closeCategoryForm')
+        ->call('openMaterialForm')
+        ->assertSet('showMaterialForm', true)
+        ->assertSee('Enviado como rascunho');
+});
+
+it('allows staff to create category and material from the category library modals', function () {
+    Storage::fake('local');
+    $staff = User::factory()->staffInSchool()->create();
+    $activeCategory = Category::factory()->create();
+
+    Livewire::actingAs($staff)
+        ->test(CategoryLibrary::class)
+        ->call('openCategoryForm')
+        ->set('categoryForm.name', 'Tecnologia educacional')
+        ->set('categoryForm.description', 'Recursos para a sala de aula.')
+        ->call('saveCategory')
+        ->assertHasNoErrors()
+        ->assertSet('showCategoryForm', false)
+        ->call('openMaterialForm')
+        ->set('materialForm.title', 'Guia de tecnologia')
+        ->set('materialForm.category_id', (string) $activeCategory->getKey())
+        ->set('materialForm.author', 'Equipe pedagógica')
+        ->set('materialForm.file', UploadedFile::fake()->create('guia.pdf', 100, 'application/pdf'))
+        ->call('saveMaterial')
+        ->assertHasNoErrors()
+        ->assertSet('showMaterialForm', false);
+
+    $this->assertDatabaseHas('categories', [
+        'name' => 'Tecnologia educacional',
+        'slug' => 'tecnologia-educacional',
+        'is_active' => false,
+    ]);
+    $this->assertDatabaseHas('materials', [
+        'title' => 'Guia de tecnologia',
+        'created_by' => $staff->getKey(),
+        'status' => MaterialStatus::DRAFT->value,
+    ]);
 });
 
 it('allows admins to create a category with a generated slug', function () {

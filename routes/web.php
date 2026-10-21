@@ -65,10 +65,13 @@ Route::middleware([
         Route::get('/painel/materiais/{material}', MaterialDetail::class)->name('painel.materials.show');
     });
 
-    Route::middleware('role:teacher')->group(function () {
+    Route::middleware('role:staff,teacher')->group(function () {
         Route::get('/painel/biblioteca/categorias', CategoryLibrary::class)->name('painel.library.categories');
         Route::get('/painel/biblioteca', MaterialLibrary::class)->name('painel.library');
         Route::get('/painel/biblioteca/{material}', MaterialDetail::class)->name('painel.library.show');
+    });
+
+    Route::middleware('role:teacher')->group(function () {
         Route::get('/painel/favoritos', FavoriteLibrary::class)->name('painel.favorites');
     });
 

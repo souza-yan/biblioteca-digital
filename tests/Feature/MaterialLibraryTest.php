@@ -23,16 +23,21 @@ it('allows teachers to browse published materials only', function () {
         ->assertDontSee($archived->title);
 });
 
-it('forbids admins and staff from the teacher library route', function (string $role) {
-    $actor = $role === 'admin'
-        ? User::factory()->admin()->create()
-        : User::factory()->staffInSchool()->create();
-    $this->actingAs($actor);
+it('allows staff to browse published materials and forbids administrators from the library', function () {
+    $published = Material::factory()->published()->create(['title' => 'Conteúdo para a gestão']);
+
+    $this->actingAs(User::factory()->staffInSchool()->create());
+
+    $this->get('/painel/biblioteca')
+        ->assertOk()
+        ->assertSee($published->title);
+    Livewire::test(MaterialLibrary::class)->assertSee($published->title);
+
+    $this->actingAs(User::factory()->admin()->create());
 
     $this->get('/painel/biblioteca')->assertForbidden();
-
     Livewire::test(MaterialLibrary::class)->assertForbidden();
-})->with(['admin' => 'admin', 'staff' => 'staff']);
+});
 
 it('filters the teacher library by search and category', function () {
     $teacher = User::factory()->teacher()->create();

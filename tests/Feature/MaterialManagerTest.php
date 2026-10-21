@@ -1,6 +1,7 @@
 <?php
 
 use App\Enums\MaterialStatus;
+use App\Livewire\Categories\CategoryLibrary;
 use App\Livewire\Materials\MaterialManager;
 use App\Models\Category;
 use App\Models\Material;
@@ -263,11 +264,23 @@ it('shows the material creation flow to staff as a draft submission', function (
 
     Livewire::actingAs($staff)
         ->test(MaterialManager::class)
-        ->assertSee('Novo material')
+        ->assertSee('Visualizar conteúdos')
+        ->assertDontSee('Novo material')
         ->call('openCreate')
         ->assertSet('showForm', true)
         ->assertSee('Enviado como rascunho')
         ->assertSee('O material ficará disponível para revisão do administrador.');
+});
+
+it('opens the staff material form from the category library action', function () {
+    $staff = User::factory()->staffInSchool()->create();
+
+    Livewire::actingAs($staff)
+        ->test(CategoryLibrary::class)
+        ->call('openMaterialForm')
+        ->assertSet('showMaterialForm', true)
+        ->assertSee('Novo material')
+        ->assertSee('Enviado como rascunho');
 });
 
 it('shows staff a download action for published materials with a current version', function () {

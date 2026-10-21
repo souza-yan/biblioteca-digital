@@ -15,7 +15,7 @@ class MaterialPolicy
 
     public function browseLibrary(User $user): bool
     {
-        return $user->is_active && $user->isTeacher();
+        return $user->is_active && ($user->isStaff() || $user->isTeacher());
     }
 
     public function view(User $user, Material $material): bool
