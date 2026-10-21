@@ -100,6 +100,24 @@ it('creates managers from schools without exposing a school status', function ()
     ]);
 });
 
+it('allows administrators to deactivate and reactivate a manager from the school', function () {
+    $admin = User::factory()->admin()->create();
+    $school = School::factory()->create();
+    $manager = User::factory()->staffInSchool($school)->create(['name' => 'Gestora para desativar']);
+
+    Livewire::actingAs($admin)
+        ->test(SchoolManager::class)
+        ->assertSee('Desativar gestor Gestora para desativar')
+        ->call('toggleManagerActive', $school->getKey(), $manager->getKey())
+        ->assertHasNoErrors()
+        ->assertSee('Ativar gestor Gestora para desativar')
+        ->call('toggleManagerActive', $school->getKey(), $manager->getKey())
+        ->assertHasNoErrors()
+        ->assertSee('Desativar gestor Gestora para desativar');
+
+    expect($manager->fresh()->is_active)->toBeTrue();
+});
+
 it('rejects duplicate school names and manager emails', function () {
     $admin = User::factory()->admin()->create();
     $school = School::factory()->create(['name' => 'EMEF Nome Único']);

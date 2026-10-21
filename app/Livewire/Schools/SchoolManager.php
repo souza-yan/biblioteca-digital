@@ -5,6 +5,7 @@ namespace App\Livewire\Schools;
 use App\Actions\School\CreateSchool;
 use App\Actions\School\UpdateSchool;
 use App\Actions\User\CreateUser;
+use App\Actions\User\ToggleUserActive;
 use App\Enums\Role;
 use App\Enums\SchoolRegion;
 use App\Enums\SchoolType;
@@ -157,6 +158,31 @@ class SchoolManager extends Component
 
         $this->toast()
             ->success('Gestor cadastrado!', 'O gestor foi criado e vinculado à escola.')
+            ->send();
+    }
+
+    public function toggleManagerActive(
+        int $schoolId,
+        int $managerId,
+        ToggleUserActive $toggleUserActive,
+    ): void {
+        $actor = $this->currentUser();
+        $school = $this->findAuthorizedSchool($schoolId);
+        $manager = $school->users()
+            ->whereKey($managerId)
+            ->where('role', Role::STAFF)
+            ->wherePivot('is_active', true)
+            ->firstOrFail();
+
+        Gate::authorize('toggleActive', $manager);
+
+        $manager = $toggleUserActive->handle($actor, $manager);
+
+        $this->toast()
+            ->success(
+                'Status atualizado!',
+                'O gestor foi '.($manager->is_active ? 'ativado' : 'desativado').' com sucesso.'
+            )
             ->send();
     }
 

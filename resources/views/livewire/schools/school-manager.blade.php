@@ -70,10 +70,24 @@
                                     <span class="flex size-10 shrink-0 items-center justify-center rounded-full bg-blue-100 font-semibold text-blue-900">
                                         {{ \Illuminate\Support\Str::upper(\Illuminate\Support\Str::substr($manager->name, 0, 1)) }}
                                     </span>
-                                    <span class="min-w-0">
+                                    <span class="min-w-0 flex-1">
                                         <span class="block truncate text-sm font-semibold text-slate-800">{{ $manager->name }}</span>
                                         <span class="block truncate text-xs text-slate-500">{{ $manager->email }}</span>
+                                        <span @class([
+                                            'mt-1 inline-flex rounded-full px-2 py-0.5 text-xs font-semibold',
+                                            'bg-emerald-100 text-emerald-800' => $manager->is_active,
+                                            'bg-slate-200 text-slate-700' => ! $manager->is_active,
+                                        ])>
+                                            {{ $manager->is_active ? 'Ativo' : 'Inativo' }}
+                                        </span>
                                     </span>
+                                    <x-ts-button :color="$manager->is_active ? 'red' : 'emerald'"
+                                        wire:click="toggleManagerActive({{ $school->id }}, {{ $manager->id }})"
+                                        :aria-label="$manager->is_active ? 'Desativar gestor '.$manager->name : 'Ativar gestor '.$manager->name"
+                                        :title="$manager->is_active ? 'Desativar gestor' : 'Ativar gestor'"
+                                        class="!size-12 !p-0 shrink-0 justify-center">
+                                        <x-ts-icon :icon="$manager->is_active ? 'no-symbol' : 'check-circle'" outline class="size-7 text-white" />
+                                    </x-ts-button>
                                 </div>
                             @empty
                                 <p class="rounded-xl border border-dashed border-slate-200 px-4 py-3 text-sm text-slate-500">
