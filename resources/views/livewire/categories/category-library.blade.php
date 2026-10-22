@@ -89,45 +89,27 @@
         </section>
     </div>
 
-    @if ($showCategoryForm)
-        <div class="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-gray-900/50 px-4 py-8 sm:items-center">
-            <section role="dialog" aria-modal="true" aria-labelledby="library-category-form-title"
-                class="w-full max-w-xl rounded-md bg-white p-6 shadow-xl">
-                <div class="mb-6 flex items-center justify-between gap-4">
-                    <h2 id="library-category-form-title" class="text-2xl font-bold text-slate-900">Nova categoria</h2>
-                    <button type="button" wire:click="closeCategoryForm" aria-label="Fechar formulário"
-                        class="rounded p-1 text-xl text-gray-500 hover:bg-gray-100">&times;</button>
-                </div>
+    <x-ts-modal wire="showCategoryForm" title="Nova categoria" size="xl" center>
+        <form id="library-category-form" wire:submit="saveCategory" class="space-y-4">
+            <x-ts-input wire:model="categoryForm.name" label="Nome *" required />
+            <x-ts-input wire:model="categoryForm.description" label="Descrição" />
+            <div class="rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+                <span class="font-semibold">Enviada como inativa</span>
+                <span class="mt-1 block">A categoria ficará aguardando revisão e ativação do administrador.</span>
+            </div>
+        </form>
 
-                <form wire:submit="saveCategory" class="space-y-4">
-                    <x-ts-input wire:model="categoryForm.name" label="Nome *" required />
-                    <x-ts-input wire:model="categoryForm.description" label="Descrição" />
-                    <div class="rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
-                        <span class="font-semibold">Enviada como inativa</span>
-                        <span class="mt-1 block">A categoria ficará aguardando revisão e ativação do administrador.</span>
-                    </div>
-                    <div class="flex justify-end border-t border-gray-100 pt-4">
-                        <x-ts-button color="blue" type="submit" wire:loading.attr="disabled" wire:target="saveCategory">
-                            <span wire:loading.remove wire:target="saveCategory">Salvar categoria</span>
-                            <span wire:loading wire:target="saveCategory">Salvando...</span>
-                        </x-ts-button>
-                    </div>
-                </form>
-            </section>
-        </div>
-    @endif
+        <x-slot:footer>
+            <x-ts-button color="slate" type="button" wire:click="closeCategoryForm">Cancelar</x-ts-button>
+            <x-ts-button color="blue" type="submit" form="library-category-form" wire:loading.attr="disabled" wire:target="saveCategory">
+                <span wire:loading.remove wire:target="saveCategory">Salvar categoria</span>
+                <span wire:loading wire:target="saveCategory">Salvando...</span>
+            </x-ts-button>
+        </x-slot:footer>
+    </x-ts-modal>
 
-    @if ($showMaterialForm)
-        <div class="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-gray-900/50 px-4 py-8 sm:items-center">
-            <section role="dialog" aria-modal="true" aria-labelledby="library-material-form-title"
-                class="w-full max-w-2xl rounded-md bg-white p-6 shadow-xl">
-                <div class="mb-6 flex items-center justify-between gap-4">
-                    <h2 id="library-material-form-title" class="text-2xl font-bold text-slate-900">Novo material</h2>
-                    <button type="button" wire:click="closeMaterialForm" aria-label="Fechar formulário"
-                        class="rounded p-1 text-xl text-gray-500 hover:bg-gray-100">&times;</button>
-                </div>
-
-                <form wire:submit="saveMaterial" class="space-y-4">
+    <x-ts-modal wire="showMaterialForm" title="Novo material" size="2xl" center>
+        <form id="library-material-form" wire:submit="saveMaterial" class="space-y-4">
                     <x-ts-input wire:model="materialForm.title" label="Título *" required />
                     <x-ts-input wire:model="materialForm.description" label="Descrição" />
                     <x-ts-select.styled wire:model="materialForm.category_id" label="Categoria *"
@@ -178,14 +160,14 @@
                         @endif
                     </div>
 
-                    <div class="flex justify-end border-t border-gray-100 pt-4">
-                        <x-ts-button color="blue" type="submit" wire:loading.attr="disabled" wire:target="saveMaterial">
-                            <span wire:loading.remove wire:target="saveMaterial">Salvar material</span>
-                            <span wire:loading wire:target="saveMaterial">Salvando...</span>
-                        </x-ts-button>
-                    </div>
-                </form>
-            </section>
-        </div>
-    @endif
+        </form>
+
+        <x-slot:footer>
+            <x-ts-button color="slate" type="button" wire:click="closeMaterialForm">Cancelar</x-ts-button>
+            <x-ts-button color="blue" type="submit" form="library-material-form" wire:loading.attr="disabled" wire:target="saveMaterial">
+                <span wire:loading.remove wire:target="saveMaterial">Salvar material</span>
+                <span wire:loading wire:target="saveMaterial">Salvando...</span>
+            </x-ts-button>
+        </x-slot:footer>
+    </x-ts-modal>
 </div>

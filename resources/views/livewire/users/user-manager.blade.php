@@ -108,26 +108,8 @@
 
         <x-pagination :paginator="$users" class="mt-4" />
 
-        @if ($showForm)
-            <div
-                class="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-gray-900/50 px-4 py-8 sm:items-center">
-                <section role="dialog" aria-modal="true" aria-labelledby="user-form-title"
-                    class="w-full max-w-xl rounded-md bg-white p-6 shadow-xl">
-                    <div class="mb-6 flex items-start justify-between gap-4">
-                        <div>
-                            <h2 id="user-form-title" class="text-2xl font-bold text-slate-900">
-                                {{ $editingUserId === null
-                                    ? 'Novo professor'
-                                    : 'Editar professor' }}
-                            </h2>
-                        </div>
-                        <button type="button" wire:click="closeForm" aria-label="Fechar formulário" title="Fechar"
-                            class="inline-flex size-12 items-center justify-center rounded p-1 text-gray-500 hover:bg-gray-100 hover:text-gray-800">
-                            <x-ts-icon icon="x-mark" outline class="size-7" />
-                        </button>
-                    </div>
-
-                    <form wire:submit="save" class="space-y-4">
+        <x-ts-modal wire="showForm" :title="$editingUserId === null ? 'Novo professor' : 'Editar professor'" size="xl" center>
+            <form id="user-form" wire:submit="save" class="space-y-4">
                         @if ($actor->isAdmin() || $editingUserId === null)
                             <x-ts-input wire:model="form.name" label="Nome *" autocomplete="name" required />
                             <x-ts-input wire:model="form.email" label="E-mail *" type="email" autocomplete="email" required />
@@ -175,21 +157,19 @@
                             <p class="text-base text-red-600">{{ $message }}</p>
                         @enderror
 
-                        <div class="flex justify-end gap-3 border-t border-gray-100 pt-4">
-                            @if ($actor->isStaff() && $editingUserId !== null)
-                                <x-ts-button color="slate" type="button" wire:click="closeForm">
-                                    Fechar
-                                </x-ts-button>
-                            @else
-                                <x-ts-button color="blue" type="submit">
-                                    Salvar professor
-                                </x-ts-button>
-                            @endif
-                        </div>
-                    </form>
-                </section>
-            </div>
-        @endif
+            </form>
+
+            <x-slot:footer>
+                <x-ts-button color="slate" type="button" wire:click="closeForm">
+                    {{ $actor->isStaff() && $editingUserId !== null ? 'Fechar' : 'Cancelar' }}
+                </x-ts-button>
+                @unless ($actor->isStaff() && $editingUserId !== null)
+                    <x-ts-button color="blue" type="submit" form="user-form" wire:loading.attr="disabled" wire:target="save">
+                        Salvar professor
+                    </x-ts-button>
+                @endunless
+            </x-slot:footer>
+        </x-ts-modal>
     </div>
 
     <x-ts-modal wire="showPasswordResetConfirmation" title="Redefinir senha" size="md" center>

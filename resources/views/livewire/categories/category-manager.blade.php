@@ -70,47 +70,34 @@
 
         <x-pagination :paginator="$categories" class="mt-4" />
 
-        @if ($showForm)
-            <div
-                class="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-gray-900/50 px-4 py-8 sm:items-center">
-                <section role="dialog" aria-modal="true" aria-labelledby="category-form-title"
-                    class="w-full max-w-xl rounded-md bg-white p-6 shadow-xl">
-                    <div class="mb-6 flex items-center justify-between gap-4">
-                        <h2 id="category-form-title" class="text-2xl font-bold text-slate-900">
-                            {{ $editingCategoryId === null ? 'Nova categoria' : 'Editar categoria' }}
-                        </h2>
-                        <button type="button" wire:click="closeForm" aria-label="Fechar formulário" title="Fechar"
-                            class="inline-flex size-12 items-center justify-center rounded text-gray-500 hover:bg-gray-100">
-                            <x-ts-icon icon="x-mark" outline class="size-7" />
-                        </button>
+        <x-ts-modal wire="showForm" :title="$editingCategoryId === null ? 'Nova categoria' : 'Editar categoria'" size="xl" center>
+            <form id="category-form" wire:submit="save" class="space-y-4">
+                <x-ts-input wire:model="form.name" label="Nome *" required />
+                <x-ts-input wire:model="form.description" label="Descrição" />
+                @if ($actor?->isAdmin())
+                    <label class="flex items-center gap-2 text-base text-gray-700">
+                        <input type="checkbox" wire:model="form.is_active"
+                            class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                        Categoria ativa
+                    </label>
+                @else
+                    <div class="rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+                        <span class="font-semibold">Enviada como inativa</span>
+                        <span class="mt-1 block">A categoria ficará aguardando revisão e ativação do administrador.</span>
                     </div>
+                @endif
 
-                    <form wire:submit="save" class="space-y-4">
-                        <x-ts-input wire:model="form.name" label="Nome *" required />
-                        <x-ts-input wire:model="form.description" label="Descrição" />
-                        @if ($actor?->isAdmin())
-                            <label class="flex items-center gap-2 text-base text-gray-700">
-                                <input type="checkbox" wire:model="form.is_active"
-                                    class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
-                                Categoria ativa
-                            </label>
-                        @else
-                            <div class="rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
-                                <span class="font-semibold">Enviada como inativa</span>
-                                <span class="mt-1 block">A categoria ficará aguardando revisão e ativação do administrador.</span>
-                            </div>
-                        @endif
+                @error('form.slug')
+                    <p class="text-base text-red-600">{{ $message }}</p>
+                @enderror
+            </form>
 
-                        @error('form.slug')
-                            <p class="text-base text-red-600">{{ $message }}</p>
-                        @enderror
-
-                        <div class="flex justify-end gap-3 border-t border-gray-100 pt-4">
-                            <x-ts-button color="blue" type="submit">Salvar categoria</x-ts-button>
-                        </div>
-                    </form>
-                </section>
-            </div>
-        @endif
+            <x-slot:footer>
+                <x-ts-button color="slate" type="button" wire:click="closeForm">Cancelar</x-ts-button>
+                <x-ts-button color="blue" type="submit" form="category-form" wire:loading.attr="disabled" wire:target="save">
+                    Salvar categoria
+                </x-ts-button>
+            </x-slot:footer>
+        </x-ts-modal>
         </div>
 </div>
