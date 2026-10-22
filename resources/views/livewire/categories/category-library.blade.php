@@ -89,6 +89,7 @@
         </section>
     </div>
 
+    @if ($isStaff)
     <x-ts-modal wire="showCategoryForm" title="Nova categoria" size="xl" center>
         <form id="library-category-form" wire:submit="saveCategory" class="space-y-4">
             <x-ts-input wire:model="categoryForm.name" label="Nome *" required />
@@ -144,4 +145,5 @@
             </x-ts-button>
         </x-slot:footer>
     </x-ts-modal>
+    @endif
 </div>
