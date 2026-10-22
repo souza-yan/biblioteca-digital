@@ -78,10 +78,9 @@ it('creates a staff manager with one active school membership', function () {
         ->and(Hash::check('password', $manager->password))->toBeTrue();
 });
 
-it('creates managers from schools without exposing a school status', function () {
+it('creates managers directly from schools', function () {
     $admin = User::factory()->admin()->create();
     $school = School::factory()->create(['name' => 'EMEF Sem Situação']);
-    $school->forceFill(['is_active' => false])->save();
 
     Livewire::actingAs($admin)
         ->test(SchoolManager::class)

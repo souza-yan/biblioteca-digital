@@ -23,16 +23,6 @@ it('rejects a duplicate school name', function () {
         ->toThrow(QueryException::class);
 });
 
-it('returns schools regardless of the legacy status value', function () {
-    $activeSchool = School::factory()->create();
-    $legacySchool = School::factory()->create();
-    $legacySchool->forceFill(['is_active' => false])->save();
-
-    expect(School::query()->get()->modelKeys())
-        ->toContain($activeSchool->getKey())
-        ->toContain($legacySchool->getKey());
-});
-
 it('allows a teacher to belong to two schools', function () {
     $teacher = User::factory()->teacher()->create();
     $schools = School::factory()->count(2)->create();
