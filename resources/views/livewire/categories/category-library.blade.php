@@ -132,33 +132,7 @@
 
                     <x-ts-input wire:model="materialForm.change_note" label="Nota da versão (opcional)" />
 
-                    <div>
-                        <label for="library-material-file" class="mb-1 block text-base font-medium text-gray-700">
-                            Arquivo <span aria-hidden="true" class="font-bold text-red-500">*</span>
-                        </label>
-                        <input id="library-material-file" type="file" wire:model="materialForm.file"
-                            accept="{{ implode(',', array_map(fn($mime) => '.'.$mime, config('materials.upload.allowed_mimes'))) }}"
-                            required
-                            class="block w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-base text-gray-700 file:mr-4 file:rounded file:border-0 file:bg-blue-50 file:px-3 file:py-2 file:text-base file:font-semibold file:text-blue-700">
-                        @error('materialForm.file')
-                            <p class="mt-1 text-base text-red-600">{{ $message }}</p>
-                        @enderror
-                        <div wire:loading wire:target="materialForm.file" class="mt-2 text-base font-medium text-blue-700">
-                            Enviando arquivo...
-                        </div>
-                        @if ($materialForm->file instanceof \Livewire\Features\SupportFileUploads\TemporaryUploadedFile)
-                            <dl class="mt-3 grid grid-cols-1 gap-2 rounded-md bg-gray-50 p-3 text-base sm:grid-cols-2">
-                                <div class="min-w-0">
-                                    <dt class="font-medium text-gray-500">Nome</dt>
-                                    <dd class="truncate text-gray-900">{{ $materialForm->file->getClientOriginalName() }}</dd>
-                                </div>
-                                <div>
-                                    <dt class="font-medium text-gray-500">Tamanho</dt>
-                                    <dd class="text-gray-900">{{ number_format($materialForm->file->getSize() / 1024, 1, ',', '.') }} KB</dd>
-                                </div>
-                            </dl>
-                        @endif
-                    </div>
+                    <x-materials.file-upload id="library-material-file" model="materialForm.file" :file="$materialForm->file" />
 
         </form>
 
