@@ -6,9 +6,6 @@
             ['label' => 'Meu histórico'],
         ]" />
         <h1 class="mt-1 text-3xl font-bold tracking-tight text-blue-800 sm:text-4xl">Meu histórico</h1>
-        <p class="mt-2 max-w-2xl text-base text-slate-500">
-            Consulte os materiais que você baixou ou visualizou anteriormente.
-        </p>
     </header>
 
     {{-- Abas preservadas na URL para facilitar o retorno à visão selecionada. --}}

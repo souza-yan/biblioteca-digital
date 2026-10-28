@@ -15,11 +15,8 @@
 
             {{-- Visão Geral --}}
             <header class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-                <div class="min-w-0 space-y-2">
+                <div class="min-w-0">
                     <h1 class="text-3xl font-bold tracking-tight text-blue-800 sm:text-4xl">Visão Geral</h1>
-                    <p class="text-base text-slate-500 sm:text-lg">
-                        Acompanhe os principais indicadores da sua biblioteca digital.
-                    </p>
                 </div>
 
                 <a href="{{ route('painel.library.categories') }}"
@@ -324,14 +321,10 @@
             {{-- ======================================== --}}
 
             <header class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-                <div class="min-w-0 space-y-2">
+                <div class="min-w-0">
                     <h1 class="text-3xl font-bold tracking-tight text-blue-800 sm:text-4xl">
                         Visão Geral
                     </h1>
-
-                    <p class="text-base text-slate-500 sm:text-lg">
-                        Acompanhe os principais indicadores da sua biblioteca digital.
-                    </p>
                 </div>
 
                 <a href="{{ route('painel.materials') }}"

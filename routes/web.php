@@ -44,6 +44,7 @@ Route::middleware([
         ->name('previews.version');
 
     Route::get('/painel/meu-historico', MyHistory::class)
+        ->middleware('role:staff,teacher')
         ->name('painel.history');
 
     Route::get('/painel/usuarios', UserManager::class)

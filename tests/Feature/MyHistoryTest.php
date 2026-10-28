@@ -13,6 +13,18 @@ it('requires authentication to view personal history', function () {
     $this->get(route('painel.history'))->assertRedirect(route('login'));
 });
 
+it('forbids administrators from viewing personal history', function () {
+    $administrator = User::factory()->admin()->create();
+
+    $this->actingAs($administrator)
+        ->get(route('painel.history'))
+        ->assertForbidden();
+
+    Livewire::actingAs($administrator)
+        ->test(MyHistory::class)
+        ->assertForbidden();
+});
+
 it('shows only the authenticated users downloads', function () {
     $teacher = User::factory()->teacher()->create();
     $otherTeacher = User::factory()->teacher()->create();
