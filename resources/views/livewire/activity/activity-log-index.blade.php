@@ -1,5 +1,6 @@
 <div>
     <div class="mx-auto w-full max-w-screen-2xl space-y-6 px-4 py-6 sm:px-6 lg:space-y-8 lg:px-8 lg:py-8">
+        {{-- Cabeçalho da auditoria acessível somente ao administrador. --}}
         <header>
             <x-breadcrumb :items="[
                 ['label' => 'Início', 'url' => route('dashboard')],
@@ -10,6 +11,7 @@
             </h1>
         </header>
 
+        {{-- Abas separam downloads, alterações administrativas e acessos. --}}
         <nav class="flex flex-wrap gap-2 border-b border-blue-200" role="tablist" aria-label="Tipos de atividade">
             @foreach ($tabLabels as $tab => $label)
                 <button type="button" role="tab" wire:key="tab-button-{{ $tab }}"

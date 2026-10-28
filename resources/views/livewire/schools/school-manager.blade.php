@@ -1,5 +1,6 @@
 <div>
     <div class="mx-auto w-full max-w-screen-2xl space-y-6 px-4 py-6 sm:px-6 lg:space-y-8 lg:px-8 lg:py-8">
+        {{-- Cabeçalho da administração das unidades escolares. --}}
         <header class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
             <div>
                 <x-breadcrumb :items="[
@@ -23,6 +24,7 @@
             <x-search-field model="search" label="Buscar escola" placeholder="Nome ou endereço" />
         </div>
 
+        {{-- Cards das escolas com os respectivos gestores e vínculos. --}}
         <div class="grid grid-cols-1 gap-5 xl:grid-cols-2">
             @forelse ($schools as $school)
                 <article wire:key="school-{{ $school->id }}"
@@ -111,6 +113,7 @@
         <x-pagination :paginator="$schools" />
     </div>
 
+    {{-- Formulário dos dados cadastrais da escola. --}}
     <x-ts-modal wire="showSchoolForm" :title="$editingSchoolId === null ? 'Nova escola' : 'Editar escola'" size="2xl" center>
         <form id="school-form" wire:submit="saveSchool" class="space-y-4">
             <x-form.input id="school-name" label="Nome" :required="true" error="form.name"

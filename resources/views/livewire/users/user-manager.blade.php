@@ -1,5 +1,6 @@
 <div>
     <div class="mx-auto w-full max-w-screen-2xl space-y-6 px-4 py-6 sm:px-6 lg:space-y-8 lg:px-8 lg:py-8">
+        {{-- Cabeçalho contextualizado para administrador ou gestão escolar. --}}
         <div class="mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
             <div class="min-w-0">
                 <x-breadcrumb :items="[
@@ -24,6 +25,7 @@
             </x-ts-button>
         </div>
 
+        {{-- Busca com sugestões e seleção explícita de usuário. --}}
         <div class="relative mb-5 max-w-xl">
             <x-ts-input id="user-search" wire:model.live.debounce.300ms="search"
                 label="Buscar por nome ou e-mail" placeholder="Digite um nome ou endereço de e-mail"
@@ -61,6 +63,7 @@
             @endif
         </div>
 
+        {{-- Professores visíveis no escopo do ator e ações autorizadas. --}}
         <x-data-table :columns="$columns">
             <x-data-table.loading :colspan="count($columns)" />
             @forelse ($users as $user)
@@ -111,6 +114,7 @@
 
         <x-pagination :paginator="$users" class="mt-4" />
 
+        {{-- Cadastro global e vínculos com escolas. --}}
         <x-ts-modal wire="showForm" :title="$editingUserId === null ? 'Novo professor' : 'Editar professor'" size="xl" center>
             <form id="user-form" wire:submit="save" class="space-y-4">
                         @if ($actor->isAdmin() || $editingUserId === null)

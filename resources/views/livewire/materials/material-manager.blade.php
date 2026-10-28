@@ -14,6 +14,7 @@
             }
         @endphp
         <div class="mx-auto w-full max-w-screen-2xl space-y-6 px-4 py-6 sm:px-6 lg:space-y-8 lg:px-8 lg:py-8">
+            {{-- Cabeçalho e ações permitidas conforme o perfil autenticado. --}}
             <div class="mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
                 <div class="min-w-0">
                     <x-breadcrumb :items="[
@@ -52,6 +53,7 @@
                 <p class="mb-4 rounded border border-red-200 bg-red-50 p-3 text-base text-red-700">{{ $message }}</p>
             @enderror
 
+            {{-- Filtros reativos da listagem administrativa de materiais. --}}
             <div @class([
                 'mb-5 grid grid-cols-1 gap-4',
                 'md:grid-cols-3',
@@ -70,6 +72,7 @@
                 </x-form.select>
             </div>
 
+            {{-- Acervo gerenciável e ações de ciclo de vida do material. --}}
             <x-data-table :columns="$materialColumns">
                 <x-data-table.loading :colspan="count($materialColumns)" />
                 @forelse ($materials as $material)
@@ -130,6 +133,7 @@
 
             <x-pagination :paginator="$materials" class="mt-4" />
 
+            {{-- Formulário compartilhado para criação e edição dos metadados. --}}
             @if ($showForm && $canCreateMaterials)
                 <x-ts-modal wire="showForm" :title="$editingMaterialId === null ? 'Novo material' : 'Editar material'" size="2xl" center>
                 <form id="managed-material-form" wire:submit="save" class="space-y-4">

@@ -12,6 +12,7 @@
         }
     @endphp
         <div class="mx-auto w-full max-w-screen-2xl space-y-6 px-4 py-6 sm:px-6 lg:space-y-8 lg:px-8 lg:py-8">
+        {{-- Cabeçalho da gestão de taxonomia do acervo. --}}
         <div class="mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
             <div>
                 <x-breadcrumb :items="[
@@ -37,6 +38,7 @@
             <x-search-field model="search" label="Buscar categoria" placeholder="Digite o nome da categoria" />
         </div>
 
+        {{-- Categorias e controles administrativos de ativação. --}}
         <x-data-table :columns="$categoryColumns">
             <x-data-table.loading :colspan="count($categoryColumns)" />
             @forelse ($categories as $category)
@@ -73,6 +75,7 @@
 
         <x-pagination :paginator="$categories" class="mt-4" />
 
+        {{-- Formulário de categoria; gestores enviam novas opções para revisão. --}}
         <x-ts-modal wire="showForm" :title="$editingCategoryId === null ? 'Nova categoria' : 'Editar categoria'" size="xl" center>
             <form id="category-form" wire:submit="save" class="space-y-4">
                 <x-ts-input wire:model="form.name" label="Nome *" required />

@@ -67,17 +67,18 @@ Professores poderão consultar e baixar os materiais sem alterar os arquivos ori
 
 ## 2. Tecnologias Utilizadas
 
-* Laravel
-* Laravel Jetstream
-* Livewire
-* Blade
-* Tailwind CSS
+* PHP 8.4
+* Laravel 13
+* Laravel Jetstream 5
+* Livewire 3
+* Blade e TallStackUI 3
+* Tailwind CSS 4 e Vite 8
 * MySQL
-* Git e GitHub
+* Pest 5
 
 ## 3. Requisitos
 
-* PHP
+* PHP 8.4 ou superior
 * Composer
 * Node.js e NPM
 * MySQL
@@ -86,8 +87,8 @@ Professores poderão consultar e baixar os materiais sem alterar os arquivos ori
 ## 4. Instalação
 
 ```bash
-git clone <https://github.com/souza-yan/biblioteca-digital.git>
-cd <bibioteca-digital>
+git clone https://github.com/souza-yan/biblioteca-digital.git
+cd biblioteca-digital
 
 composer install
 npm install
@@ -95,6 +96,9 @@ npm install
 cp .env.example .env
 
 php artisan key:generate
+php artisan migrate --seed
+php artisan storage:link
+npm run build
 ```
 
 ## 5. Configuração do `.env`
@@ -178,8 +182,9 @@ O banco armazena as informações necessárias para identificar e gerenciar cada
 
 O sistema utiliza diferentes perfis para controlar as funcionalidades disponíveis.
 
-* **Gestão:** responsável pelo gerenciamento dos materiais, usuários e versões.
-* **Professor:** pode consultar e baixar os materiais disponibilizados, sem alterar os arquivos oficiais.
+* **Administrador:** gerencia escolas, usuários, categorias, materiais, versões e auditoria global.
+* **Gestão escolar:** gerencia professores da sua escola e envia categorias e materiais para revisão.
+* **Professor:** consulta, visualiza, baixa e favorita materiais publicados.
 
 ### 10.3 Versionamento
 
@@ -208,3 +213,58 @@ npm run dev
 ```
 
 A aplicação estará disponível no endereço configurado pelo servidor Laravel.
+
+## 12. Funcionalidades
+
+* Biblioteca de materiais publicados com busca full-text e fallback compatível.
+* Filtros por categoria, formato, autor e período, preservados na URL.
+* Sugestões e histórico recente de pesquisas por sessão.
+* Pré-visualização, download, favoritos e histórico pessoal de acessos.
+* Versionamento imutável dos arquivos, com nota de alteração e responsável.
+* Fluxos distintos para administrador, gestão escolar e professor.
+* Escolas e vínculos de gestores e professores.
+* Painéis de indicadores, materiais mais baixados e atividades de auditoria.
+* Navegação responsiva, feedback offline, aviso de sessão expirada e carregamento progressivo.
+
+## 13. Organização do Código
+
+* `app/Actions`: operações de negócio transacionais e reutilizáveis.
+* `app/Livewire`: estado, filtros e coordenação das telas reativas.
+* `app/Livewire/Forms`: validação e estado dos formulários.
+* `app/Policies`: autorização por perfil e por recurso.
+* `app/Models`: relacionamentos, casts e scopes de consulta.
+* `resources/views/components`: componentes do design system e elementos reutilizáveis.
+* `tests/Feature`: cobertura dos fluxos, permissões e isolamento por escola ou usuário.
+
+Materiais visíveis são filtrados na consulta por scopes explícitos e validados pelas Policies. As gravações relevantes utilizam Actions, transações e registros de atividade. Listas estáveis de categorias utilizam cache com invalidação após criação ou alteração.
+
+## 14. Busca e Banco de Dados
+
+Em MySQL ou MariaDB, a busca de materiais utiliza um índice full-text sobre título, autor e descrição. Outros bancos usam uma busca compatível com `LIKE`. Índices compostos atendem os principais filtros de materiais, downloads recentes e histórico de atividades.
+
+Após atualizar o código em um ambiente existente, execute:
+
+```bash
+php artisan migrate
+npm run build
+```
+
+## 15. Testes e Qualidade
+
+Execute somente um arquivo durante o desenvolvimento:
+
+```bash
+php artisan test --compact tests/Feature/MaterialLibraryTest.php
+```
+
+Execute a suíte completa antes de publicar:
+
+```bash
+php artisan test --compact
+```
+
+Após alterar arquivos PHP, aplique o formatador:
+
+```bash
+vendor/bin/pint --dirty --format agent
+```
