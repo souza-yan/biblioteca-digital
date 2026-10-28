@@ -5,7 +5,10 @@
         </div>
 
         {{-- Busca por material ou autor; a categoria é definida pela tela anterior. --}}
-        <div class="grid grid-cols-1 items-end gap-4 md:grid-cols-2">
+        <div @class([
+            'grid grid-cols-1 items-end gap-4 md:grid-cols-2',
+            'xl:grid-cols-3' => $isStaff,
+        ])>
             <x-search-field model="search" label="Buscar material" placeholder="Título ou autor"
                 list="material-search-suggestions" />
             <datalist id="material-search-suggestions">
@@ -19,18 +22,18 @@
                     <option value="{{ $author }}">{{ $author }}</option>
                 @endforeach
             </x-form.select>
+            @if ($isStaff)
+                <x-form.select id="material-category-filter" label="Categoria" wire:model.live="categoryFilter">
+                    <option value="">Todas as categorias</option>
+                    @foreach ($categories as $category)
+                        <option value="{{ $category->id }}">{{ $category->name }}</option>
+                    @endforeach
+                </x-form.select>
+            @endif
         </div>
 
-        @if ($recentSearches !== [] || $hasActiveFilters)
+        @if ($recentSearches !== [])
             <div class="flex flex-wrap items-center gap-2" aria-label="Filtros e pesquisas recentes">
-                @if ($hasActiveFilters)
-                    <button type="button" wire:click="clearFilters"
-                        class="inline-flex h-9 items-center gap-2 rounded-full border border-blue-200 bg-blue-50 px-3 text-sm font-semibold text-blue-800 transition hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-600">
-                        <x-ts-icon icon="x-mark" outline class="size-4" />
-                        Limpar filtros
-                    </button>
-                @endif
-
                 @foreach ($recentSearches as $recentSearch)
                     <button type="button" wire:key="recent-search-{{ md5($recentSearch) }}"
                         wire:click="applyRecentSearch(@js($recentSearch))"

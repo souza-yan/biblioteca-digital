@@ -5,6 +5,7 @@ namespace App\Livewire\Materials;
 use App\Actions\Favorite\ToggleFavorite;
 use App\Enums\MaterialStatus;
 use App\Livewire\Concerns\InteractsWithCurrentUser;
+use App\Models\Category;
 use App\Models\Material;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
@@ -84,17 +85,6 @@ class MaterialLibrary extends Component
         $this->resetPage();
     }
 
-    public function clearFilters(): void
-    {
-        $this->authorizeLibrary();
-        $this->reset([
-            'search',
-            'authorFilter',
-            'titleSortDirection',
-        ]);
-        $this->resetPage();
-    }
-
     public function toggleFavorite(int $materialId, ToggleFavorite $toggleFavorite): void
     {
         $material = Material::query()->findOrFail($materialId);
@@ -150,14 +140,22 @@ class MaterialLibrary extends Component
             ->distinct()
             ->orderBy('author')
             ->pluck('author');
+        $categories = $user->isStaff()
+            ? Category::query()
+                ->where('is_active', true)
+                ->whereHas('materials', fn (Builder $query): Builder => $query->published())
+                ->orderBy('name')
+                ->get()
+            : collect();
 
         return view('livewire.materials.material-library', [
             'materials' => $materials,
             'isTeacher' => $user->isTeacher(),
+            'isStaff' => $user->isStaff(),
             'authors' => $authors,
+            'categories' => $categories,
             'recentSearches' => session()->get('material_library_recent_searches', []),
             'searchSuggestions' => $this->searchSuggestions(),
-            'hasActiveFilters' => $this->hasActiveFilters(),
         ]);
     }
 
@@ -219,13 +217,6 @@ class MaterialLibrary extends Component
             ->all();
 
         session()->put('material_library_recent_searches', $recentSearches);
-    }
-
-    private function hasActiveFilters(): bool
-    {
-        return $this->search !== ''
-            || $this->authorFilter !== ''
-            || $this->titleSortDirection !== 'asc';
     }
 
     private function authorizeLibrary(): void

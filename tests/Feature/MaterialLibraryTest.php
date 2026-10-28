@@ -73,7 +73,7 @@ it('filters published materials by author', function () {
         ->assertDontSee('Material de outra autoria');
 });
 
-it('persists library filters in the query string and can clear them', function () {
+it('persists library filters in the query string', function () {
     $teacher = User::factory()->teacher()->create();
 
     Livewire::withQueryParams([
@@ -85,11 +85,21 @@ it('persists library filters in the query string and can clear them', function (
         ->test(MaterialLibrary::class)
         ->assertSet('search', 'Arduino')
         ->assertSet('authorFilter', 'Equipe de Robótica')
-        ->assertSet('titleSortDirection', 'desc')
-        ->call('clearFilters')
-        ->assertSet('search', '')
-        ->assertSet('authorFilter', '')
-        ->assertSet('titleSortDirection', 'asc');
+        ->assertSet('titleSortDirection', 'desc');
+});
+
+it('shows the category selector only for staff', function () {
+    $category = Category::factory()->create(['name' => 'Robótica educacional']);
+    Material::factory()->published()->for($category)->create();
+
+    Livewire::actingAs(User::factory()->staffInSchool()->create())
+        ->test(MaterialLibrary::class)
+        ->assertSee('Todas as categorias')
+        ->assertSee($category->name);
+
+    Livewire::actingAs(User::factory()->teacher()->create())
+        ->test(MaterialLibrary::class)
+        ->assertDontSee('Todas as categorias');
 });
 
 it('stores and reapplies recent material searches', function () {
