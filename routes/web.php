@@ -5,6 +5,7 @@ use App\Http\Controllers\DownloadController;
 use App\Http\Controllers\MostDownloadedMaterialsController;
 use App\Http\Controllers\PreviewController;
 use App\Livewire\Activity\ActivityLogIndex;
+use App\Livewire\Activity\MyHistory;
 use App\Livewire\Categories\CategoryLibrary;
 use App\Livewire\Categories\CategoryManager;
 use App\Livewire\Materials\FavoriteLibrary;
@@ -41,6 +42,9 @@ Route::middleware([
         ->name('previews.show');
     Route::get('/materiais/{material}/versoes/{version}/preview', [PreviewController::class, 'version'])
         ->name('previews.version');
+
+    Route::get('/painel/meu-historico', MyHistory::class)
+        ->name('painel.history');
 
     Route::get('/painel/usuarios', UserManager::class)
         ->middleware('role:admin,staff')

@@ -10,6 +10,13 @@
             ],
         ];
 
+        $navigationItems[] = [
+            'label' => 'Meu histórico',
+            'route' => 'painel.history',
+            'active' => request()->routeIs('painel.history'),
+            'icon' => 'history',
+        ];
+
         if ($currentUser->isAdmin()) {
             $navigationItems = [
                 ...$navigationItems,
