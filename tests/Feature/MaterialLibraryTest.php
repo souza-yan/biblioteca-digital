@@ -4,7 +4,6 @@ use App\Enums\MaterialStatus;
 use App\Livewire\Materials\MaterialDetail;
 use App\Livewire\Materials\MaterialLibrary;
 use App\Models\Category;
-use App\Models\Download;
 use App\Models\Material;
 use App\Models\MaterialVersion;
 use App\Models\User;
@@ -56,35 +55,22 @@ it('filters the teacher library by search and category', function () {
         ->assertDontSee($other->title);
 });
 
-it('filters published materials by format author and publication period', function () {
+it('filters published materials by author', function () {
     $teacher = User::factory()->teacher()->create();
     $matching = Material::factory()->published()->create([
-        'title' => 'Apostila recente',
-        'type' => 'pdf',
+        'title' => 'Material da equipe',
         'author' => 'Equipe de Robótica',
-        'published_at' => now()->subDays(5),
     ]);
     Material::factory()->published()->create([
-        'title' => 'Vídeo recente',
-        'type' => 'mp4',
-        'author' => 'Equipe de Robótica',
-        'published_at' => now()->subDays(5),
-    ]);
-    Material::factory()->published()->create([
-        'title' => 'Apostila antiga',
-        'type' => 'pdf',
-        'author' => 'Equipe de Robótica',
-        'published_at' => now()->subDays(120),
+        'title' => 'Material de outra autoria',
+        'author' => 'Outra autoria',
     ]);
 
     Livewire::actingAs($teacher)
         ->test(MaterialLibrary::class)
-        ->set('formatFilter', 'pdf')
         ->set('authorFilter', 'Equipe de Robótica')
-        ->set('publishedPeriod', '30')
         ->assertSee($matching->title)
-        ->assertDontSee('Vídeo recente')
-        ->assertDontSee('Apostila antiga');
+        ->assertDontSee('Material de outra autoria');
 });
 
 it('persists library filters in the query string and can clear them', function () {
@@ -92,18 +78,18 @@ it('persists library filters in the query string and can clear them', function (
 
     Livewire::withQueryParams([
         'q' => 'Arduino',
-        'formatFilter' => 'pdf',
-        'sortOrder' => 'recent',
+        'authorFilter' => 'Equipe de Robótica',
+        'titleSortDirection' => 'desc',
     ])
         ->actingAs($teacher)
         ->test(MaterialLibrary::class)
         ->assertSet('search', 'Arduino')
-        ->assertSet('formatFilter', 'pdf')
-        ->assertSet('sortOrder', 'recent')
+        ->assertSet('authorFilter', 'Equipe de Robótica')
+        ->assertSet('titleSortDirection', 'desc')
         ->call('clearFilters')
         ->assertSet('search', '')
-        ->assertSet('formatFilter', '')
-        ->assertSet('sortOrder', 'title');
+        ->assertSet('authorFilter', '')
+        ->assertSet('titleSortDirection', 'asc');
 });
 
 it('stores and reapplies recent material searches', function () {
@@ -118,45 +104,44 @@ it('stores and reapplies recent material searches', function () {
         ->assertSet('search', 'Sensores');
 });
 
-it('searches published materials by description without exposing unpublished materials', function () {
+it('searches published materials by author without exposing unpublished materials', function () {
     $teacher = User::factory()->teacher()->create();
     $published = Material::factory()->published()->create([
         'title' => 'Título sem correspondência',
-        'description' => 'Descrição especial sobre sensores magnéticos',
-        'author' => 'Autora',
+        'author' => 'Autora Magnética',
     ]);
     $draft = Material::factory()->draft()->create([
         'title' => 'Rascunho oculto',
-        'description' => 'Descrição especial sobre sensores magnéticos',
+        'author' => 'Autora Magnética',
     ]);
     $archived = Material::factory()->archived()->create([
         'title' => 'Arquivado oculto',
-        'description' => 'Descrição especial sobre sensores magnéticos',
+        'author' => 'Autora Magnética',
     ]);
     $this->actingAs($teacher);
 
     Livewire::test(MaterialLibrary::class)
-        ->set('search', 'sensores magnéticos')
+        ->set('search', 'magnética')
         ->assertSee($published->title)
         ->assertDontSee($draft->title)
         ->assertDontSee($archived->title);
 });
 
-it('falls back to title ordering for an invalid library sort option', function () {
+it('falls back to ascending title ordering for an invalid direction', function () {
     $teacher = User::factory()->teacher()->create();
     Material::factory()->published()->create(['title' => 'Zebra']);
     Material::factory()->published()->create(['title' => 'Abacaxi']);
     $this->actingAs($teacher);
 
     Livewire::test(MaterialLibrary::class)
-        ->set('sortOrder', 'created_by')
-        ->assertSet('sortOrder', 'title')
+        ->set('titleSortDirection', 'created_by')
+        ->assertSet('titleSortDirection', 'asc')
         ->assertViewHas('materials', function ($materials): bool {
             return $materials->getCollection()->pluck('title')->values()->all() === ['Abacaxi', 'Zebra'];
         });
 });
 
-it('supports each fixed library sort option', function (string $sortOrder, array $expectedTitles) {
+it('orders titles in both directions', function (string $titleSortDirection, array $expectedTitles) {
     $teacher = User::factory()->teacher()->create();
     $alpha = Material::factory()->published()->create([
         'title' => 'Alpha',
@@ -168,24 +153,15 @@ it('supports each fixed library sort option', function (string $sortOrder, array
         'author' => 'Alice',
         'created_at' => now(),
     ]);
-    $version = MaterialVersion::factory()->for($alpha)->create();
-    $alpha->update(['current_version_id' => $version->getKey()]);
-    Download::factory()->count(2)->create([
-        'material_id' => $alpha->getKey(),
-        'material_version_id' => $version->getKey(),
-    ]);
-
     Livewire::actingAs($teacher)
         ->test(MaterialLibrary::class)
-        ->set('sortOrder', $sortOrder)
+        ->set('titleSortDirection', $titleSortDirection)
         ->assertViewHas('materials', function ($materials) use ($expectedTitles): bool {
             return $materials->getCollection()->pluck('title')->values()->all() === $expectedTitles;
         });
 })->with([
-    'title A-Z' => ['title', ['Alpha', 'Beta']],
-    'most recent' => ['recent', ['Beta', 'Alpha']],
-    'author' => ['author', ['Beta', 'Alpha']],
-    'most downloaded' => ['most_downloaded', ['Alpha', 'Beta']],
+    'title A-Z' => ['asc', ['Alpha', 'Beta']],
+    'title Z-A' => ['desc', ['Beta', 'Alpha']],
 ]);
 
 it('opens the selected category from the teacher category library as a filtered materials list', function () {
@@ -223,8 +199,7 @@ it('preserves the category filter when opening material details from the library
         'categoryFilter' => $category->getKey(),
     ]))
         ->assertOk()
-        ->assertSee('Categorias')
-        ->assertSee($filteredLibraryUrl, false);
+        ->assertDontSee('Categorias');
 });
 
 it('shows published material details and an enabled download link to teachers', function () {

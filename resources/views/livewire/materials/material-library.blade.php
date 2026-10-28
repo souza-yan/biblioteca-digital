@@ -1,50 +1,23 @@
 <div>
     <div class="mx-auto w-full max-w-screen-2xl space-y-6 px-4 py-6 sm:px-6 lg:space-y-8 lg:px-8 lg:py-8">
         <div class="mb-8">
-            <x-breadcrumb :items="[
-                ['label' => 'Início', 'url' => route('dashboard')],
-                ['label' => 'Materiais', 'url' => route('painel.library.categories')],
-                ['label' => 'Materiais publicados'],
-            ]" />
-            <h1 class="mt-1 text-3xl font-bold tracking-tight text-blue-800 sm:text-4xl">Materiais publicados</h1>
+            <h1 class="text-3xl font-bold tracking-tight text-blue-800 sm:text-4xl">Materiais publicados</h1>
         </div>
 
-        {{-- Busca facetada: todos os valores ficam na URL para permitir compartilhar a consulta. --}}
-        <div class="grid grid-cols-1 items-end gap-4 md:grid-cols-2 xl:grid-cols-3">
-            <x-search-field model="search" label="Buscar material" placeholder="Título, autor ou descrição"
+        {{-- Busca por material ou autor; a categoria é definida pela tela anterior. --}}
+        <div class="grid grid-cols-1 items-end gap-4 md:grid-cols-2">
+            <x-search-field model="search" label="Buscar material" placeholder="Título ou autor"
                 list="material-search-suggestions" />
             <datalist id="material-search-suggestions">
                 @foreach ($searchSuggestions as $suggestion)
                     <option value="{{ $suggestion }}"></option>
                 @endforeach
             </datalist>
-            <x-form.select id="material-category-filter" label="Categoria" wire:model.live="categoryFilter">
-                <option value="">Todas as categorias</option>
-                @foreach ($categories as $category)
-                    <option value="{{ $category->id }}">{{ $category->name }}</option>
-                @endforeach
-            </x-form.select>
-            <x-form.select id="material-format-filter" label="Formato" wire:model.live="formatFilter">
-                <option value="">Todos os formatos</option>
-                @foreach ($formats as $format)
-                    <option value="{{ $format }}">{{ Str::upper($format) }}</option>
-                @endforeach
-            </x-form.select>
             <x-form.select id="material-author-filter" label="Autor" wire:model.live="authorFilter">
                 <option value="">Todos os autores</option>
                 @foreach ($authors as $author)
                     <option value="{{ $author }}">{{ $author }}</option>
                 @endforeach
-            </x-form.select>
-            <x-form.select id="material-period-filter" label="Publicação" wire:model.live="publishedPeriod">
-                @foreach ($periodOptions as $value => $label)
-                    <option value="{{ $value }}">{{ $label }}</option>
-                @endforeach
-            </x-form.select>
-            <x-form.select id="material-sort-order" label="Ordenar por" wire:model.live="sortOrder">
-                    @foreach ($sortOptions as $value => $label)
-                        <option value="{{ $value }}">{{ $label }}</option>
-                    @endforeach
             </x-form.select>
         </div>
 
@@ -71,7 +44,7 @@
 
         {{-- Resultados e ações disponíveis para cada material publicado. --}}
         <x-data-table :columns="[
-            ['label' => 'Título'],
+            ['label' => 'Título', 'sortAction' => 'toggleTitleSort', 'sortDirection' => $titleSortDirection],
             ['label' => 'Categoria'],
             ['label' => 'Autor'],
             ['label' => 'Ação', 'align' => 'right'],

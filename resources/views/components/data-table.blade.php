@@ -19,7 +19,16 @@
                         'text-white' => $headerStyle === 'blue',
                         'text-slate-600' => $headerStyle === 'gray',
                     ])>
-                        {{ $column['label'] }}
+                        @if (isset($column['sortAction']))
+                            <button type="button" wire:click="{{ $column['sortAction'] }}"
+                                class="inline-flex items-center gap-1 rounded text-inherit focus:outline-none focus:ring-2 focus:ring-current focus:ring-offset-2"
+                                aria-label="Ordenar por {{ $column['label'] }} {{ ($column['sortDirection'] ?? 'asc') === 'asc' ? 'de Z para A' : 'de A para Z' }}">
+                                <span>{{ $column['label'] }}</span>
+                                <span aria-hidden="true">{{ ($column['sortDirection'] ?? 'asc') === 'asc' ? '↑' : '↓' }}</span>
+                            </button>
+                        @else
+                            {{ $column['label'] }}
+                        @endif
                     </th>
                 @endforeach
             </tr>
