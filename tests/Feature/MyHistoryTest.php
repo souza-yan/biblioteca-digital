@@ -25,6 +25,18 @@ it('forbids administrators from viewing personal history', function () {
         ->assertForbidden();
 });
 
+it('forbids staff from viewing personal history', function () {
+    $staff = User::factory()->staffInSchool()->create();
+
+    $this->actingAs($staff)
+        ->get(route('painel.history'))
+        ->assertForbidden();
+
+    Livewire::actingAs($staff)
+        ->test(MyHistory::class)
+        ->assertForbidden();
+});
+
 it('shows only the authenticated users downloads', function () {
     $teacher = User::factory()->teacher()->create();
     $otherTeacher = User::factory()->teacher()->create();

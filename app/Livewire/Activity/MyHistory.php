@@ -27,7 +27,7 @@ class MyHistory extends Component
     public function mount(): void
     {
         $user = $this->currentUser();
-        abort_unless($user->isStaff() || $user->isTeacher(), 403);
+        abort_unless($user->isTeacher(), 403);
 
         $this->normalizeActiveTab();
     }
