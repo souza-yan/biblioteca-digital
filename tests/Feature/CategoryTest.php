@@ -8,7 +8,9 @@ use App\Livewire\Materials\MaterialLibrary;
 use App\Models\Category;
 use App\Models\Material;
 use App\Models\User;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Livewire;
@@ -223,6 +225,20 @@ it('invalidates cached category options after a category changes', function () {
 
     expect($categoryOptions->all()->firstWhere('id', $category->getKey())?->name)
         ->toBe('Nome atualizado');
+});
+
+it('rebuilds category options when the cached payload is incompatible', function () {
+    $category = Category::factory()->create(['name' => 'Categoria recuperada']);
+    Cache::forever('category-options.v2.all', new stdClass);
+
+    $categories = app(ListCategoryOptions::class)->all();
+
+    expect($categories)
+        ->toBeInstanceOf(Collection::class)
+        ->and($categories->firstWhere('id', $category->getKey())?->name)
+        ->toBe('Categoria recuperada')
+        ->and(Cache::get('category-options.v2.all'))
+        ->toBeArray();
 });
 
 it('allows staff to submit categories while keeping updates and activation exclusive to admins', function (string $role, bool $canCreate, bool $canManage) {
