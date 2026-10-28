@@ -25,41 +25,52 @@
             </x-ts-button>
         </div>
 
-        {{-- Busca com sugestões e seleção explícita de usuário. --}}
-        <div class="relative mb-5 max-w-xl">
-            <x-ts-input id="user-search" wire:model.live.debounce.300ms="search"
-                label="Buscar por nome ou e-mail" placeholder="Digite um nome ou endereço de e-mail"
-                autocomplete="off" aria-controls="user-search-suggestions" />
+        {{-- Busca com sugestões, seleção explícita e filtro administrativo por escola. --}}
+        <div @class([
+            'mb-5 grid gap-4',
+            'max-w-xl' => ! $actor->isAdmin(),
+            'max-w-4xl md:grid-cols-2' => $actor->isAdmin(),
+        ])>
+            <div class="relative">
+                <x-ts-input id="user-search" wire:model.live.debounce.300ms="search"
+                    label="Buscar por nome ou e-mail" placeholder="Digite um nome ou endereço de e-mail"
+                    autocomplete="off" aria-controls="user-search-suggestions" />
 
-            <div wire:loading wire:target="search" role="status" class="mt-1 text-sm text-gray-600">
-                Buscando usuários...
+                <div wire:loading wire:target="search" role="status" class="mt-1 text-sm text-gray-600">
+                    Buscando usuários...
+                </div>
+
+                @if ($selectedUserId !== null)
+                    <div class="mt-2 flex items-center justify-between gap-3 rounded-md border border-blue-200 bg-blue-50 px-3 py-2 text-sm text-blue-900" role="status">
+                        <span>Selecionado: {{ $selectedUser?->name ?? 'usuário indisponível' }}</span>
+                        <button type="button" wire:click="clearSelectedUser" aria-label="Limpar usuário selecionado"
+                            title="Limpar seleção" class="inline-flex size-9 items-center justify-center rounded hover:bg-blue-100">
+                            <x-ts-icon icon="x-mark" outline class="size-5" />
+                        </button>
+                    </div>
+                @elseif (filled($search))
+                    <ul id="user-search-suggestions" role="listbox"
+                        class="absolute z-20 mt-1 max-h-60 w-full overflow-auto rounded-md border border-gray-200 bg-white py-1 shadow-lg">
+                        @forelse ($suggestions as $suggestion)
+                            <li wire:key="user-suggestion-{{ $suggestion->id }}" role="presentation">
+                                <button type="button" role="option" aria-selected="false"
+                                    aria-label="Selecionar {{ $suggestion->name }} ({{ $suggestion->email }})"
+                                    wire:click="selectUser({{ $suggestion->id }})"
+                                    class="flex w-full flex-col px-3 py-2 text-left hover:bg-blue-50 focus:bg-blue-50 focus:outline-none">
+                                    <span class="font-medium text-gray-900">{{ $suggestion->name }}</span>
+                                    <span class="text-sm text-gray-600">{{ $suggestion->email }}</span>
+                                </button>
+                            </li>
+                        @empty
+                            <li class="px-3 py-2 text-sm text-gray-600" role="status">Nenhum usuário encontrado.</li>
+                        @endforelse
+                    </ul>
+                @endif
             </div>
 
-            @if ($selectedUserId !== null)
-                <div class="mt-2 flex items-center justify-between gap-3 rounded-md border border-blue-200 bg-blue-50 px-3 py-2 text-sm text-blue-900" role="status">
-                    <span>Selecionado: {{ $selectedUser?->name ?? 'usuário indisponível' }}</span>
-                    <button type="button" wire:click="clearSelectedUser" aria-label="Limpar usuário selecionado"
-                        title="Limpar seleção" class="inline-flex size-9 items-center justify-center rounded hover:bg-blue-100">
-                        <x-ts-icon icon="x-mark" outline class="size-5" />
-                    </button>
-                </div>
-            @elseif (filled($search))
-                <ul id="user-search-suggestions" role="listbox"
-                    class="absolute z-20 mt-1 max-h-60 w-full overflow-auto rounded-md border border-gray-200 bg-white py-1 shadow-lg">
-                    @forelse ($suggestions as $suggestion)
-                        <li wire:key="user-suggestion-{{ $suggestion->id }}" role="presentation">
-                            <button type="button" role="option" aria-selected="false"
-                                aria-label="Selecionar {{ $suggestion->name }} ({{ $suggestion->email }})"
-                                wire:click="selectUser({{ $suggestion->id }})"
-                                class="flex w-full flex-col px-3 py-2 text-left hover:bg-blue-50 focus:bg-blue-50 focus:outline-none">
-                                <span class="font-medium text-gray-900">{{ $suggestion->name }}</span>
-                                <span class="text-sm text-gray-600">{{ $suggestion->email }}</span>
-                            </button>
-                        </li>
-                    @empty
-                        <li class="px-3 py-2 text-sm text-gray-600" role="status">Nenhum usuário encontrado.</li>
-                    @endforelse
-                </ul>
+            @if ($actor->isAdmin())
+                <x-ts-select.styled wire:model.live="schoolFilter" searchable clearable label="Filtrar por escola"
+                    placeholder="Todas as escolas" :options="$schoolOptions" select="label:label|value:value" />
             @endif
         </div>
 
@@ -74,6 +85,9 @@
                 <tr wire:key="user-{{ $user->id }}">
                     <td class="whitespace-nowrap px-5 py-4 text-lg font-medium text-black">{{ $user->name }}</td>
                     <td class="whitespace-nowrap px-5 py-4 text-lg text-black">{{ $user->email }}</td>
+                    @if ($actor->isAdmin())
+                        <td class="px-5 py-4 text-lg text-black">{{ $user->schools->pluck('name')->join(' / ') ?: 'Sem escola vinculada' }}</td>
+                    @endif
                     <td class="whitespace-nowrap px-5 py-4 text-right text-lg">
                         <div class="flex justify-end gap-2">
                             @if ($actor->isAdmin())

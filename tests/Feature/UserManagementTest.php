@@ -53,6 +53,29 @@ it('allows staff to create a teacher from the user manager', function () {
     ]);
 });
 
+it('shows active teacher schools and filters professors by school for administrators', function () {
+    $administrator = User::factory()->admin()->create();
+    $firstSchool = School::factory()->create(['name' => 'Escola Alfa']);
+    $secondSchool = School::factory()->create(['name' => 'Escola Beta']);
+    $teacherInBothSchools = User::factory()->teacher()->create(['name' => 'Professora das duas escolas']);
+    $teacherInSecondSchool = User::factory()->teacher()->create(['name' => 'Professor da segunda escola']);
+    $teacherWithInactiveMembership = User::factory()->teacher()->create(['name' => 'Professor inativo']);
+    $teacherInBothSchools->schools()->attach([
+        $firstSchool->getKey() => ['is_active' => true],
+        $secondSchool->getKey() => ['is_active' => true],
+    ]);
+    $teacherInSecondSchool->schools()->attach($secondSchool->getKey(), ['is_active' => true]);
+    $teacherWithInactiveMembership->schools()->attach($firstSchool->getKey(), ['is_active' => false]);
+
+    Livewire::actingAs($administrator)
+        ->test(UserManager::class)
+        ->assertSee('Escola Alfa / Escola Beta')
+        ->set('schoolFilter', (string) $firstSchool->getKey())
+        ->assertSee($teacherInBothSchools->name)
+        ->assertDontSee($teacherInSecondSchool->name)
+        ->assertDontSee($teacherWithInactiveMembership->name);
+});
+
 it('rejects management registration from the professor screen', function () {
     $this->actingAs(User::factory()->admin()->create());
 

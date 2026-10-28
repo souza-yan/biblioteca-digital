@@ -32,6 +32,8 @@ class UserManager extends Component
 
     public string $search = '';
 
+    public string $schoolFilter = '';
+
     #[Locked]
     public ?int $selectedUserId = null;
 
@@ -53,6 +55,15 @@ class UserManager extends Component
     public function updatedSearch(): void
     {
         $this->authorizeManager();
+        $this->selectedUserId = null;
+        $this->resetPage();
+    }
+
+    public function updatedSchoolFilter(): void
+    {
+        $actor = $this->authorizeManager();
+        abort_unless($actor->isAdmin(), 403);
+
         $this->selectedUserId = null;
         $this->resetPage();
     }
@@ -256,6 +267,13 @@ class UserManager extends Component
     {
         $actor = $this->authorizeManager();
         $manageableUsers = $this->scopeToManageableUsers(User::query(), $actor);
+
+        if ($actor->isAdmin() && $this->schoolFilter !== '') {
+            $manageableUsers->whereHas('schools', fn (Builder $schools): Builder => $schools
+                ->whereKey($this->schoolFilter)
+                ->where('school_user.is_active', true));
+        }
+
         $searchTerm = trim($this->search);
         $suggestions = $searchTerm !== '' && $this->selectedUserId === null
             ? (clone $manageableUsers)
@@ -280,6 +298,12 @@ class UserManager extends Component
                 $query->where('name', 'like', '%'.$searchTerm.'%')
                     ->orWhere('email', 'like', '%'.$searchTerm.'%');
             });
+        }
+
+        if ($actor->isAdmin()) {
+            $usersQuery->with(['schools' => fn (BelongsToMany $schools): BelongsToMany => $schools
+                ->wherePivot('is_active', true)
+                ->orderBy('name')]);
         }
 
         $users = $usersQuery->orderBy('name')->paginate(15);
@@ -320,6 +344,7 @@ class UserManager extends Component
             'columns' => [
                 ['label' => 'Nome', 'class' => 'text-lg'],
                 ['label' => 'E-mail', 'class' => 'text-lg'],
+                ...($actor->isAdmin() ? [['label' => 'Escola(s)', 'class' => 'text-lg']] : []),
                 ['label' => 'Ações', 'align' => 'right', 'class' => 'text-lg'],
             ],
             'schoolOptions' => $schoolOptions,
