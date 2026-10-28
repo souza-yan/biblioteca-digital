@@ -69,7 +69,6 @@ class CategoryLibrary extends Component
         $actor = $this->authorizeStaffCreation(Category::class);
 
         $this->categoryForm->categoryId = null;
-        $this->categoryForm->is_active = false;
         $this->categoryForm->generateSlugFromName();
 
         $createCategory->handle($actor, $this->categoryForm->validate());
@@ -78,7 +77,7 @@ class CategoryLibrary extends Component
         $this->resetPage();
 
         $this->toast()
-            ->success('Categoria cadastrada!', 'A categoria foi enviada para revisão.')
+            ->success('Categoria cadastrada!', 'A categoria foi cadastrada com sucesso.')
             ->send();
     }
 
@@ -103,8 +102,6 @@ class CategoryLibrary extends Component
 
         try {
             $this->materialForm->materialId = null;
-            $this->materialForm->initialStatus = MaterialStatus::DRAFT->value;
-
             if ($temporaryFile instanceof UploadedFile) {
                 $this->materialForm->type = strtolower(
                     $temporaryFile->guessExtension() ?? $temporaryFile->getClientOriginalExtension()
@@ -121,6 +118,7 @@ class CategoryLibrary extends Component
             }
 
             $changeNote = $attributes['change_note'] ?: null;
+            $initialStatus = MaterialStatus::from($attributes['initialStatus']);
             unset($attributes['file'], $attributes['change_note'], $attributes['initialStatus']);
 
             $createMaterialWithVersion->handle(
@@ -128,13 +126,13 @@ class CategoryLibrary extends Component
                 $attributes,
                 $uploadedFile,
                 $changeNote,
-                MaterialStatus::DRAFT,
+                $initialStatus,
             );
 
             $this->closeMaterialForm();
 
             $this->toast()
-                ->success('Material criado com sucesso!', 'O material foi enviado para revisão.')
+                ->success('Material criado com sucesso!', 'O material foi cadastrado na Biblioteca Digital.')
                 ->send();
         } finally {
             if ($temporaryFile instanceof TemporaryUploadedFile) {

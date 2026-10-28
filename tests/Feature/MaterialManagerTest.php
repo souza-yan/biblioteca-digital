@@ -260,17 +260,16 @@ it('paginates published materials by ten for staff', function () {
         ->assertSee('wire:click="nextPage(\'page\')"', false);
 });
 
-it('shows the material creation flow to staff as a draft submission', function () {
+it('shows the material creation flow to staff with publication control', function () {
     $staff = User::factory()->staffInSchool()->create();
 
     Livewire::actingAs($staff)
         ->test(MaterialManager::class)
         ->assertSee('Visualizar conteúdos')
-        ->assertDontSee('Novo material')
+        ->assertSee('Novo material')
         ->call('openCreate')
         ->assertSet('showForm', true)
-        ->assertSee('Enviado como rascunho')
-        ->assertSee('O material ficará disponível para revisão do administrador.');
+        ->assertSee('Status inicial');
 });
 
 it('opens the staff material form from the category library action', function () {
@@ -281,7 +280,7 @@ it('opens the staff material form from the category library action', function ()
         ->call('openMaterialForm')
         ->assertSet('showMaterialForm', true)
         ->assertSee('Novo material')
-        ->assertSee('Enviado como rascunho');
+        ->assertSee('Status inicial');
 });
 
 it('shows staff a download action for published materials with a current version', function () {

@@ -192,7 +192,7 @@ class MaterialDetail extends Component
     {
         $material = $this->findViewableMaterial();
         $actor = $this->currentUser();
-        $canManageVersions = $actor->isAdmin();
+        $canManageVersions = Gate::allows('create', [MaterialVersion::class, $material]);
         $canEditMaterial = Gate::allows('update', $material);
         $canViewVersionHistory = $actor->isAdmin() || $actor->isStaff();
         $isFavorited = $actor->isTeacher()

@@ -94,10 +94,11 @@
         <form id="library-category-form" wire:submit="saveCategory" class="space-y-4">
             <x-ts-input wire:model="categoryForm.name" label="Nome *" required />
             <x-ts-input wire:model="categoryForm.description" label="Descrição" />
-            <div class="rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
-                <span class="font-semibold">Enviada como inativa</span>
-                <span class="mt-1 block">A categoria ficará aguardando revisão e ativação do administrador.</span>
-            </div>
+            <label class="flex items-center gap-2 text-base text-gray-700">
+                <input type="checkbox" wire:model="categoryForm.is_active"
+                    class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                Categoria ativa
+            </label>
         </form>
 
         <x-slot:footer>
@@ -121,10 +122,11 @@
                     <x-ts-input wire:model="materialForm.author" label="Autor *" required />
 
                     <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                        <div class="rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
-                            <span class="font-semibold">Enviado como rascunho</span>
-                            <span class="mt-1 block">O material ficará disponível para revisão do administrador.</span>
-                        </div>
+                        <x-ts-select.styled wire:model="materialForm.initialStatus" label="Status inicial *"
+                            :options="[
+                                ['label' => 'Rascunho', 'value' => 'draft'],
+                                ['label' => 'Publicado', 'value' => 'published'],
+                            ]" select="label:label|value:value" required />
                         <div class="rounded-md border border-blue-100 bg-blue-50 px-4 py-3 text-sm text-blue-900">
                             <span class="font-semibold">Versão 1</span>
                             <span class="mt-1 block text-blue-700">Definida automaticamente pelo sistema.</span>

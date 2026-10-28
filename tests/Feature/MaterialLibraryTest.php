@@ -229,23 +229,21 @@ it('shows published material details and an enabled download link to teachers', 
         ->assertSee($material->title);
 });
 
-it('hides publish and archive actions from staff material details and rejects direct calls', function () {
+it('allows staff to manage global material details', function () {
     $staff = User::factory()->staffInSchool()->create();
     $material = Material::factory()->published()->create();
     $this->actingAs($staff);
 
     Livewire::test(MaterialDetail::class, ['material' => $material])
         ->assertSee($material->title)
-        ->assertDontSee('Publicar')
-        ->assertDontSee('Arquivar');
-
-    Livewire::test(MaterialDetail::class, ['material' => $material])
-        ->call('publish')
-        ->assertForbidden();
+        ->assertSee('Editar material')
+        ->assertSee('Arquivar material');
 
     Livewire::test(MaterialDetail::class, ['material' => $material])
         ->call('archive')
-        ->assertForbidden();
+        ->assertHasNoErrors();
+
+    expect($material->fresh()->status)->toBe(MaterialStatus::ARCHIVED);
 });
 
 it('forbids teachers from viewing unpublished material details', function (MaterialStatus $status) {

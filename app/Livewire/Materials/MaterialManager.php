@@ -61,9 +61,7 @@ class MaterialManager extends Component
     {
         $actor = $this->authorizeManager();
 
-        $allowedStatuses = $actor->isAdmin()
-            ? MaterialStatus::cases()
-            : [MaterialStatus::PUBLISHED, MaterialStatus::DRAFT];
+        $allowedStatuses = MaterialStatus::cases();
         $requestedStatus = MaterialStatus::tryFrom((string) $value);
 
         if ($requestedStatus === null || ! in_array($requestedStatus, $allowedStatuses, true)) {
@@ -135,10 +133,6 @@ class MaterialManager extends Component
                 );
             }
 
-            if ($material === null && $actor->isStaff()) {
-                $this->form->initialStatus = MaterialStatus::DRAFT->value;
-            }
-
             $attributes = $this->form->validate();
 
             if ($material === null) {
@@ -173,9 +167,7 @@ class MaterialManager extends Component
                     $initialStatus
                 );
 
-                if ($actor->isStaff()) {
-                    $this->statusFilter = MaterialStatus::DRAFT->value;
-                }
+                $this->statusFilter = $initialStatus->value;
 
                 $this->toast()
                     ->success(
@@ -261,9 +253,7 @@ class MaterialManager extends Component
     public function render(ListCategoryOptions $listCategoryOptions): View
     {
         $actor = $this->authorizeManager();
-        $allowedStatuses = $actor->isAdmin()
-            ? MaterialStatus::cases()
-            : [MaterialStatus::PUBLISHED, MaterialStatus::DRAFT];
+        $allowedStatuses = MaterialStatus::cases();
         $status = MaterialStatus::tryFrom($this->statusFilter);
 
         if ($status === null || ! in_array($status, $allowedStatuses, true)) {
@@ -306,10 +296,10 @@ class MaterialManager extends Component
                     $allowedStatuses,
                 ),
             ],
-            'creationStatuses' => $actor->isAdmin() ? [
+            'creationStatuses' => [
                 MaterialStatus::DRAFT,
                 MaterialStatus::PUBLISHED,
-            ] : [MaterialStatus::DRAFT],
+            ],
         ]);
     }
 

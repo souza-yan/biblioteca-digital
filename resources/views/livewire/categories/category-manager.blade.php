@@ -1,7 +1,7 @@
 <div>
     @php
         $actor = auth()->user();
-        $canManageCategories = $actor?->isAdmin() ?? false;
+        $canManageCategories = $actor?->isAdmin() || $actor?->isStaff();
         $categoryColumns = [
             ['label' => 'Nome', 'class' => 'text-lg'],
             ['label' => 'Situação', 'class' => 'text-lg'],
@@ -16,11 +16,6 @@
         <div class="mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
             <div>
                 <h1 class="text-3xl font-bold tracking-tight text-blue-800 sm:text-4xl">Categorias</h1>
-                @if ($actor?->isStaff())
-                    <p class="mt-2 max-w-2xl text-base text-slate-500">
-                        Cadastre novas categorias para revisão. Somente o administrador pode ativá-las ou editá-las.
-                    </p>
-                @endif
             </div>
             @can('create', \App\Models\Category::class)
                 <x-ts-button color="blue" wire:click="openCreate">
@@ -70,23 +65,16 @@
 
         <x-pagination :paginator="$categories" class="mt-4" />
 
-        {{-- Formulário de categoria; gestores enviam novas opções para revisão. --}}
+        {{-- Formulário para criar ou atualizar categorias globais da biblioteca. --}}
         <x-ts-modal wire="showForm" :title="$editingCategoryId === null ? 'Nova categoria' : 'Editar categoria'" size="xl" center>
             <form id="category-form" wire:submit="save" class="space-y-4">
                 <x-ts-input wire:model="form.name" label="Nome *" required />
                 <x-ts-input wire:model="form.description" label="Descrição" />
-                @if ($actor?->isAdmin())
-                    <label class="flex items-center gap-2 text-base text-gray-700">
-                        <input type="checkbox" wire:model="form.is_active"
-                            class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
-                        Categoria ativa
-                    </label>
-                @else
-                    <div class="rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
-                        <span class="font-semibold">Enviada como inativa</span>
-                        <span class="mt-1 block">A categoria ficará aguardando revisão e ativação do administrador.</span>
-                    </div>
-                @endif
+                <label class="flex items-center gap-2 text-base text-gray-700">
+                    <input type="checkbox" wire:model="form.is_active"
+                        class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                    Categoria ativa
+                </label>
 
                 @error('form.slug')
                     <p class="text-base text-red-600">{{ $message }}</p>

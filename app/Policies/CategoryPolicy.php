@@ -20,11 +20,17 @@ class CategoryPolicy
 
     public function update(User $user, Category $category): bool
     {
-        return $user->is_active && $user->isAdmin();
+        return $this->isGlobalManager($user);
     }
 
     public function toggleActive(User $user, Category $category): bool
     {
-        return $user->is_active && $user->isAdmin();
+        return $this->isGlobalManager($user);
+    }
+
+    private function isGlobalManager(User $user): bool
+    {
+        return $user->is_active && ($user->isAdmin()
+            || ($user->isStaff() && $user->hasExactlyOneActiveSchool()));
     }
 }

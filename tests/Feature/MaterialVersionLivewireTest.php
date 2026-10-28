@@ -118,15 +118,15 @@ it('allows an admin to edit material data from its detail page', function () {
     ]);
 });
 
-it('does not expose or execute detail editing for staff', function () {
+it('allows staff to edit global material details', function () {
     $staff = User::factory()->staffInSchool()->create();
     $material = Material::factory()->published()->create();
 
     Livewire::actingAs($staff)
         ->test(MaterialDetail::class, ['material' => $material])
-        ->assertDontSee('Editar material')
+        ->assertSee('Editar material')
         ->call('openEditForm')
-        ->assertForbidden();
+        ->assertSet('showEditForm', true);
 });
 
 it('shows management links only to admins and staff and library to teachers', function () {

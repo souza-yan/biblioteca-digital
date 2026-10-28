@@ -33,7 +33,7 @@ it('forbids teachers from opening draft material details', function () {
     Livewire::test(MaterialDetail::class, ['material' => $material])->assertForbidden();
 });
 
-it('allows staff to create a material owned by the authenticated user', function () {
+it('allows staff to publish a material owned by the authenticated user', function () {
     Storage::fake('local');
     $staff = User::factory()->staffInSchool()->create();
     $category = Category::factory()->create();
@@ -50,13 +50,13 @@ it('allows staff to create a material owned by the authenticated user', function
         ->set('form.initialStatus', MaterialStatus::PUBLISHED->value)
         ->call('save')
         ->assertHasNoErrors()
-        ->assertSet('statusFilter', MaterialStatus::DRAFT->value);
+        ->assertSet('statusFilter', MaterialStatus::PUBLISHED->value);
 
     $this->assertDatabaseHas('materials', [
         'title' => 'Apostila de Ciências',
         'category_id' => $category->getKey(),
         'created_by' => $staff->getKey(),
-        'status' => MaterialStatus::DRAFT->value,
+        'status' => MaterialStatus::PUBLISHED->value,
     ]);
 });
 
@@ -147,7 +147,7 @@ it('allows teachers to view and download only published materials', function (Ma
     'archived' => [MaterialStatus::ARCHIVED, false],
 ]);
 
-it('allows staff to create drafts while keeping global material management exclusive to admins', function (string $role, bool $canCreate, bool $canManage) {
+it('allows management to manage all global materials', function (string $role, bool $canCreate, bool $canManage) {
     $user = match ($role) {
         'admin' => User::factory()->admin()->create(),
         'staff' => User::factory()->staffInSchool()->create(),
@@ -161,6 +161,6 @@ it('allows staff to create drafts while keeping global material management exclu
         ->and(Gate::forUser($user)->allows('publish', $material))->toBe($canManage);
 })->with([
     'admin' => ['admin', true, true],
-    'staff' => ['staff', true, false],
+    'staff' => ['staff', true, true],
     'teacher' => ['teacher', false, false],
 ]);

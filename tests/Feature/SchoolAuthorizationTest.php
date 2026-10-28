@@ -68,7 +68,7 @@ it('lets staff deactivate a local teacher membership without changing the global
     $this->assertDatabaseHas('school_user', ['school_id' => $schoolB->getKey(), 'user_id' => $teacher->getKey(), 'is_active' => true]);
 });
 
-it('allows staff to submit draft materials and inactive categories through direct actions', function () {
+it('allows staff to publish materials and activate global categories through direct actions', function () {
     Storage::fake('local');
     $staff = User::factory()->staffInSchool()->create();
 
@@ -78,22 +78,22 @@ it('allows staff to submit draft materials and inactive categories through direc
         'category_id' => Category::factory()->create()->getKey(),
         'type' => 'Apostila',
         'author' => 'Equipe',
-        'status' => MaterialStatus::DRAFT,
+        'status' => MaterialStatus::PUBLISHED,
     ]);
 
     expect($material->created_by)->toBe($staff->getKey())
-        ->and($material->status)->toBe(MaterialStatus::DRAFT);
+        ->and($material->status)->toBe(MaterialStatus::PUBLISHED);
 
     $category = app(CreateCategory::class)->handle($staff, [
-        'name' => 'Categoria para revisão',
-        'slug' => 'categoria-para-revisao',
+        'name' => 'Categoria global',
+        'slug' => 'categoria-global',
         'description' => null,
         'is_active' => true,
     ]);
 
     expect(Gate::forUser($staff)->allows('create', Material::class))->toBeTrue()
         ->and(Gate::forUser($staff)->allows('create', Category::class))->toBeTrue()
-        ->and($category->is_active)->toBeFalse();
+        ->and($category->is_active)->toBeTrue();
 });
 
 it('keeps school context methods correct when relations are already loaded', function () {

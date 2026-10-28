@@ -15,7 +15,7 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Livewire;
 
-it('shows teachers active categories that have published materials only', function () {
+it('does not expose management category filters to teachers', function () {
     $activeCategory = Category::factory()->create(['name' => 'Categoria ativa']);
     $inactiveCategory = Category::factory()->inactive()->create(['name' => 'Categoria inativa']);
     Material::factory()->published()->for($activeCategory)->create();
@@ -26,8 +26,7 @@ it('shows teachers active categories that have published materials only', functi
     Livewire::test(MaterialLibrary::class)
         ->assertViewHas(
             'categories',
-            fn ($categories): bool => $categories->contains('id', $activeCategory->getKey())
-                && ! $categories->contains('id', $inactiveCategory->getKey()),
+            fn ($categories): bool => $categories->isEmpty(),
         );
 });
 
@@ -103,11 +102,11 @@ it('allows staff to browse categories and access creation actions', function () 
         ->test(CategoryLibrary::class)
         ->call('openCategoryForm')
         ->assertSet('showCategoryForm', true)
-        ->assertSee('Enviada como inativa')
+        ->assertSee('Categoria ativa')
         ->call('closeCategoryForm')
         ->call('openMaterialForm')
         ->assertSet('showMaterialForm', true)
-        ->assertSee('Enviado como rascunho');
+        ->assertSee('Status inicial');
 });
 
 it('allows staff to create category and material from the category library modals', function () {
@@ -128,6 +127,7 @@ it('allows staff to create category and material from the category library modal
         ->set('materialForm.category_id', (string) $activeCategory->getKey())
         ->set('materialForm.author', 'Equipe pedagógica')
         ->set('materialForm.file', UploadedFile::fake()->create('guia.pdf', 100, 'application/pdf'))
+        ->set('materialForm.initialStatus', MaterialStatus::PUBLISHED->value)
         ->call('saveMaterial')
         ->assertHasNoErrors()
         ->assertSet('showMaterialForm', false);
@@ -135,12 +135,12 @@ it('allows staff to create category and material from the category library modal
     $this->assertDatabaseHas('categories', [
         'name' => 'Tecnologia educacional',
         'slug' => 'tecnologia-educacional',
-        'is_active' => false,
+        'is_active' => true,
     ]);
     $this->assertDatabaseHas('materials', [
         'title' => 'Guia de tecnologia',
         'created_by' => $staff->getKey(),
-        'status' => MaterialStatus::DRAFT->value,
+        'status' => MaterialStatus::PUBLISHED->value,
     ]);
 });
 
@@ -241,7 +241,7 @@ it('rebuilds category options when the cached payload is incompatible', function
         ->toBeArray();
 });
 
-it('allows staff to submit categories while keeping updates and activation exclusive to admins', function (string $role, bool $canCreate, bool $canManage) {
+it('allows management to manage global categories', function (string $role, bool $canCreate, bool $canManage) {
     $user = match ($role) {
         'admin' => User::factory()->admin()->create(),
         'staff' => User::factory()->staffInSchool()->create(),
@@ -254,6 +254,6 @@ it('allows staff to submit categories while keeping updates and activation exclu
         ->and(Gate::forUser($user)->allows('toggleActive', $category))->toBe($canManage);
 })->with([
     'admin' => ['admin', true, true],
-    'staff' => ['staff', true, false],
+    'staff' => ['staff', true, true],
     'teacher' => ['teacher', false, false],
 ]);

@@ -20,11 +20,7 @@ class MaterialPolicy
 
     public function view(User $user, Material $material): bool
     {
-        return $user->is_active && ($user->isAdmin()
-            || ($user->isStaff() && (
-                $material->status === MaterialStatus::PUBLISHED
-                || ($material->status === MaterialStatus::DRAFT && $material->created_by === $user->getKey())
-            ))
+        return $user->is_active && ($this->isGlobalManager($user)
             || ($user->isTeacher() && $material->status === MaterialStatus::PUBLISHED));
     }
 
@@ -36,7 +32,7 @@ class MaterialPolicy
 
     public function update(User $user, Material $material): bool
     {
-        return $user->is_active && $user->isAdmin();
+        return $this->isGlobalManager($user);
     }
 
     public function download(User $user, Material $material): bool
@@ -52,11 +48,17 @@ class MaterialPolicy
 
     public function archive(User $user, Material $material): bool
     {
-        return $user->is_active && $user->isAdmin();
+        return $this->isGlobalManager($user);
     }
 
     public function publish(User $user, Material $material): bool
     {
-        return $user->is_active && $user->isAdmin();
+        return $this->isGlobalManager($user);
+    }
+
+    private function isGlobalManager(User $user): bool
+    {
+        return $user->is_active && ($user->isAdmin()
+            || ($user->isStaff() && $user->hasExactlyOneActiveSchool()));
     }
 }

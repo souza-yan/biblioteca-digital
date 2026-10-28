@@ -1,7 +1,7 @@
     <div>
         @php
             $actor = auth()->user();
-            $canManageMaterials = $actor?->isAdmin() ?? false;
+            $canManageMaterials = $actor?->isAdmin() || $actor?->isStaff();
             $canCreateMaterials = $actor ? \Illuminate\Support\Facades\Gate::allows('create', \App\Models\Material::class) : false;
             $materialColumns = [
                 ['label' => 'Título', 'class' => 'text-lg'],
@@ -17,19 +17,9 @@
             {{-- Cabeçalho e ações permitidas conforme o perfil autenticado. --}}
             <div class="mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
                 <div class="min-w-0">
-                    @if (! $canManageMaterials)
-                        <p class="text-sm font-semibold uppercase tracking-[0.14em] text-blue-700">
-                            Gestão de conteúdos
-                        </p>
-                    @endif
                     <h1 class="text-3xl font-bold tracking-tight text-blue-800 sm:text-4xl">
                         Materiais
                     </h1>
-                    @if (! $canManageMaterials)
-                        <p class="mt-2 max-w-2xl text-base text-slate-500">
-                            Consulte a biblioteca e envie novos materiais para revisão e publicação.
-                        </p>
-                    @endif
                 </div>
                 <div class="flex flex-col gap-2 sm:flex-row">
                     @if ($actor?->isStaff())
@@ -38,7 +28,8 @@
                             <x-ts-icon icon="eye" outline class="size-5" />
                             Visualizar conteúdos
                         </x-ts-button>
-                    @elseif ($canCreateMaterials)
+                    @endif
+                    @if ($canCreateMaterials)
                         <x-ts-button color="blue" wire:click="openCreate" class="w-full justify-center sm:w-auto">
                             <x-ts-icon icon="plus" outline class="size-5" />
                             Novo material
@@ -146,17 +137,10 @@
 
                             @if ($editingMaterialId === null)
                                 <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                                    @if ($actor->isAdmin())
-                                        <x-ts-select.styled wire:model="form.initialStatus" label="Status inicial *"
-                                            :options="collect($creationStatuses)
-                                                ->map(fn($status) => ['label' => $status->label(), 'value' => $status->value])
-                                                ->all()" select="label:label|value:value" required />
-                                    @else
-                                        <div class="rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
-                                            <span class="font-semibold">Enviado como rascunho</span>
-                                            <span class="mt-1 block">O material ficará disponível para revisão do administrador.</span>
-                                        </div>
-                                    @endif
+                                    <x-ts-select.styled wire:model="form.initialStatus" label="Status inicial *"
+                                        :options="collect($creationStatuses)
+                                            ->map(fn($status) => ['label' => $status->label(), 'value' => $status->value])
+                                            ->all()" select="label:label|value:value" required />
                                     <div class="flex items-end">
                                         <div
                                             class="w-full rounded-md border border-blue-100 bg-blue-50 px-4 py-3 text-base text-blue-900">

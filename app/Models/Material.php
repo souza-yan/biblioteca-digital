@@ -55,20 +55,8 @@ class Material extends Model
     #[Scope]
     protected function visibleTo(Builder $query, User $user): Builder
     {
-        if ($user->isAdmin()) {
+        if ($user->isAdmin() || $user->isStaff()) {
             return $query;
-        }
-
-        if ($user->isStaff()) {
-            return $query->where(function (Builder $query) use ($user): void {
-                $query
-                    ->where('status', MaterialStatus::PUBLISHED)
-                    ->orWhere(function (Builder $query) use ($user): void {
-                        $query
-                            ->where('status', MaterialStatus::DRAFT)
-                            ->where('created_by', $user->getKey());
-                    });
-            });
         }
 
         if ($user->isTeacher()) {
