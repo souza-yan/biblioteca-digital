@@ -3,26 +3,22 @@
         <header>
             <h1 class="text-3xl font-bold tracking-tight text-blue-800 sm:text-4xl">Meu perfil</h1>
         </header>
-        <div class="grid grid-cols-1 items-stretch gap-6 xl:grid-cols-6">
+        <div class="grid grid-cols-1 items-stretch gap-6 xl:grid-cols-2">
 
             @if (Laravel\Fortify\Features::canUpdateProfileInformation())
-                <div class="xl:col-span-3">
-                    @livewire('profile.update-profile-information-form')
-                </div>
+                @livewire('profile.update-profile-information-form')
             @endif
 
             @if (Laravel\Fortify\Features::enabled(Laravel\Fortify\Features::updatePasswords()))
-                <div class="xl:col-span-3">
-                    @livewire('profile.update-password-form')
-                </div>
+                @livewire('profile.update-password-form')
             @endif
 
-            <div class="min-w-0 xl:col-span-4">
+            <div class="min-w-0">
                 @livewire('profile.logout-other-browser-sessions-form')
             </div>
 
             <section aria-labelledby="system-security-title"
-                class="min-w-0 rounded-2xl border border-emerald-100 bg-emerald-50 p-5 shadow-sm sm:p-6 xl:col-span-2">
+                class="min-w-0 rounded-2xl border border-emerald-100 bg-emerald-50 p-5 shadow-sm sm:p-6">
                 <div class="flex items-start gap-4">
                     <span class="flex size-12 shrink-0 items-center justify-center rounded-xl bg-white text-emerald-700 shadow-sm">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
