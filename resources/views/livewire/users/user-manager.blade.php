@@ -13,11 +13,11 @@
                 <h1 class="mt-1 text-3xl font-bold tracking-tight text-blue-800 sm:text-4xl">
                     {{ $actor->isStaff() ? 'Professores da escola' : 'Professores' }}
                 </h1>
-                <p class="mt-2 max-w-2xl text-base text-slate-500">
-                    {{ $actor->isStaff()
-                        ? 'Gerencie somente o vínculo dos professores com a sua escola. Os dados da conta continuam globais.'
-                        : 'Cadastre professores e gerencie seus dados e vínculos com as escolas.' }}
-                </p>
+                @if ($actor->isStaff())
+                    <p class="mt-2 max-w-2xl text-base text-slate-500">
+                        Gerencie somente o vínculo dos professores com a sua escola. Os dados da conta continuam globais.
+                    </p>
+                @endif
             </div>
 
             <x-ts-button color="blue" wire:click="openCreate">

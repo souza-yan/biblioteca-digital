@@ -29,11 +29,11 @@
                     <h1 class="mt-1 text-3xl font-bold tracking-tight text-blue-800 sm:text-4xl">
                         Materiais
                     </h1>
-                    <p class="mt-2 max-w-2xl text-base text-slate-500">
-                        {{ $canManageMaterials
-                            ? 'Cadastre, publique e mantenha os conteúdos da biblioteca digital.'
-                            : 'Consulte a biblioteca e envie novos materiais para revisão e publicação.' }}
-                    </p>
+                    @if (! $canManageMaterials)
+                        <p class="mt-2 max-w-2xl text-base text-slate-500">
+                            Consulte a biblioteca e envie novos materiais para revisão e publicação.
+                        </p>
+                    @endif
                 </div>
                 <div class="flex flex-col gap-2 sm:flex-row">
                     @if ($actor?->isStaff())

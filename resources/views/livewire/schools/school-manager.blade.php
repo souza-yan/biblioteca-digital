@@ -9,9 +9,6 @@
                 ]" />
                 <p class="text-sm font-semibold uppercase tracking-[0.14em] text-blue-700">Administração</p>
                 <h1 class="mt-2 text-3xl font-bold tracking-tight text-blue-800 sm:text-4xl">Escolas</h1>
-                <p class="mt-2 max-w-2xl text-base text-slate-500">
-                    Cadastre as unidades escolares e vincule os gestores responsáveis por cada uma.
-                </p>
             </div>
 
             <x-ts-button color="blue" wire:click="openCreate" class="w-full justify-center sm:w-auto">

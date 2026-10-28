@@ -25,7 +25,6 @@
         </div>
         <div>
             <h3 class="text-lg font-bold text-gray-900">Segurança da conta</h3>
-            <p class="text-sm text-gray-500">Altere sua senha para manter sua conta segura.</p>
         </div>
     </div>
 
