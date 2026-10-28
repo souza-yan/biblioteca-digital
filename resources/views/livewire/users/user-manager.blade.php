@@ -3,14 +3,10 @@
         {{-- Cabeçalho contextualizado para administrador ou gestão escolar. --}}
         <div class="mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
             <div class="min-w-0">
-                <x-breadcrumb :items="[
-                    ['label' => 'Início', 'url' => route('dashboard')],
-                    ['label' => 'Professores'],
-                ]" />
                 @if ($actor->isStaff())
                     <p class="text-sm font-semibold uppercase tracking-[0.14em] text-blue-700">Gestão escolar</p>
                 @endif
-                <h1 class="mt-1 text-3xl font-bold tracking-tight text-blue-800 sm:text-4xl">
+                <h1 class="text-3xl font-bold tracking-tight text-blue-800 sm:text-4xl">
                     {{ $actor->isStaff() ? 'Professores da escola' : 'Professores' }}
                 </h1>
                 @if ($actor->isStaff())

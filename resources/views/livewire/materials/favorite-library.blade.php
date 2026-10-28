@@ -1,11 +1,7 @@
 <div>
     <div class="mx-auto w-full max-w-screen-2xl space-y-6 px-4 py-6 sm:px-6 lg:space-y-8 lg:px-8 lg:py-8">
         <div class="mb-8">
-            <x-breadcrumb :items="[
-                ['label' => 'Início', 'url' => route('dashboard')],
-                ['label' => 'Meus favoritos'],
-            ]" />
-            <h1 class="mt-1 text-3xl font-bold tracking-tight text-blue-800 sm:text-4xl">Meus favoritos</h1>
+            <h1 class="text-3xl font-bold tracking-tight text-blue-800 sm:text-4xl">Meus favoritos</h1>
             <p class="mt-2 text-base text-slate-500">Seus materiais publicados salvos para consultar depois.</p>
         </div>
         <x-data-table :columns="[

@@ -1,27 +1,5 @@
 <div>
     <div class="mx-auto w-full max-w-screen-2xl space-y-6 px-4 py-6 sm:px-6 lg:space-y-8 lg:px-8 lg:py-8">
-        @php
-            $isLibraryContext = request()->routeIs('painel.library.*');
-            $categoryFilter = request()->query('categoryFilter');
-            $breadcrumbItems = $isLibraryContext
-                ? [
-                    ['label' => 'Início', 'url' => route('dashboard')],
-                    ['label' => 'Materiais', 'url' => route('painel.library.categories')],
-                    [
-                        'label' => 'Categorias',
-                        'url' => route('painel.library', ['categoryFilter' => $categoryFilter]),
-                    ],
-                    ['label' => $material->title],
-                ]
-                : [
-                    ['label' => 'Início', 'url' => route('dashboard')],
-                    ['label' => 'Materiais', 'url' => route('painel.materials')],
-                    ['label' => $material->title],
-                ];
-        @endphp
-
-        <x-breadcrumb :items="$breadcrumbItems" />
-
         <article class="rounded-md border border-gray-200 bg-white p-6 shadow-sm">
             <div class="flex flex-col justify-between gap-4 sm:flex-row sm:items-start">
                 <div>

@@ -1,11 +1,7 @@
 <div class="mx-auto w-full max-w-screen-2xl space-y-6 px-4 py-6 sm:px-6 lg:space-y-8 lg:px-8 lg:py-8">
     {{-- Cabeçalho da área pessoal de rastreabilidade do acervo. --}}
     <header>
-        <x-breadcrumb :items="[
-            ['label' => 'Início', 'url' => route('dashboard')],
-            ['label' => 'Meu histórico'],
-        ]" />
-        <h1 class="mt-1 text-3xl font-bold tracking-tight text-blue-800 sm:text-4xl">Meu histórico</h1>
+        <h1 class="text-3xl font-bold tracking-tight text-blue-800 sm:text-4xl">Meu histórico</h1>
     </header>
 
     {{-- Abas preservadas na URL para facilitar o retorno à visão selecionada. --}}

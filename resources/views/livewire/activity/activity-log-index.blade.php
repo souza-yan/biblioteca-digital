@@ -2,11 +2,7 @@
     <div class="mx-auto w-full max-w-screen-2xl space-y-6 px-4 py-6 sm:px-6 lg:space-y-8 lg:px-8 lg:py-8">
         {{-- Cabeçalho da auditoria acessível somente ao administrador. --}}
         <header>
-            <x-breadcrumb :items="[
-                ['label' => 'Início', 'url' => route('dashboard')],
-                ['label' => 'Atividades'],
-            ]" />
-            <h1 class="mt-1 text-3xl font-bold tracking-tight text-blue-800 sm:text-4xl">
+            <h1 class="text-3xl font-bold tracking-tight text-blue-800 sm:text-4xl">
                 Atividades
             </h1>
         </header>

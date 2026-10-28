@@ -15,12 +15,7 @@
         {{-- Cabeçalho da gestão de taxonomia do acervo. --}}
         <div class="mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
             <div>
-                <x-breadcrumb :items="[
-                    ['label' => 'Início', 'url' => route('dashboard')],
-                    ['label' => 'Materiais', 'url' => route('painel.materials')],
-                    ['label' => 'Categorias'],
-                ]" />
-                <h1 class="mt-1 text-3xl font-bold tracking-tight text-blue-800 sm:text-4xl">Categorias</h1>
+                <h1 class="text-3xl font-bold tracking-tight text-blue-800 sm:text-4xl">Categorias</h1>
                 @if ($actor?->isStaff())
                     <p class="mt-2 max-w-2xl text-base text-slate-500">
                         Cadastre novas categorias para revisão. Somente o administrador pode ativá-las ou editá-las.
