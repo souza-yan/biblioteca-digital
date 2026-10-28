@@ -28,7 +28,19 @@
     @vite('resources/css/app.css')
 </head>
 
-<body class="bg-slate-50 font-sans text-slate-900 antialiased" x-data="{ menuOpen: false }">
+<body class="bg-slate-50 font-sans text-slate-900 antialiased" x-data="{
+    menuOpen: false,
+    closeMobileMenu() {
+        this.menuOpen = false;
+    },
+    toggleDesktopSidebar() {
+        const collapsed = document.documentElement.classList.toggle('sidebar-collapsed');
+
+        try {
+            localStorage.setItem('sidebarCollapsed', collapsed ? '1' : '0');
+        } catch (error) {}
+    },
+}" @keydown.escape.window="closeMobileMenu()">
     <x-banner />
 
     {{-- Sidebar + Header fixos (ficam dentro do componente) --}}

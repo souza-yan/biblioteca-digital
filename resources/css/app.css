@@ -29,14 +29,19 @@ html.sidebar-collapsed {
     inset: 0 auto 0 0;
     z-index: 50;
     width: var(--sidebar-w);
-    transition: width var(--sidebar-speed);
+    transform: translateX(-100%);
+    transition: width var(--sidebar-speed), transform 200ms ease-in-out;
+}
+
+#app-sidebar.mobile-menu-open {
+    transform: translateX(0);
 }
 
 #app-header {
     position: fixed;
     top: 0;
     right: 0;
-    left: var(--sidebar-w);
+    left: 0;
     z-index: 40;
     height: var(--header-h);
     transition: left var(--sidebar-speed);
@@ -44,7 +49,7 @@ html.sidebar-collapsed {
 
 #app-main {
     padding-top: var(--header-h);
-    padding-left: var(--sidebar-w);
+    padding-left: 0;
     transition: padding-left var(--sidebar-speed);
 }
 
@@ -88,4 +93,27 @@ html.sidebar-collapsed #app-sidebar .sidebar-account-link {
 html.sidebar-collapsed #app-sidebar p.sidebar-label {
     max-height: 0;
     padding: 0;
+}
+
+@media (min-width: 64rem) {
+    #app-sidebar {
+        transform: translateX(0);
+    }
+
+    #app-header {
+        left: var(--sidebar-w);
+    }
+
+    #app-main {
+        padding-left: var(--sidebar-w);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    #app-sidebar,
+    #app-header,
+    #app-main,
+    .sidebar-label {
+        transition-duration: 1ms;
+    }
 }

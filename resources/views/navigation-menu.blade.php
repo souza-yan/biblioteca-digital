@@ -89,10 +89,16 @@
         $roleLabel = $currentUser->isStaff() ? 'Gestão escolar' : $currentUser->role->label();
     @endphp
 
-    {{-- HEADER --}}
+    {{-- Cabeçalho global: abre o drawer no mobile e mantém os atalhos da conta visíveis. --}}
     <header id="app-header" class="border-b border-slate-200 bg-white">
         <div class="flex h-full items-center justify-between gap-3 px-4 sm:px-6">
-            <div class="flex min-w-0 items-center gap-3 pl-4 sm:pl-6">
+            <div class="flex min-w-0 items-center gap-3 lg:pl-6">
+                <button type="button"
+                    class="inline-flex size-11 shrink-0 items-center justify-center rounded-xl text-blue-900 transition hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-600 lg:hidden"
+                    @click="menuOpen = true" :aria-expanded="menuOpen.toString()" aria-controls="app-sidebar"
+                    aria-label="Abrir menu principal" title="Abrir menu principal">
+                    <x-ts-icon icon="bars-3" outline class="size-7" />
+                </button>
                 <a href="{{ route('dashboard') }}"
                     class="flex items-center gap-2 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-blue-600"
                     aria-label="Ir para a página inicial">
@@ -137,20 +143,23 @@
         </div>
     </header>
 
-    {{-- SIDEBAR: posição e largura vêm do CSS no <head> do layout. --}}
-    <aside id="app-sidebar" class="flex flex-col overflow-hidden border-r border-blue-900 bg-blue-800"
-        aria-label="Navegação principal">
+    {{-- Fundo clicável do drawer mobile. --}}
+    <div x-cloak x-show="menuOpen" x-transition.opacity @click="closeMobileMenu()"
+        class="fixed inset-0 z-40 bg-slate-950/50 lg:hidden" aria-hidden="true"></div>
+
+    {{-- Navegação principal: drawer no mobile e sidebar recolhível no desktop. --}}
+    <aside id="app-sidebar" :class="{ 'mobile-menu-open': menuOpen }"
+        class="flex flex-col overflow-hidden border-r border-blue-900 bg-blue-800"
+        aria-label="Navegação principal" x-trap.inert.noscroll="menuOpen">
 
         <div class="sidebar-brand flex shrink-0 items-center border-b border-blue-700 px-5" style="height: 4rem">
             <button type="button"
                 class="inline-flex size-12 shrink-0 items-center justify-center rounded-xl text-white transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-white"
-                onclick="
-                    const c = document.documentElement.classList.toggle('sidebar-collapsed');
-                    try { localStorage.setItem('sidebarCollapsed', c ? '1' : '0'); } catch (e) {}
-                "
-                aria-label="Recolher ou expandir barra lateral" aria-controls="app-sidebar"
-                title="Recolher ou expandir barra lateral">
-                <x-ts-icon icon="bars-3" outline class="size-7" />
+                @click="window.innerWidth < 1024 ? closeMobileMenu() : toggleDesktopSidebar()"
+                :aria-label="window.innerWidth < 1024 ? 'Fechar menu principal' : 'Recolher ou expandir barra lateral'"
+                aria-controls="app-sidebar" title="Recolher, expandir ou fechar o menu">
+                <x-ts-icon icon="x-mark" outline class="size-7 lg:hidden" />
+                <x-ts-icon icon="bars-3" outline class="hidden size-7 lg:block" />
             </button>
             <div class="sidebar-brand-title sidebar-label ml-3 shrink-0 whitespace-nowrap">
                 <p class="text-base font-bold text-white">Biblioteca de Robótica</p>
@@ -162,7 +171,7 @@
 
             <nav class="space-y-1">
                 @foreach ($navigationItems as $item)
-                    <a href="{{ route($item['route']) }}" title="{{ $item['label'] }}" aria-label="{{ $item['label'] }}"
+                    <a href="{{ route($item['route']) }}" @click="closeMobileMenu()" title="{{ $item['label'] }}" aria-label="{{ $item['label'] }}"
                         style="padding-left: 18px; padding-right: 18px" @class([
                             'sidebar-nav-link group flex items-center gap-3 rounded-xl py-3 text-base font-medium transition',
                             'bg-white text-blue-800 shadow-sm' => $item['active'],
@@ -228,7 +237,7 @@
                     Conta
                 </p>
 
-                <a href="{{ route('profile.show') }}" title="Meu perfil" aria-label="Meu perfil"
+                <a href="{{ route('profile.show') }}" @click="closeMobileMenu()" title="Meu perfil" aria-label="Meu perfil"
                     style="padding-left: 18px; padding-right: 18px" @class([
                         'sidebar-account-link group flex items-center gap-3 rounded-xl py-3 text-base font-medium transition',
                         'bg-white text-blue-800 shadow-sm' => request()->routeIs('profile.show'),
