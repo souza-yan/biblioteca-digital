@@ -119,8 +119,6 @@
         @if ($canEditMaterial)
             <x-ts-modal wire="showEditForm" title="Editar material" size="2xl" center>
                 <form id="detail-material-form" wire:submit="saveMaterial" class="space-y-4">
-                    <p class="text-sm text-slate-500">Atualize os dados do material mantendo suas versões.</p>
-
                     <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
                         <x-form.input id="detail-material-title" label="Título" :required="true"
                             error="materialForm.title" wire:model="materialForm.title" />
