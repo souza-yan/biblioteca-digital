@@ -1,5 +1,6 @@
 <?php
 
+use App\Actions\Category\ListCategoryOptions;
 use App\Enums\MaterialStatus;
 use App\Livewire\Categories\CategoryLibrary;
 use App\Livewire\Categories\CategoryManager;
@@ -203,6 +204,25 @@ it('allows admins to update and deactivate a category', function () {
         'slug' => 'ciencias-naturais',
         'is_active' => false,
     ]);
+});
+
+it('invalidates cached category options after a category changes', function () {
+    $admin = User::factory()->admin()->create();
+    $category = Category::factory()->create(['name' => 'Nome original']);
+    $categoryOptions = app(ListCategoryOptions::class);
+
+    expect($categoryOptions->all()->firstWhere('id', $category->getKey())?->name)
+        ->toBe('Nome original');
+
+    Livewire::actingAs($admin)
+        ->test(CategoryManager::class)
+        ->call('editCategory', $category->getKey())
+        ->set('form.name', 'Nome atualizado')
+        ->call('save')
+        ->assertHasNoErrors();
+
+    expect($categoryOptions->all()->firstWhere('id', $category->getKey())?->name)
+        ->toBe('Nome atualizado');
 });
 
 it('allows staff to submit categories while keeping updates and activation exclusive to admins', function (string $role, bool $canCreate, bool $canManage) {

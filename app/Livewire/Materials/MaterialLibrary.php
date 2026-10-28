@@ -150,7 +150,7 @@ class MaterialLibrary extends Component
             ->withExists([
                 'favoritedBy as is_favorited' => fn (Builder $query): Builder => $query->whereKey($userId),
             ])
-            ->where('status', MaterialStatus::PUBLISHED)
+            ->published()
             ->when($this->search !== '', fn (Builder $query): Builder => $this->applySearch($query))
             ->when(
                 $this->categoryFilter,
@@ -184,10 +184,6 @@ class MaterialLibrary extends Component
             default => $materials->orderBy('title'),
         };
         $materials = $materials->paginate(15);
-
-        foreach ($materials as $material) {
-            Gate::authorize('view', $material);
-        }
 
         $categories = Category::query()
             ->where('is_active', true)

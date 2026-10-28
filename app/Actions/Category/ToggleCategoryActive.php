@@ -15,7 +15,7 @@ class ToggleCategoryActive
 
     public function handle(User $actor, Category $category): Category
     {
-        return DB::transaction(function () use ($actor, $category): Category {
+        $updatedCategory = DB::transaction(function () use ($actor, $category): Category {
             $lockedActor = User::query()->lockForUpdate()->findOrFail($actor->getKey());
             $lockedCategory = Category::query()->lockForUpdate()->findOrFail($category->getKey());
             Gate::forUser($lockedActor)->authorize('toggleActive', $lockedCategory);
@@ -25,5 +25,9 @@ class ToggleCategoryActive
 
             return $lockedCategory;
         });
+
+        ListCategoryOptions::clear();
+
+        return $updatedCategory;
     }
 }

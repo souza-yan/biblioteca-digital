@@ -4,6 +4,8 @@ namespace App\Models;
 
 use App\Enums\MaterialStatus;
 use Database\Factories\MaterialFactory;
+use Illuminate\Database\Eloquent\Attributes\Scope;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -42,6 +44,38 @@ class Material extends Model
             'published_at' => 'datetime',
             'archived_at' => 'datetime',
         ];
+    }
+
+    #[Scope]
+    protected function published(Builder $query): Builder
+    {
+        return $query->where('status', MaterialStatus::PUBLISHED);
+    }
+
+    #[Scope]
+    protected function visibleTo(Builder $query, User $user): Builder
+    {
+        if ($user->isAdmin()) {
+            return $query;
+        }
+
+        if ($user->isStaff()) {
+            return $query->where(function (Builder $query) use ($user): void {
+                $query
+                    ->where('status', MaterialStatus::PUBLISHED)
+                    ->orWhere(function (Builder $query) use ($user): void {
+                        $query
+                            ->where('status', MaterialStatus::DRAFT)
+                            ->where('created_by', $user->getKey());
+                    });
+            });
+        }
+
+        if ($user->isTeacher()) {
+            return $query->published();
+        }
+
+        return $query->whereRaw('1 = 0');
     }
 
     /**

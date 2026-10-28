@@ -20,7 +20,7 @@ class CreateCategory
     {
         Gate::forUser($actor)->authorize('create', Category::class);
 
-        return DB::transaction(function () use ($actor, $attributes): Category {
+        $category = DB::transaction(function () use ($actor, $attributes): Category {
             $lockedActor = User::query()->lockForUpdate()->findOrFail($actor->getKey());
             Gate::forUser($lockedActor)->authorize('create', Category::class);
 
@@ -34,5 +34,9 @@ class CreateCategory
 
             return $category;
         });
+
+        ListCategoryOptions::clear();
+
+        return $category;
     }
 }

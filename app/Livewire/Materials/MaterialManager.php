@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Materials;
 
+use App\Actions\Category\ListCategoryOptions;
 use App\Actions\Material\ArchiveMaterial;
 use App\Actions\Material\CreateMaterialWithVersion;
 use App\Actions\Material\PublishMaterial;
@@ -9,7 +10,6 @@ use App\Actions\Material\UpdateMaterial;
 use App\Enums\MaterialStatus;
 use App\Livewire\Concerns\InteractsWithCurrentUser;
 use App\Livewire\Forms\MaterialForm;
-use App\Models\Category;
 use App\Models\Material;
 use App\Models\User;
 use Illuminate\Contracts\View\View;
@@ -258,7 +258,7 @@ class MaterialManager extends Component
     }
 
     #[Layout('layouts.app')]
-    public function render(): View
+    public function render(ListCategoryOptions $listCategoryOptions): View
     {
         $actor = $this->authorizeManager();
         $allowedStatuses = $actor->isAdmin()
@@ -272,6 +272,7 @@ class MaterialManager extends Component
 
         $materials = Material::query()
             ->with(['category', 'currentVersion'])
+            ->visibleTo($actor)
             ->when(filled($this->search), function (Builder $query): void {
                 $query->where(function (Builder $query): void {
                     $query
@@ -280,10 +281,6 @@ class MaterialManager extends Component
                 });
             })
             ->where('status', $status->value)
-            ->when(
-                $actor->isStaff() && $status === MaterialStatus::DRAFT,
-                fn (Builder $query): Builder => $query->where('created_by', $actor->getKey())
-            )
             ->when(
                 filled($this->categoryFilter),
                 fn (Builder $query): Builder => $query->where(
@@ -294,17 +291,12 @@ class MaterialManager extends Component
             ->orderBy('title')
             ->paginate($actor->isStaff() ? 10 : 15);
 
-        foreach ($materials as $material) {
-            Gate::authorize('view', $material);
-        }
+        $categories = $listCategoryOptions->all();
 
         return view('livewire.materials.material-manager', [
             'materials' => $materials,
-            'categories' => Category::query()->orderBy('name')->get(),
-            'activeCategories' => Category::query()
-                ->where('is_active', true)
-                ->orderBy('name')
-                ->get(),
+            'categories' => $categories,
+            'activeCategories' => $listCategoryOptions->active(),
             'statusOptions' => [
                 ...array_map(
                     fn (MaterialStatus $status): array => [
