@@ -9,12 +9,36 @@
             <h1 class="mt-1 text-3xl font-bold tracking-tight text-blue-800 sm:text-4xl">Materiais publicados</h1>
         </div>
 
-        <div class="mb-5 grid grid-cols-1 items-end gap-4 md:grid-cols-3">
-            <x-search-field model="search" label="Buscar material" placeholder="Título, autor ou descrição" />
+        {{-- Busca facetada: todos os valores ficam na URL para permitir compartilhar a consulta. --}}
+        <div class="grid grid-cols-1 items-end gap-4 md:grid-cols-2 xl:grid-cols-3">
+            <x-search-field model="search" label="Buscar material" placeholder="Título, autor ou descrição"
+                list="material-search-suggestions" />
+            <datalist id="material-search-suggestions">
+                @foreach ($searchSuggestions as $suggestion)
+                    <option value="{{ $suggestion }}"></option>
+                @endforeach
+            </datalist>
             <x-form.select id="material-category-filter" label="Categoria" wire:model.live="categoryFilter">
                 <option value="">Todas as categorias</option>
                 @foreach ($categories as $category)
                     <option value="{{ $category->id }}">{{ $category->name }}</option>
+                @endforeach
+            </x-form.select>
+            <x-form.select id="material-format-filter" label="Formato" wire:model.live="formatFilter">
+                <option value="">Todos os formatos</option>
+                @foreach ($formats as $format)
+                    <option value="{{ $format }}">{{ Str::upper($format) }}</option>
+                @endforeach
+            </x-form.select>
+            <x-form.select id="material-author-filter" label="Autor" wire:model.live="authorFilter">
+                <option value="">Todos os autores</option>
+                @foreach ($authors as $author)
+                    <option value="{{ $author }}">{{ $author }}</option>
+                @endforeach
+            </x-form.select>
+            <x-form.select id="material-period-filter" label="Publicação" wire:model.live="publishedPeriod">
+                @foreach ($periodOptions as $value => $label)
+                    <option value="{{ $value }}">{{ $label }}</option>
                 @endforeach
             </x-form.select>
             <x-form.select id="material-sort-order" label="Ordenar por" wire:model.live="sortOrder">
@@ -24,6 +48,28 @@
             </x-form.select>
         </div>
 
+        @if ($recentSearches !== [] || $hasActiveFilters)
+            <div class="flex flex-wrap items-center gap-2" aria-label="Filtros e pesquisas recentes">
+                @if ($hasActiveFilters)
+                    <button type="button" wire:click="clearFilters"
+                        class="inline-flex h-9 items-center gap-2 rounded-full border border-blue-200 bg-blue-50 px-3 text-sm font-semibold text-blue-800 transition hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-600">
+                        <x-ts-icon icon="x-mark" outline class="size-4" />
+                        Limpar filtros
+                    </button>
+                @endif
+
+                @foreach ($recentSearches as $recentSearch)
+                    <button type="button" wire:key="recent-search-{{ md5($recentSearch) }}"
+                        wire:click="applyRecentSearch(@js($recentSearch))"
+                        class="inline-flex h-9 items-center gap-2 rounded-full bg-slate-100 px-3 text-sm text-slate-700 transition hover:bg-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-600">
+                        <x-ts-icon icon="clock" outline class="size-4" />
+                        {{ $recentSearch }}
+                    </button>
+                @endforeach
+            </div>
+        @endif
+
+        {{-- Resultados e ações disponíveis para cada material publicado. --}}
         <x-data-table :columns="[
             ['label' => 'Título'],
             ['label' => 'Categoria'],

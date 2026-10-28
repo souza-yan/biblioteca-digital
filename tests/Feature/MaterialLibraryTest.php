@@ -56,6 +56,68 @@ it('filters the teacher library by search and category', function () {
         ->assertDontSee($other->title);
 });
 
+it('filters published materials by format author and publication period', function () {
+    $teacher = User::factory()->teacher()->create();
+    $matching = Material::factory()->published()->create([
+        'title' => 'Apostila recente',
+        'type' => 'pdf',
+        'author' => 'Equipe de Robótica',
+        'published_at' => now()->subDays(5),
+    ]);
+    Material::factory()->published()->create([
+        'title' => 'Vídeo recente',
+        'type' => 'mp4',
+        'author' => 'Equipe de Robótica',
+        'published_at' => now()->subDays(5),
+    ]);
+    Material::factory()->published()->create([
+        'title' => 'Apostila antiga',
+        'type' => 'pdf',
+        'author' => 'Equipe de Robótica',
+        'published_at' => now()->subDays(120),
+    ]);
+
+    Livewire::actingAs($teacher)
+        ->test(MaterialLibrary::class)
+        ->set('formatFilter', 'pdf')
+        ->set('authorFilter', 'Equipe de Robótica')
+        ->set('publishedPeriod', '30')
+        ->assertSee($matching->title)
+        ->assertDontSee('Vídeo recente')
+        ->assertDontSee('Apostila antiga');
+});
+
+it('persists library filters in the query string and can clear them', function () {
+    $teacher = User::factory()->teacher()->create();
+
+    Livewire::withQueryParams([
+        'q' => 'Arduino',
+        'formatFilter' => 'pdf',
+        'sortOrder' => 'recent',
+    ])
+        ->actingAs($teacher)
+        ->test(MaterialLibrary::class)
+        ->assertSet('search', 'Arduino')
+        ->assertSet('formatFilter', 'pdf')
+        ->assertSet('sortOrder', 'recent')
+        ->call('clearFilters')
+        ->assertSet('search', '')
+        ->assertSet('formatFilter', '')
+        ->assertSet('sortOrder', 'title');
+});
+
+it('stores and reapplies recent material searches', function () {
+    $teacher = User::factory()->teacher()->create();
+
+    Livewire::actingAs($teacher)
+        ->test(MaterialLibrary::class)
+        ->set('search', 'Sensores')
+        ->assertSessionHas('material_library_recent_searches', ['Sensores'])
+        ->set('search', '')
+        ->call('applyRecentSearch', 'Sensores')
+        ->assertSet('search', 'Sensores');
+});
+
 it('searches published materials by description without exposing unpublished materials', function () {
     $teacher = User::factory()->teacher()->create();
     $published = Material::factory()->published()->create([
