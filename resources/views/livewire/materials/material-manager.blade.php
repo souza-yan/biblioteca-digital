@@ -21,9 +21,11 @@
                         ['label' => 'Início', 'url' => route('dashboard')],
                         ['label' => 'Materiais'],
                     ]" />
-                    <p class="text-sm font-semibold uppercase tracking-[0.14em] text-blue-700">
-                        {{ $canManageMaterials ? 'Acervo global' : 'Gestão de conteúdos' }}
-                    </p>
+                    @if (! $canManageMaterials)
+                        <p class="text-sm font-semibold uppercase tracking-[0.14em] text-blue-700">
+                            Gestão de conteúdos
+                        </p>
+                    @endif
                     <h1 class="mt-1 text-3xl font-bold tracking-tight text-blue-800 sm:text-4xl">
                         Materiais
                     </h1>

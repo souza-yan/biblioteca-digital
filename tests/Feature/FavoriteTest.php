@@ -144,4 +144,9 @@ it('shows the favorites navigation link only to teachers', function () {
         ->get(route('painel.materials'))
         ->assertOk()
         ->assertDontSee('Favoritos');
+
+    $this->actingAs(User::factory()->admin()->create())
+        ->get(route('painel.materials'))
+        ->assertOk()
+        ->assertDontSee('Favoritos');
 });

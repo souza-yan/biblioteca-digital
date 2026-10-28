@@ -23,6 +23,7 @@ it('allows admins to create materials with the authenticated creator', function 
     $this->actingAs($actor);
 
     Livewire::test(MaterialManager::class)
+        ->assertDontSee('Acervo global')
         ->call('openCreate')
         ->set('form.title', 'Material de Ciências')
         ->set('form.description', 'Conteúdo introdutório')
