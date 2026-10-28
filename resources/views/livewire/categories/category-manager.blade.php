@@ -38,6 +38,7 @@
         </div>
 
         <x-data-table :columns="$categoryColumns">
+            <x-data-table.loading :colspan="count($categoryColumns)" />
             @forelse ($categories as $category)
                 <tr wire:key="category-{{ $category->id }}">
                     <td class="px-5 py-4 text-lg font-medium text-gray-900">{{ $category->name }}</td>
@@ -52,6 +53,8 @@
                                     <x-ts-icon icon="pencil-square" outline class="size-7 text-white" />
                                 </x-ts-button>
                                 <x-ts-button :color="$category->is_active ? 'red' : 'emerald'" wire:click="toggleActive({{ $category->id }})"
+                                    wire:confirm="{{ $category->is_active ? 'Desativar esta categoria?' : 'Ativar esta categoria?' }}"
+                                    wire:loading.attr="disabled" wire:target="toggleActive({{ $category->id }})"
                                     :aria-label="$category->is_active ? 'Desativar categoria '.$category->name : 'Ativar categoria '.$category->name"
                                     :title="$category->is_active ? 'Desativar categoria' : 'Ativar categoria'" class="!size-12 !p-0 justify-center">
                                     <x-ts-icon :icon="$category->is_active ? 'no-symbol' : 'check-circle'" outline class="size-5 text-white" />

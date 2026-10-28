@@ -71,6 +71,7 @@
             </div>
 
             <x-data-table :columns="$materialColumns">
+                <x-data-table.loading :colspan="count($materialColumns)" />
                 @forelse ($materials as $material)
                     <tr wire:key="material-{{ $material->id }}">
                         <td class="px-5 py-4 text-lg font-medium text-black">{{ $material->title }}</td>
@@ -98,6 +99,8 @@
 
                                 @if ($material->status->value !== \App\Enums\MaterialStatus::PUBLISHED->value)
                                     <x-ts-button color="emerald" wire:click="publish({{ $material->id }})"
+                                        wire:confirm="Publicar este material na biblioteca?"
+                                        wire:loading.attr="disabled" wire:target="publish({{ $material->id }})"
                                         aria-label="Publicar material {{ $material->title }}" title="Publicar material"
                                         class="!size-12 !p-0 shrink-0 justify-center">
                                         <x-ts-icon icon="cloud-arrow-up" outline class="size-7 text-white" />
@@ -106,6 +109,8 @@
 
                                 @if ($material->status->value !== \App\Enums\MaterialStatus::ARCHIVED->value)
                                     <x-ts-button color="red" wire:click="archive({{ $material->id }})"
+                                        wire:confirm="Arquivar este material? Ele deixará de aparecer na biblioteca."
+                                        wire:loading.attr="disabled" wire:target="archive({{ $material->id }})"
                                         aria-label="Arquivar material {{ $material->title }}" title="Arquivar material"
                                         class="!size-12 !p-0 shrink-0 justify-center">
                                         <x-ts-icon icon="archive-box" outline class="size-7 text-white" />

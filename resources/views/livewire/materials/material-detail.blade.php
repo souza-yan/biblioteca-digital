@@ -63,6 +63,7 @@
 
                         @if ($material->status !== \App\Enums\MaterialStatus::PUBLISHED)
                             <x-ts-button color="emerald" wire:click="publish" aria-label="Publicar material"
+                                wire:confirm="Publicar este material na biblioteca?"
                                 title="Publicar material" class="!size-12 !p-0 shrink-0 justify-center">
                                 <x-ts-icon icon="cloud-arrow-up" outline class="size-7 text-white" />
                             </x-ts-button>
@@ -70,6 +71,7 @@
 
                         @if ($material->status !== \App\Enums\MaterialStatus::ARCHIVED)
                             <x-ts-button color="red" wire:click="archive" aria-label="Arquivar material"
+                                wire:confirm="Arquivar este material? Ele deixará de aparecer na biblioteca."
                                 title="Arquivar material" class="!size-12 !p-0 shrink-0 justify-center">
                                 <x-ts-icon icon="archive-box" outline class="size-7 text-white" />
                             </x-ts-button>

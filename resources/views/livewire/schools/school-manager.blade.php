@@ -83,6 +83,8 @@
                                     </span>
                                     <x-ts-button :color="$manager->is_active ? 'red' : 'emerald'"
                                         wire:click="toggleManagerActive({{ $school->id }}, {{ $manager->id }})"
+                                        wire:confirm="Alterar a situação deste gestor na escola?"
+                                        wire:loading.attr="disabled" wire:target="toggleManagerActive({{ $school->id }}, {{ $manager->id }})"
                                         :aria-label="$manager->is_active ? 'Desativar gestor '.$manager->name : 'Ativar gestor '.$manager->name"
                                         :title="$manager->is_active ? 'Desativar gestor' : 'Ativar gestor'"
                                         class="!size-12 !p-0 shrink-0 justify-center">

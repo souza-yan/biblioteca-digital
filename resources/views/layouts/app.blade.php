@@ -40,8 +40,21 @@
             localStorage.setItem('sidebarCollapsed', collapsed ? '1' : '0');
         } catch (error) {}
     },
-}" @keydown.escape.window="closeMobileMenu()">
+    sessionExpired: false,
+}" @keydown.escape.window="closeMobileMenu()" x-on:session-expired.window="sessionExpired = true">
     <x-banner />
+
+    {{-- Avisos globais para falhas que impedem novas interações Livewire. --}}
+    <div wire:offline
+        class="fixed inset-x-4 top-4 z-[70] rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-center text-sm font-semibold text-amber-900 shadow-lg sm:left-auto sm:max-w-md"
+        role="status">
+        Você está offline. As alterações serão retomadas quando a conexão voltar.
+    </div>
+    <div x-cloak x-show="sessionExpired" x-transition
+        class="fixed inset-x-4 top-4 z-[70] rounded-lg border border-red-300 bg-red-50 px-4 py-3 text-sm font-semibold text-red-900 shadow-lg sm:left-auto sm:max-w-md"
+        role="alert">
+        Sua sessão expirou. <a href="{{ route('login') }}" class="underline">Entre novamente</a> para continuar.
+    </div>
 
     {{-- Sidebar + Header fixos (ficam dentro do componente) --}}
     @livewire('navigation-menu')
@@ -64,6 +77,18 @@
     @stack('modals')
 
     @livewireScripts
+    <script>
+        document.addEventListener('livewire:init', () => {
+            Livewire.hook('request', ({ fail }) => {
+                fail(({ status, preventDefault }) => {
+                    if (status === 419) {
+                        preventDefault();
+                        window.dispatchEvent(new CustomEvent('session-expired'));
+                    }
+                });
+            });
+        });
+    </script>
 </body>
 
 </html>

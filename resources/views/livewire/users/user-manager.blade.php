@@ -62,6 +62,7 @@
         </div>
 
         <x-data-table :columns="$columns">
+            <x-data-table.loading :colspan="count($columns)" />
             @forelse ($users as $user)
                 @php
                     $schoolMembership = $actor->isStaff() ? $user->schools->first() : null;
@@ -90,6 +91,8 @@
                             @else
                                 @can('toggleActive', $user)
                                     <x-ts-button :color="($actor->isStaff() ? $localMembershipIsActive : $user->is_active) ? 'red' : 'emerald'" wire:click="toggleActive({{ $user->id }})"
+                                        wire:confirm="{{ ($actor->isStaff() ? $localMembershipIsActive : $user->is_active) ? 'Desativar este usuário?' : 'Ativar este usuário?' }}"
+                                        wire:loading.attr="disabled" wire:target="toggleActive({{ $user->id }})"
                                         :aria-label="($actor->isStaff() ? $localMembershipIsActive : $user->is_active) ? 'Desativar usuário '.$user->name : 'Ativar usuário '.$user->name"
                                         :title="($actor->isStaff() ? $localMembershipIsActive : $user->is_active) ? 'Desativar usuário' : 'Ativar usuário'" class="!size-12 !p-0 justify-center">
                                         <x-ts-icon :icon="($actor->isStaff() ? $localMembershipIsActive : $user->is_active) ? 'no-symbol' : 'check-circle'" outline class="size-5 text-white" />
