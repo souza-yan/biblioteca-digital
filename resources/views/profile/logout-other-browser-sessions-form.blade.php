@@ -58,7 +58,7 @@
         </div>
     @endif
 
-    <div class="flex items-center mt-5">
+    <div class="mt-5 flex items-center justify-end">
         <button type="button" wire:click="confirmLogout" wire:loading.attr="disabled" aria-label="Encerrar outras sessões" title="Encerrar outras sessões"
             class="inline-flex size-12 items-center justify-center rounded-lg bg-blue-900 text-white hover:bg-blue-800 disabled:opacity-50">
             <x-ts-icon icon="arrow-right-start-on-rectangle" outline class="size-7" />
