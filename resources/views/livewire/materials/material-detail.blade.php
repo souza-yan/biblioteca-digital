@@ -107,18 +107,19 @@
                 @endif
             </dl>
 
-            @if ($showEditForm && $canEditMaterial)
-                <form wire:submit="saveMaterial" class="mt-6 space-y-4 border-t border-slate-200 pt-6">
-                    <div class="flex items-center justify-between gap-4">
-                        <div>
-                            <h2 class="text-lg font-semibold text-slate-900">Editar material</h2>
-                            <p class="mt-1 text-sm text-slate-500">Atualize os dados do material mantendo suas versões.</p>
-                        </div>
-                        <button type="button" wire:click="closeEditForm" aria-label="Fechar edição" title="Fechar edição"
-                            class="inline-flex size-11 items-center justify-center rounded-lg text-slate-500 hover:bg-slate-100">
-                            <x-ts-icon icon="x-mark" outline class="size-6" />
-                        </button>
-                    </div>
+            @if ($material->currentVersion)
+                @include('livewire.materials.partials.file-preview', [
+                    'version' => $material->currentVersion,
+                    'previewUrl' => route('previews.show', $material),
+                ])
+            @endif
+        </article>
+
+        {{-- Edição dos metadados sem deslocar a leitura da ficha do material. --}}
+        @if ($canEditMaterial)
+            <x-ts-modal wire="showEditForm" title="Editar material" size="2xl" center>
+                <form id="detail-material-form" wire:submit="saveMaterial" class="space-y-4">
+                    <p class="text-sm text-slate-500">Atualize os dados do material mantendo suas versões.</p>
 
                     <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
                         <x-form.input id="detail-material-title" label="Título" :required="true"
@@ -135,23 +136,20 @@
                         <x-form.input id="detail-material-description" label="Descrição"
                             error="materialForm.description" wire:model="materialForm.description" />
                     </div>
-
-                    <div class="flex justify-end border-t border-slate-100 pt-4">
-                        <x-ts-button color="blue" type="submit" wire:loading.attr="disabled" wire:target="saveMaterial">
-                            <span wire:loading.remove wire:target="saveMaterial">Salvar alterações</span>
-                            <span wire:loading wire:target="saveMaterial">Salvando...</span>
-                        </x-ts-button>
-                    </div>
                 </form>
-            @endif
 
-            @if ($material->currentVersion)
-                @include('livewire.materials.partials.file-preview', [
-                    'version' => $material->currentVersion,
-                    'previewUrl' => route('previews.show', $material),
-                ])
-            @endif
-        </article>
+                <x-slot:footer>
+                    <x-ts-button color="slate" type="button" wire:click="closeEditForm">
+                        Cancelar
+                    </x-ts-button>
+                    <x-ts-button color="blue" type="submit" form="detail-material-form"
+                        wire:loading.attr="disabled" wire:target="saveMaterial">
+                        <span wire:loading.remove wire:target="saveMaterial">Salvar alterações</span>
+                        <span wire:loading wire:target="saveMaterial">Salvando...</span>
+                    </x-ts-button>
+                </x-slot:footer>
+            </x-ts-modal>
+        @endif
 
         {{-- O restante do arquivo continua igual abaixo... --}}
 

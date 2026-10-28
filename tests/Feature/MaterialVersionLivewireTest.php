@@ -101,6 +101,8 @@ it('allows an admin to edit material data from its detail page', function () {
         ->test(MaterialDetail::class, ['material' => $material])
         ->call('openEditForm')
         ->assertSet('showEditForm', true)
+        ->assertSee('Editar material')
+        ->assertSee('id="detail-material-form"', false)
         ->set('materialForm.title', 'Título atualizado nos detalhes')
         ->set('materialForm.author', 'Equipe atualizada')
         ->set('materialForm.category_id', (string) $category->getKey())
