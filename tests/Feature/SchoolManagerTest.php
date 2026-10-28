@@ -21,6 +21,15 @@ it('allows an administrator to access school management', function () {
         ->assertSee('Nova escola');
 });
 
+it('paginates schools in groups of six', function () {
+    $administrator = User::factory()->admin()->create();
+    School::factory()->count(7)->create();
+
+    Livewire::actingAs($administrator)
+        ->test(SchoolManager::class)
+        ->assertViewHas('schools', fn ($schools): bool => $schools->perPage() === 6 && $schools->total() === 7);
+});
+
 it('blocks staff and teachers from school management', function (User $user) {
     $this->actingAs($user)
         ->get(route('painel.schools'))

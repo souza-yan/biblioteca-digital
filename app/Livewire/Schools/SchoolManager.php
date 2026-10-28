@@ -202,7 +202,7 @@ class SchoolManager extends Component
                         ->orWhere('address', 'like', '%'.$this->search.'%');
                 }))
             ->orderBy('name')
-            ->paginate(12);
+            ->paginate(6);
 
         return view('livewire.schools.school-manager', [
             'schools' => $schools,
