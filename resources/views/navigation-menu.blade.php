@@ -178,49 +178,7 @@
                             'text-white hover:bg-blue-700' => !$item['active'],
                         ])
                         @if ($item['active']) aria-current="page" @endif>
-                        <svg @class([
-                            'size-5 shrink-0 transition-colors',
-                            'text-blue-800' => $item['active'],
-                            'text-white' => !$item['active'],
-                        ]) viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="1.7" aria-hidden="true">
-                            @switch($item['icon'])
-                                @case('home')
-                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                        d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1V10Z" />
-                                @break
-
-                                @case('book')
-                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                        d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v16H6.5A2.5 2.5 0 0 0 4 21.5v-16Z" />
-                                    <path stroke-linecap="round" d="M4 18.5A2.5 2.5 0 0 1 6.5 16H20M8 7h8M8 10h5" />
-                                @break
-
-                                @case('folder')
-                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                        d="M3 7.5A1.5 1.5 0 0 1 4.5 6H10l2 2h7.5A1.5 1.5 0 0 1 21 9.5v8a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 17.5v-10Z" />
-                                @break
-
-                                @case('users')
-                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                        d="M16 20v-1.5a3.5 3.5 0 0 0-3.5-3.5h-5A3.5 3.5 0 0 0 4 18.5V20m6-8a4 4 0 1 0-0-8 4 4 0 0 0 0 8Zm6-7.7a4 4 0 0 1 0 7.4m4 8.3v-1.5a3.5 3.5 0 0 0-2.5-3.35" />
-                                @break
-
-                                @case('school')
-                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                        d="M3 21h18M5 21V8l7-4 7 4v13M9 21v-5h6v5M8 11h.01M12 11h.01M16 11h.01" />
-                                @break
-
-                                @case('activity')
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 12h4l2.2-6 4.1 12 2.2-6H21" />
-                                @break
-
-                                @case('bookmark')
-                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                        d="M6.75 3.75h10.5a1.5 1.5 0 0 1 1.5 1.5v15L12 16.5l-6.75 3.75v-15a1.5 1.5 0 0 1 1.5-1.5Z" />
-                                @break
-                            @endswitch
-                        </svg>
+                        <x-navigation-icon :icon="$item['icon']" :active="$item['active']" />
 
                         <span class="sidebar-label shrink-0 whitespace-nowrap">
                             {{ $item['label'] }}
@@ -243,15 +201,7 @@
                         'bg-white text-blue-800 shadow-sm' => request()->routeIs('profile.show'),
                         'text-white hover:bg-blue-700' => !request()->routeIs('profile.show'),
                     ])>
-                    <svg @class([
-                        'size-5 shrink-0 transition-colors',
-                        'text-blue-800' => request()->routeIs('profile.show'),
-                        'text-white' => !request()->routeIs('profile.show'),
-                    ]) viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                        stroke-width="1.7" aria-hidden="true">
-                        <circle cx="12" cy="8" r="3.5" />
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 21v-1.5a7 7 0 0 1 14 0V21H5Z" />
-                    </svg>
+                    <x-navigation-icon icon="profile" :active="request()->routeIs('profile.show')" />
 
                     <span class="sidebar-label shrink-0 whitespace-nowrap">Meu perfil</span>
                 </a>

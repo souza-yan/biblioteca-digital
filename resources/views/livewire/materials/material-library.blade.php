@@ -53,21 +53,17 @@
                             @endif
 
                             @if ($material->currentVersion)
-                                <x-ts-button color="emerald" href="{{ route('downloads.show', $material) }}"
-                                    aria-label="Baixar {{ $material->title }}" title="Baixar material"
-                                    class="!size-12 !p-0 shrink-0 justify-center">
-                                    <x-ts-icon icon="document-arrow-down" outline class="size-7 text-white" />
-                                </x-ts-button>
+                                <x-icon-button icon="document-arrow-down" variant="success"
+                                    :href="route('downloads.show', $material)"
+                                    label="Baixar {{ $material->title }}" />
                             @endif
 
-                            <x-ts-button color="blue" href="{{ route('painel.library.show', [
-                                'material' => $material,
-                                'categoryFilter' => $categoryFilter ?: null,
-                            ]) }}"
-                                aria-label="Ver detalhes de {{ $material->title }}" title="Ver detalhes"
-                                class="!size-12 !p-0 shrink-0 justify-center">
-                                <x-ts-icon icon="eye" outline class="size-7 text-white" />
-                            </x-ts-button>
+                            <x-icon-button icon="eye"
+                                :href="route('painel.library.show', [
+                                    'material' => $material,
+                                    'categoryFilter' => $categoryFilter ?: null,
+                                ])"
+                                label="Ver detalhes de {{ $material->title }}" />
                         </div>
                     </td>
                 </tr>
