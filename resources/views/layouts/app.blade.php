@@ -57,7 +57,7 @@
     </div>
 
     {{-- Sidebar + Header fixos (ficam dentro do componente) --}}
-    @livewire('navigation-menu')
+    @livewire(\App\Livewire\NavigationMenu::class)
 
     {{-- Conteúdo --}}
     <div id="app-main" class="min-h-screen">

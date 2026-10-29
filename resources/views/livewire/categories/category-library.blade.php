@@ -28,18 +28,6 @@
                             placeholder="Nome ou descrição"
                         />
                     </div>
-                    @if ($isStaff)
-                        <div class="flex gap-2">
-                            <x-ts-button color="slate" wire:click="openCategoryForm">
-                                <x-ts-icon icon="folder-plus" outline class="size-5" />
-                                Nova categoria
-                            </x-ts-button>
-                            <x-ts-button color="blue" wire:click="openMaterialForm">
-                                <x-ts-icon icon="plus" outline class="size-5" />
-                                Novo material
-                            </x-ts-button>
-                        </div>
-                    @endif
                 </div>
             </div>
 
@@ -89,63 +77,4 @@
         </section>
     </div>
 
-    @if ($isStaff)
-    <x-ts-modal wire="showCategoryForm" title="Nova categoria" size="xl" center>
-        <form id="library-category-form" wire:submit="saveCategory" class="space-y-4">
-            <x-ts-input wire:model="categoryForm.name" label="Nome *" required />
-            <x-ts-input wire:model="categoryForm.description" label="Descrição" />
-            <label class="flex items-center gap-2 text-base text-gray-700">
-                <input type="checkbox" wire:model="categoryForm.is_active"
-                    class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
-                Categoria ativa
-            </label>
-        </form>
-
-        <x-slot:footer>
-            <x-ts-button color="slate" type="button" wire:click="closeCategoryForm">Cancelar</x-ts-button>
-            <x-ts-button color="blue" type="submit" form="library-category-form" wire:loading.attr="disabled" wire:target="saveCategory">
-                <span wire:loading.remove wire:target="saveCategory">Salvar categoria</span>
-                <span wire:loading wire:target="saveCategory">Salvando...</span>
-            </x-ts-button>
-        </x-slot:footer>
-    </x-ts-modal>
-
-    <x-ts-modal wire="showMaterialForm" title="Novo material" size="2xl" center>
-        <form id="library-material-form" wire:submit="saveMaterial" class="space-y-4">
-                    <x-ts-input wire:model="materialForm.title" label="Título *" required />
-                    <x-ts-input wire:model="materialForm.description" label="Descrição" />
-                    <x-ts-select.styled wire:model="materialForm.category_id" label="Categoria *"
-                        placeholder="Selecione uma categoria ativa" :options="$activeCategories
-                            ->map(fn($category) => ['label' => $category->name, 'value' => $category->id])
-                            ->all()"
-                        select="label:label|value:value" required />
-                    <x-ts-input wire:model="materialForm.author" label="Autor *" required />
-
-                    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                        <x-ts-select.styled wire:model="materialForm.initialStatus" label="Status inicial *"
-                            :options="[
-                                ['label' => 'Rascunho', 'value' => 'draft'],
-                                ['label' => 'Publicado', 'value' => 'published'],
-                            ]" select="label:label|value:value" required />
-                        <div class="rounded-md border border-blue-100 bg-blue-50 px-4 py-3 text-sm text-blue-900">
-                            <span class="font-semibold">Versão 1</span>
-                            <span class="mt-1 block text-blue-700">Definida automaticamente pelo sistema.</span>
-                        </div>
-                    </div>
-
-                    <x-ts-input wire:model="materialForm.change_note" label="Nota da versão (opcional)" />
-
-                    <x-materials.file-upload id="library-material-file" model="materialForm.file" :file="$materialForm->file" />
-
-        </form>
-
-        <x-slot:footer>
-            <x-ts-button color="slate" type="button" wire:click="closeMaterialForm">Cancelar</x-ts-button>
-            <x-ts-button color="blue" type="submit" form="library-material-form" wire:loading.attr="disabled" wire:target="saveMaterial">
-                <span wire:loading.remove wire:target="saveMaterial">Salvar material</span>
-                <span wire:loading wire:target="saveMaterial">Salvando...</span>
-            </x-ts-button>
-        </x-slot:footer>
-    </x-ts-modal>
-    @endif
 </div>

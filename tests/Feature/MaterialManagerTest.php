@@ -272,15 +272,12 @@ it('shows the material creation flow to staff with publication control', functio
         ->assertSee('Status inicial');
 });
 
-it('opens the staff material form from the category library action', function () {
+it('keeps staff material creation in the material manager', function () {
     $staff = User::factory()->staffInSchool()->create();
 
     Livewire::actingAs($staff)
         ->test(CategoryLibrary::class)
-        ->call('openMaterialForm')
-        ->assertSet('showMaterialForm', true)
-        ->assertSee('Novo material')
-        ->assertSee('Status inicial');
+        ->assertDontSee('Novo material');
 });
 
 it('shows staff a download action for published materials with a current version', function () {
