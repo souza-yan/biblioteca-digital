@@ -219,7 +219,7 @@ A aplicação estará disponível no endereço configurado pelo servidor Laravel
 * Biblioteca de materiais publicados com busca full-text e fallback compatível.
 * Filtros por categoria, formato, autor e período, preservados na URL.
 * Sugestões e histórico recente de pesquisas por sessão.
-* Pré-visualização, download, favoritos e histórico pessoal de acessos.
+* Pré-visualização, download, favoritos e últimos materiais acessados no painel do professor.
 * Versionamento imutável dos arquivos, com nota de alteração e responsável.
 * Fluxos distintos para administrador, gestão escolar e professor.
 * Escolas e vínculos de gestores e professores.

@@ -156,7 +156,7 @@ class BuildDashboard
             ->select('materials.id')
             ->orderByDesc('latest_accesses.last_accessed_at')
             ->orderByDesc('materials.id')
-            ->limit(5)
+            ->limit(3)
             ->pluck('materials.id')
             ->all();
 

@@ -44,11 +44,13 @@ it('shows teachers recent published materials and only their published favorites
         );
 });
 
-it('shows teachers only their five latest unique published downloads and previews', function () {
+it('shows teachers only their three latest unique published downloads and previews', function () {
     $teacher = User::factory()->teacher()->create();
     $otherTeacher = User::factory()->teacher()->create();
     $downloaded = Material::factory()->published()->create(['title' => 'Baixado por mim']);
     $previewed = Material::factory()->published()->create(['title' => 'Prévia por mim']);
+    $thirdAccess = Material::factory()->published()->create(['title' => 'Terceiro acesso por mim']);
+    $olderAccess = Material::factory()->published()->create(['title' => 'Acesso mais antigo por mim']);
     $otherAccess = Material::factory()->published()->create(['title' => 'Acesso de outro professor']);
     $draft = Material::factory()->draft()->create(['title' => 'Rascunho acessado']);
     $archived = Material::factory()->archived()->create(['title' => 'Arquivado acessado']);
@@ -65,6 +67,8 @@ it('shows teachers only their five latest unique published downloads and preview
         [$downloaded, $teacher, now()->subMinutes(2)],
         [$downloaded, $teacher, now()->subMinutes(1)],
         [$previewed, $teacher, now()->subMinutes(3)],
+        [$thirdAccess, $teacher, now()->subMinutes(4)],
+        [$olderAccess, $teacher, now()->subMinutes(5)],
         [$otherAccess, $otherTeacher, now()],
         [$draft, $teacher, now()],
         [$archived, $teacher, now()],
@@ -86,7 +90,11 @@ it('shows teachers only their five latest unique published downloads and preview
     ]);
 
     $recentlyAccessed = app(BuildDashboard::class)->handle($teacher)['recentlyAccessedMaterials'];
-    expect($recentlyAccessed->pluck('id')->all())->toBe([$downloaded->getKey(), $previewed->getKey()]);
+    expect($recentlyAccessed->pluck('id')->all())->toBe([
+        $downloaded->getKey(),
+        $previewed->getKey(),
+        $thirdAccess->getKey(),
+    ]);
 
     $this->actingAs($teacher)
         ->get(route('dashboard'))
@@ -94,11 +102,16 @@ it('shows teachers only their five latest unique published downloads and preview
         ->assertSee('Últimos materiais acessados ou baixados')
         ->assertSee('Baixado por mim')
         ->assertSee('Prévia por mim')
+        ->assertSee('Terceiro acesso por mim')
         ->assertDontSee('Rascunho acessado')
         ->assertDontSee('Arquivado acessado')
-        ->assertViewHas('recentlyAccessedMaterials', function ($materials) use ($downloaded, $previewed): bool {
-            return $materials->count() === 2
-                && $materials->pluck('id')->all() === [$downloaded->getKey(), $previewed->getKey()];
+        ->assertViewHas('recentlyAccessedMaterials', function ($materials) use ($downloaded, $previewed, $thirdAccess): bool {
+            return $materials->count() === 3
+                && $materials->pluck('id')->all() === [
+                    $downloaded->getKey(),
+                    $previewed->getKey(),
+                    $thirdAccess->getKey(),
+                ];
         })
         ->assertSee(route('painel.library.show', $downloaded), false)
         ->assertSee(route('painel.library.show', $previewed), false);

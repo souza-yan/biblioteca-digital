@@ -61,7 +61,7 @@
                     <td class="px-5 py-4 text-right">
                         <div class="flex flex-row flex-nowrap items-center justify-end gap-2">
                             @if ($isTeacher)
-                                <x-ts-button :color="$material->is_favorited ? 'yellow' : 'slate'"
+                                <x-ts-button :color="$material->is_favorited ? 'yellow' : 'blue'"
                                     wire:click.stop="toggleFavorite({{ $material->id }})"
                                     :aria-label="$material->is_favorited ? 'Remover dos favoritos' : 'Adicionar aos favoritos'"
                                     :title="$material->is_favorited ? 'Remover dos favoritos' : 'Adicionar aos favoritos'"
@@ -70,7 +70,7 @@
                                     @if ($material->is_favorited)
                                         <x-ts-icon icon="bookmark" solid class="size-7 text-amber-950" />
                                     @else
-                                        <x-ts-icon icon="bookmark" outline class="size-7 text-slate-200" />
+                                        <x-ts-icon icon="bookmark" outline class="size-7 text-white" />
                                     @endif
                                 </x-ts-button>
                             @endif

@@ -68,12 +68,6 @@
             $navigationItems = [
                 ...$navigationItems,
                 [
-                    'label' => 'Meu histórico',
-                    'route' => 'painel.history',
-                    'active' => request()->routeIs('painel.history'),
-                    'icon' => 'history',
-                ],
-                [
                     'label' => 'Materiais',
                     'route' => 'painel.library.categories',
                     'active' => request()->routeIs('painel.library', 'painel.library.*'),

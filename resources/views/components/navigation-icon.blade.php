@@ -10,7 +10,6 @@
         'activity' => 'chart-bar',
         'bookmark' => 'bookmark',
         'profile' => 'user-circle',
-        'history' => 'clock',
     ];
 @endphp
 
