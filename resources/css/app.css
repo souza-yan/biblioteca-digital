@@ -13,6 +13,22 @@
     display: none;
 }
 
+.skeleton-shimmer {
+    background: linear-gradient(90deg, #e2e8f0 25%, #f8fafc 50%, #e2e8f0 75%);
+    background-size: 200% 100%;
+    animation: skeleton-shimmer 1.35s ease-in-out infinite;
+}
+
+@keyframes skeleton-shimmer {
+    from {
+        background-position: 200% 0;
+    }
+
+    to {
+        background-position: -200% 0;
+    }
+}
+
 :root {
     --sidebar-w: 18rem;
     --sidebar-w-mini: 5rem;
@@ -110,6 +126,10 @@ html.sidebar-collapsed #app-sidebar p.sidebar-label {
 }
 
 @media (prefers-reduced-motion: reduce) {
+    .skeleton-shimmer {
+        animation: none;
+    }
+
     #app-sidebar,
     #app-header,
     #app-main,
