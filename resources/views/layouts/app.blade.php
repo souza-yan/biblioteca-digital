@@ -30,8 +30,6 @@
 
 <body class="bg-slate-50 font-sans text-slate-900 antialiased" x-data="{
     menuOpen: false,
-    appLoading: true,
-    loadingRequests: 0,
     closeMobileMenu() {
         this.menuOpen = false;
     },
@@ -43,10 +41,7 @@
         } catch (error) {}
     },
     sessionExpired: false,
-}" x-init="$nextTick(() => appLoading = false)" @keydown.escape.window="closeMobileMenu()"
-    x-on:session-expired.window="sessionExpired = true"
-    x-on:app-loading-start.window="loadingRequests++; appLoading = true"
-    x-on:app-loading-end.window="loadingRequests = Math.max(0, loadingRequests - 1); appLoading = loadingRequests > 0">
+}" @keydown.escape.window="closeMobileMenu()" x-on:session-expired.window="sessionExpired = true">
     <x-banner />
 
     {{-- Avisos globais para falhas que impedem novas interações Livewire. --}}
@@ -66,9 +61,6 @@
 
     {{-- Conteúdo --}}
     <div id="app-main" class="min-h-screen">
-        <div x-show="appLoading" x-transition.opacity.duration.150ms>
-            <x-skeleton.page />
-        </div>
         @isset($header)
             <header class="border-b border-slate-200 bg-white">
                 <div class="mx-auto max-w-screen-2xl px-4 py-5 sm:px-6 lg:px-8">
@@ -87,16 +79,8 @@
     @livewireScripts
     <script>
         document.addEventListener('livewire:init', () => {
-            Livewire.hook('request', ({ succeed, fail }) => {
-                window.dispatchEvent(new CustomEvent('app-loading-start'));
-
-                succeed(() => {
-                    window.dispatchEvent(new CustomEvent('app-loading-end'));
-                });
-
+            Livewire.hook('request', ({ fail }) => {
                 fail(({ status, preventDefault }) => {
-                    window.dispatchEvent(new CustomEvent('app-loading-end'));
-
                     if (status === 419) {
                         preventDefault();
                         window.dispatchEvent(new CustomEvent('session-expired'));

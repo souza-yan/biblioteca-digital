@@ -14,25 +14,7 @@
 }
 
 .skeleton-shimmer {
-    background: linear-gradient(90deg, #e2e8f0 25%, #f8fafc 50%, #e2e8f0 75%);
-    background-size: 200% 100%;
-    animation: skeleton-shimmer 1.35s ease-in-out infinite;
-}
-
-.app-loading-overlay {
-    position: fixed;
-    inset: var(--header-h) 0 0 0;
-    z-index: 35;
-}
-
-@keyframes skeleton-shimmer {
-    from {
-        background-position: 200% 0;
-    }
-
-    to {
-        background-position: -200% 0;
-    }
+    background-color: #e2e8f0;
 }
 
 :root {
@@ -130,13 +112,10 @@ html.sidebar-collapsed #app-sidebar p.sidebar-label {
         padding-left: var(--sidebar-w);
     }
 
-    .app-loading-overlay {
-        left: var(--sidebar-w);
-    }
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .skeleton-shimmer {
+    .animate-pulse {
         animation: none;
     }
 
