@@ -13,10 +13,6 @@
     display: none;
 }
 
-.skeleton-shimmer {
-    background-color: #e2e8f0;
-}
-
 :root {
     --sidebar-w: 18rem;
     --sidebar-w-mini: 5rem;
@@ -115,10 +111,6 @@ html.sidebar-collapsed #app-sidebar p.sidebar-label {
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .animate-pulse {
-        animation: none;
-    }
-
     #app-sidebar,
     #app-header,
     #app-main,

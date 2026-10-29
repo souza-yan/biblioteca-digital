@@ -72,7 +72,6 @@
 
         {{-- Professores visíveis no escopo do ator e ações autorizadas. --}}
         <x-data-table :columns="$columns">
-            <x-data-table.loading :colspan="count($columns)" />
             @forelse ($users as $user)
                 @php
                     $schoolMembership = $actor->isStaff() ? $user->schools->first() : null;

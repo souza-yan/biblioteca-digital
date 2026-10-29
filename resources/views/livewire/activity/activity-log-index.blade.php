@@ -36,7 +36,6 @@
                 <x-data-table :columns="$columns" :header-style="$tableHeaderStyle" :compact-header="true"
                     :sticky-header="true"
                     class="max-h-[70vh] overflow-auto [&_td]:text-lg [&_td]:text-black">
-                    <x-data-table.loading :colspan="count($columns)" />
                     @forelse ($records as $record)
                         @if ($activeTab === 'downloads')
                             <x-activity.download-row wire:key="download-{{ $record->id }}" :download="$record" />

@@ -10,7 +10,6 @@
             ['label' => 'Autor'],
             ['label' => 'Ação', 'align' => 'right'],
         ]">
-            <x-data-table.loading :colspan="4" />
             @forelse ($materials as $material)
                 <tr wire:key="favorite-material-{{ $material->id }}">
                     <td class="px-5 py-4 text-lg font-medium text-black">{{ $material->title }}</td>

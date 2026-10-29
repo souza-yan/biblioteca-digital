@@ -63,7 +63,6 @@
 
             {{-- Acervo gerenciável e ações de ciclo de vida do material. --}}
             <x-data-table :columns="$materialColumns">
-                <x-data-table.loading :colspan="count($materialColumns)" />
                 @forelse ($materials as $material)
                     <tr wire:key="material-{{ $material->id }}">
                         <td class="px-5 py-4 text-lg font-medium text-black">{{ $material->title }}</td>

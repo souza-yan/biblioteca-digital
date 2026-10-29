@@ -30,7 +30,6 @@
 
         {{-- Categorias e controles administrativos de ativação. --}}
         <x-data-table :columns="$categoryColumns">
-            <x-data-table.loading :colspan="count($categoryColumns)" />
             @forelse ($categories as $category)
                 <tr wire:key="category-{{ $category->id }}">
                     <td class="px-5 py-4 text-lg font-medium text-gray-900">{{ $category->name }}</td>
