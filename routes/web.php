@@ -1,6 +1,6 @@
 <?php
 
-use App\Actions\Dashboard\BuildDashboard;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DownloadController;
 use App\Http\Controllers\MostDownloadedMaterialsController;
 use App\Http\Controllers\PreviewController;
@@ -13,7 +13,6 @@ use App\Livewire\Materials\MaterialLibrary;
 use App\Livewire\Materials\MaterialManager;
 use App\Livewire\Schools\SchoolManager;
 use App\Livewire\Users\UserManager;
-use App\Models\User;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware([
@@ -24,14 +23,7 @@ Route::middleware([
     'school.context',
 ])->group(function () {
 
-    Route::get('/', function (BuildDashboard $buildDashboard) {
-        $actor = request()->user();
-        abort_unless($actor instanceof User, 403);
-        $requestedDownloadPeriod = request()->query('downloadPeriod', '30');
-        $downloadPeriod = is_string($requestedDownloadPeriod) ? $requestedDownloadPeriod : '';
-
-        return view('dashboard', $buildDashboard->handle($actor, $downloadPeriod));
-    })->name('dashboard');
+    Route::get('/', DashboardController::class)->name('dashboard');
 
     Route::get('/materiais/{material}/download', [DownloadController::class, 'show'])
         ->name('downloads.show');
