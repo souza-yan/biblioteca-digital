@@ -3,7 +3,6 @@
         {{-- Cabeçalho da administração das unidades escolares. --}}
         <header class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
             <div>
-                <p class="text-sm font-semibold uppercase tracking-[0.14em] text-blue-700">Administração</p>
                 <h1 class="mt-2 text-3xl font-bold tracking-tight text-blue-800 sm:text-4xl">Escolas</h1>
             </div>
 
@@ -53,7 +52,8 @@
                             <div>
                                 <h3 class="font-semibold text-slate-900">Gestão vinculada</h3>
                                 <p class="text-sm text-slate-500">
-                                    {{ $school->users->count() }} {{ $school->users->count() === 1 ? 'gestor vinculado' : 'gestores vinculados' }}
+                                    {{ $school->users->count() }}
+                                    {{ $school->users->count() === 1 ? 'gestor vinculado' : 'gestores vinculados' }}
                                 </p>
                             </div>
 
@@ -62,16 +62,19 @@
                         <div class="mt-4 space-y-2">
                             @forelse ($school->users as $manager)
                                 <div class="flex min-w-0 items-center gap-3 rounded-xl bg-slate-50 px-3 py-2.5">
-                                    <span class="flex size-10 shrink-0 items-center justify-center rounded-full bg-blue-100 font-semibold text-blue-900">
+                                    <span
+                                        class="flex size-10 shrink-0 items-center justify-center rounded-full bg-blue-100 font-semibold text-blue-900">
                                         {{ \Illuminate\Support\Str::upper(\Illuminate\Support\Str::substr($manager->name, 0, 1)) }}
                                     </span>
                                     <span class="min-w-0 flex-1">
-                                        <span class="block truncate text-sm font-semibold text-slate-800">{{ $manager->name }}</span>
-                                        <span class="block truncate text-xs text-slate-500">{{ $manager->email }}</span>
+                                        <span
+                                            class="block truncate text-sm font-semibold text-slate-800">{{ $manager->name }}</span>
+                                        <span
+                                            class="block truncate text-xs text-slate-500">{{ $manager->email }}</span>
                                         <span @class([
                                             'mt-1 inline-flex rounded-full px-2 py-0.5 text-xs font-semibold',
                                             'bg-emerald-100 text-emerald-800' => $manager->is_active,
-                                            'bg-slate-200 text-slate-700' => ! $manager->is_active,
+                                            'bg-slate-200 text-slate-700' => !$manager->is_active,
                                         ])>
                                             {{ $manager->is_active ? 'Ativo' : 'Inativo' }}
                                         </span>
@@ -79,15 +82,18 @@
                                     <x-ts-button :color="$manager->is_active ? 'red' : 'emerald'"
                                         wire:click="toggleManagerActive({{ $school->id }}, {{ $manager->id }})"
                                         wire:confirm="Alterar a situação deste gestor na escola?"
-                                        wire:loading.attr="disabled" wire:target="toggleManagerActive({{ $school->id }}, {{ $manager->id }})"
-                                        :aria-label="$manager->is_active ? 'Desativar gestor '.$manager->name : 'Ativar gestor '.$manager->name"
-                                        :title="$manager->is_active ? 'Desativar gestor' : 'Ativar gestor'"
+                                        wire:loading.attr="disabled"
+                                        wire:target="toggleManagerActive({{ $school->id }}, {{ $manager->id }})"
+                                        :aria-label="$manager->is_active
+                                            ? 'Desativar gestor ' . $manager->name
+                                            : 'Ativar gestor ' . $manager->name" :title="$manager->is_active ? 'Desativar gestor' : 'Ativar gestor'"
                                         class="!size-12 !p-0 shrink-0 justify-center">
                                         <x-ts-icon :icon="$manager->is_active ? 'no-symbol' : 'check-circle'" outline class="size-7 text-white" />
                                     </x-ts-button>
                                 </div>
                             @empty
-                                <p class="rounded-xl border border-dashed border-slate-200 px-4 py-3 text-sm text-slate-500">
+                                <p
+                                    class="rounded-xl border border-dashed border-slate-200 px-4 py-3 text-sm text-slate-500">
                                     Nenhum gestor ativo vinculado a esta escola.
                                 </p>
                             @endforelse
@@ -109,8 +115,8 @@
     {{-- Formulário dos dados cadastrais da escola. --}}
     <x-ts-modal wire="showSchoolForm" :title="$editingSchoolId === null ? 'Nova escola' : 'Editar escola'" size="2xl" center>
         <form id="school-form" wire:submit="saveSchool" class="space-y-4">
-            <x-form.input id="school-name" label="Nome" :required="true" error="form.name"
-                wire:model="form.name" autocomplete="organization" />
+            <x-form.input id="school-name" label="Nome" :required="true" error="form.name" wire:model="form.name"
+                autocomplete="organization" />
 
             <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <x-form.select id="school-type" label="Tipo" :required="true" error="form.type"
@@ -131,8 +137,8 @@
 
             <x-form.input id="school-address" label="Endereço" :required="true" error="form.address"
                 wire:model="form.address" autocomplete="street-address" />
-            <x-form.input id="school-phone" label="Telefone" error="form.phone" wire:model="form.phone"
-                inputmode="tel" autocomplete="tel" placeholder="(12) 3456-7890" />
+            <x-form.input id="school-phone" label="Telefone" error="form.phone" wire:model="form.phone" inputmode="tel"
+                autocomplete="tel" placeholder="(12) 3456-7890" />
         </form>
 
         <x-slot:footer>
