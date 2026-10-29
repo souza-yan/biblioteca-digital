@@ -18,7 +18,11 @@
 
     @vite('resources/css/app.css')
 </head>
-<body>
+<body x-data="{ appLoading: true }" x-init="$nextTick(() => appLoading = false)">
+    <div x-show="appLoading" x-transition.opacity.duration.150ms>
+        <x-skeleton.page class="!inset-0 !z-50" />
+    </div>
+
     <div class="font-sans text-gray-900 antialiased">
         {{ $slot }}
     </div>

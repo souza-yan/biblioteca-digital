@@ -19,6 +19,12 @@
     animation: skeleton-shimmer 1.35s ease-in-out infinite;
 }
 
+.app-loading-overlay {
+    position: fixed;
+    inset: var(--header-h) 0 0 0;
+    z-index: 35;
+}
+
 @keyframes skeleton-shimmer {
     from {
         background-position: 200% 0;
@@ -122,6 +128,10 @@ html.sidebar-collapsed #app-sidebar p.sidebar-label {
 
     #app-main {
         padding-left: var(--sidebar-w);
+    }
+
+    .app-loading-overlay {
+        left: var(--sidebar-w);
     }
 }
 
