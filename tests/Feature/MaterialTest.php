@@ -147,20 +147,38 @@ it('allows teachers to view and download only published materials', function (Ma
     'archived' => [MaterialStatus::ARCHIVED, false],
 ]);
 
-it('allows management to manage all global materials', function (string $role, bool $canCreate, bool $canManage) {
-    $user = match ($role) {
-        'admin' => User::factory()->admin()->create(),
-        'staff' => User::factory()->staffInSchool()->create(),
-        default => User::factory()->teacher()->create(),
-    };
+it('allows administrators to manage materials created by any user', function () {
+    $admin = User::factory()->admin()->create();
+    $creator = User::factory()->staffInSchool()->create();
+    $material = Material::factory()->make(['created_by' => $creator->getKey()]);
+
+    expect(Gate::forUser($admin)->allows('create', Material::class))->toBeTrue()
+        ->and(Gate::forUser($admin)->allows('update', $material))->toBeTrue()
+        ->and(Gate::forUser($admin)->allows('archive', $material))->toBeTrue()
+        ->and(Gate::forUser($admin)->allows('publish', $material))->toBeTrue();
+});
+
+it('allows management to create materials and manage only materials it created', function () {
+    $staff = User::factory()->staffInSchool()->create();
+    $otherCreator = User::factory()->admin()->create();
+    $ownMaterial = Material::factory()->make(['created_by' => $staff->getKey()]);
+    $otherMaterial = Material::factory()->make(['created_by' => $otherCreator->getKey()]);
+
+    expect(Gate::forUser($staff)->allows('create', Material::class))->toBeTrue()
+        ->and(Gate::forUser($staff)->allows('update', $ownMaterial))->toBeTrue()
+        ->and(Gate::forUser($staff)->allows('archive', $ownMaterial))->toBeTrue()
+        ->and(Gate::forUser($staff)->allows('publish', $ownMaterial))->toBeTrue()
+        ->and(Gate::forUser($staff)->allows('update', $otherMaterial))->toBeFalse()
+        ->and(Gate::forUser($staff)->allows('archive', $otherMaterial))->toBeFalse()
+        ->and(Gate::forUser($staff)->allows('publish', $otherMaterial))->toBeFalse();
+});
+
+it('forbids teachers from creating or managing materials', function () {
+    $teacher = User::factory()->teacher()->create();
     $material = Material::factory()->make();
 
-    expect(Gate::forUser($user)->allows('create', Material::class))->toBe($canCreate)
-        ->and(Gate::forUser($user)->allows('update', $material))->toBe($canManage)
-        ->and(Gate::forUser($user)->allows('archive', $material))->toBe($canManage)
-        ->and(Gate::forUser($user)->allows('publish', $material))->toBe($canManage);
-})->with([
-    'admin' => ['admin', true, true],
-    'staff' => ['staff', true, true],
-    'teacher' => ['teacher', false, false],
-]);
+    expect(Gate::forUser($teacher)->allows('create', Material::class))->toBeFalse()
+        ->and(Gate::forUser($teacher)->allows('update', $material))->toBeFalse()
+        ->and(Gate::forUser($teacher)->allows('archive', $material))->toBeFalse()
+        ->and(Gate::forUser($teacher)->allows('publish', $material))->toBeFalse();
+});

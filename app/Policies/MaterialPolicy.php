@@ -32,7 +32,7 @@ class MaterialPolicy
 
     public function update(User $user, Material $material): bool
     {
-        return $this->isGlobalManager($user);
+        return $this->canManage($user, $material);
     }
 
     public function download(User $user, Material $material): bool
@@ -48,12 +48,20 @@ class MaterialPolicy
 
     public function archive(User $user, Material $material): bool
     {
-        return $this->isGlobalManager($user);
+        return $this->canManage($user, $material);
     }
 
     public function publish(User $user, Material $material): bool
     {
-        return $this->isGlobalManager($user);
+        return $this->canManage($user, $material);
+    }
+
+    private function canManage(User $user, Material $material): bool
+    {
+        return $user->is_active && ($user->isAdmin()
+            || ($user->isStaff()
+                && $user->hasExactlyOneActiveSchool()
+                && $material->created_by === $user->getKey()));
     }
 
     private function isGlobalManager(User $user): bool

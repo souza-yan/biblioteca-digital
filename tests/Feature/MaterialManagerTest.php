@@ -179,6 +179,45 @@ it('updates a material using an active category', function () {
     ]);
 });
 
+it('forbids management from changing a material created by another user', function () {
+    $staff = User::factory()->staffInSchool()->create();
+    $otherCreator = User::factory()->admin()->create();
+    $material = Material::factory()->published()->create([
+        'created_by' => $otherCreator->getKey(),
+    ]);
+
+    Livewire::actingAs($staff)
+        ->test(MaterialManager::class)
+        ->call('editMaterial', $material->getKey())
+        ->assertForbidden();
+
+    Livewire::actingAs($staff)
+        ->test(MaterialManager::class)
+        ->call('archive', $material->getKey())
+        ->assertForbidden();
+
+    Livewire::actingAs($staff)
+        ->test(MaterialManager::class)
+        ->call('publish', $material->getKey())
+        ->assertForbidden();
+
+    $this->assertDatabaseHas('materials', [
+        'id' => $material->getKey(),
+        'status' => MaterialStatus::PUBLISHED->value,
+        'created_by' => $otherCreator->getKey(),
+    ]);
+});
+
+it('renders materials without a category in the management list', function () {
+    $admin = User::factory()->admin()->create();
+    $material = Material::factory()->published()->create(['category_id' => null]);
+
+    Livewire::actingAs($admin)
+        ->test(MaterialManager::class)
+        ->assertSee($material->title)
+        ->assertSee('Sem categoria');
+});
+
 it('prevents clients from changing the material manager target id', function (string $property) {
     $staff = User::factory()->admin()->create();
     $material = Material::factory()->create(['title' => 'Material original']);

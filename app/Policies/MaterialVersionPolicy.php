@@ -14,7 +14,10 @@ class MaterialVersionPolicy
 
     public function create(User $user, Material $material): bool
     {
-        return $this->isGlobalManager($user);
+        return $user->is_active && ($user->isAdmin()
+            || ($user->isStaff()
+                && $user->hasExactlyOneActiveSchool()
+                && $material->created_by === $user->getKey()));
     }
 
     private function isGlobalManager(User $user): bool

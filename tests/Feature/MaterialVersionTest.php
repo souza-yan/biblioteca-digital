@@ -122,18 +122,46 @@ it('rejects version files above the configured upload maximum', function () {
     expect(Storage::disk('local')->allFiles())->toBe([]);
 });
 
-it('allows only admins to list or create material versions', function (string $role, bool $allowed) {
-    $user = match ($role) {
-        'admin' => User::factory()->admin()->create(),
-        'staff' => User::factory()->staffInSchool()->create(),
-        default => User::factory()->teacher()->create(),
-    };
+it('allows administrators to list and create versions for any material', function () {
+    $admin = User::factory()->admin()->create();
     $material = Material::factory()->make();
 
-    expect(Gate::forUser($user)->allows('viewAny', [MaterialVersion::class, $material]))->toBe($allowed)
-        ->and(Gate::forUser($user)->allows('create', [MaterialVersion::class, $material]))->toBe($allowed);
-})->with([
-    'admin' => ['admin', true],
-    'staff' => ['staff', false],
-    'teacher' => ['teacher', false],
-]);
+    expect(Gate::forUser($admin)->allows('viewAny', [MaterialVersion::class, $material]))->toBeTrue()
+        ->and(Gate::forUser($admin)->allows('create', [MaterialVersion::class, $material]))->toBeTrue();
+});
+
+it('allows management to list global versions but create versions only for its own materials', function () {
+    $staff = User::factory()->staffInSchool()->create();
+    $otherCreator = User::factory()->admin()->create();
+    $ownMaterial = Material::factory()->make(['created_by' => $staff->getKey()]);
+    $otherMaterial = Material::factory()->make(['created_by' => $otherCreator->getKey()]);
+
+    expect(Gate::forUser($staff)->allows('viewAny', [MaterialVersion::class, $otherMaterial]))->toBeTrue()
+        ->and(Gate::forUser($staff)->allows('create', [MaterialVersion::class, $ownMaterial]))->toBeTrue()
+        ->and(Gate::forUser($staff)->allows('create', [MaterialVersion::class, $otherMaterial]))->toBeFalse();
+});
+
+it('forbids teachers from listing or creating material versions', function () {
+    $teacher = User::factory()->teacher()->create();
+    $material = Material::factory()->make();
+
+    expect(Gate::forUser($teacher)->allows('viewAny', [MaterialVersion::class, $material]))->toBeFalse()
+        ->and(Gate::forUser($teacher)->allows('create', [MaterialVersion::class, $material]))->toBeFalse();
+});
+
+it('forbids management from uploading a version to another user material', function () {
+    Storage::fake('local');
+    $staff = User::factory()->staffInSchool()->create();
+    $otherCreator = User::factory()->admin()->create();
+    $material = Material::factory()->create(['created_by' => $otherCreator->getKey()]);
+
+    Livewire::actingAs($staff)
+        ->test(MaterialDetail::class, ['material' => $material])
+        ->set('versionForm.file', UploadedFile::fake()->create('apostila.pdf', 100, 'application/pdf'))
+        ->call('saveVersion')
+        ->assertForbidden();
+
+    $this->assertDatabaseMissing('material_versions', [
+        'material_id' => $material->getKey(),
+    ]);
+});
