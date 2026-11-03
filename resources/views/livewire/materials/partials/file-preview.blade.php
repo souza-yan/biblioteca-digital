@@ -18,7 +18,7 @@
         @if ($version->mime_type === 'application/pdf')
             <iframe
                 class="h-[75vh] min-h-[36rem] w-full"
-                src="{{ $previewUrl }}"
+                src="{{ $previewUrl }}#view=Fit"
                 title="Prévia de {{ $version->original_name }}"
                 loading="lazy"
             ></iframe>

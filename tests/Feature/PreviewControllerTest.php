@@ -245,6 +245,7 @@ it('shows the complete file preview without a collapsible control', function () 
         ->test(MaterialDetail::class, ['material' => $material])
         ->assertSee('arquivo-completo.pdf')
         ->assertSee('h-[75vh]', false)
+        ->assertSee('#view=Fit', false)
         ->assertDontSee('Visualizar arquivo')
         ->assertDontSee('x-collapse', false);
 });
