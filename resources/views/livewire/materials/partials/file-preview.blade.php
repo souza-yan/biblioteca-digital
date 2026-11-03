@@ -12,18 +12,21 @@
             <dt class="font-semibold text-gray-500">Tamanho</dt>
             <dd class="text-gray-700">{{ number_format($version->size / 1024, 1) }} KB</dd>
         </div>
+        @if ($version->mime_type === 'application/pdf')
+            <div class="flex items-end sm:justify-end">
+                <button
+                    type="button"
+                    class="inline-flex items-center gap-2 rounded-md bg-blue-700 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                    @click="isPdfPreviewOpen = true"
+                >
+                    <x-ts-icon icon="arrows-pointing-out" outline class="size-5" />
+                    Visualizar conteúdo
+                </button>
+            </div>
+        @endif
     </dl>
 
     @if ($version->mime_type === 'application/pdf')
-        <button
-            type="button"
-            class="mt-4 inline-flex items-center gap-2 rounded-md bg-blue-700 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-            @click="isPdfPreviewOpen = true"
-        >
-            <x-ts-icon icon="arrows-pointing-out" outline class="size-5" />
-            Visualizar em tela cheia
-        </button>
-
         <template x-teleport="body">
             <div
                 x-cloak

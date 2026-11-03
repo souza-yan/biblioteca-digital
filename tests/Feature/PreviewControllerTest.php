@@ -244,7 +244,7 @@ it('opens PDF previews in a full-screen dialog', function () {
     Livewire::actingAs(User::factory()->teacher()->create())
         ->test(MaterialDetail::class, ['material' => $material])
         ->assertSee('arquivo-completo.pdf')
-        ->assertSee('Visualizar em tela cheia')
+        ->assertSee('Visualizar conteúdo')
         ->assertSee('fixed inset-0', false)
         ->assertSee('#view=Fit', false)
         ->assertDontSee('h-[75vh]', false)
