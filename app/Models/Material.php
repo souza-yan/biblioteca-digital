@@ -71,7 +71,9 @@ class Material extends Model
      */
     public function category(): BelongsTo
     {
-        return $this->belongsTo(Category::class);
+        return $this->belongsTo(Category::class)->withDefault([
+            'name' => 'Sem categoria',
+        ]);
     }
 
     /**

@@ -21,6 +21,10 @@ class ToggleCategoryActive
             Gate::forUser($lockedActor)->authorize('toggleActive', $lockedCategory);
             $lockedCategory->update(['is_active' => ! $lockedCategory->is_active]);
 
+            if (! $lockedCategory->is_active) {
+                $lockedCategory->materials()->update(['category_id' => null]);
+            }
+
             $this->logActivity->handle($lockedActor, ActivityAction::CATEGORY_TOGGLED, 'Status da categoria alterado.');
 
             return $lockedCategory;

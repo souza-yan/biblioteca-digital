@@ -2,6 +2,7 @@
 
 use App\Livewire\Categories\CategoryManager;
 use App\Models\Category;
+use App\Models\Material;
 use App\Models\User;
 use Livewire\Features\SupportLockedProperties\CannotUpdateLockedPropertyException;
 use Livewire\Livewire;
@@ -58,6 +59,7 @@ it('updates and toggles categories without deleting them', function () {
         'slug' => 'ciencias',
         'is_active' => true,
     ]);
+    $material = Material::factory()->for($category)->create();
     $this->actingAs($staff);
 
     Livewire::test(CategoryManager::class)
@@ -75,7 +77,34 @@ it('updates and toggles categories without deleting them', function () {
         'slug' => 'ciencias-naturais',
         'is_active' => false,
     ]);
+    $this->assertDatabaseHas('materials', [
+        'id' => $material->getKey(),
+        'category_id' => null,
+    ]);
     $this->assertModelExists($category->fresh());
+    $this->assertModelExists($material->fresh());
+});
+
+it('removes material category links when a category is deactivated through the form', function () {
+    $admin = User::factory()->admin()->create();
+    $category = Category::factory()->create();
+    $material = Material::factory()->for($category)->create();
+
+    Livewire::actingAs($admin)
+        ->test(CategoryManager::class)
+        ->call('editCategory', $category->getKey())
+        ->set('form.is_active', false)
+        ->call('save')
+        ->assertHasNoErrors();
+
+    $this->assertDatabaseHas('categories', [
+        'id' => $category->getKey(),
+        'is_active' => false,
+    ]);
+    $this->assertDatabaseHas('materials', [
+        'id' => $material->getKey(),
+        'category_id' => null,
+    ]);
 });
 
 it('prevents clients from changing the category manager target id', function (string $property) {

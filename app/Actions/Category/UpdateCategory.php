@@ -24,6 +24,10 @@ class UpdateCategory
             Gate::forUser($lockedActor)->authorize('update', $lockedCategory);
             $lockedCategory->update($attributes);
 
+            if (! $lockedCategory->is_active) {
+                $lockedCategory->materials()->update(['category_id' => null]);
+            }
+
             $this->logActivity->handle($lockedActor, ActivityAction::CATEGORY_UPDATED, 'Categoria atualizada.');
 
             return $lockedCategory;
