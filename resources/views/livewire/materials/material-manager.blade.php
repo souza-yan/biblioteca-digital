@@ -92,7 +92,6 @@
 
                                 @if ($material->status->value !== \App\Enums\MaterialStatus::PUBLISHED->value)
                                     <x-ts-button color="emerald" wire:click="publish({{ $material->id }})"
-                                        wire:confirm="Publicar este material na biblioteca?"
                                         wire:loading.attr="disabled" wire:target="publish({{ $material->id }})"
                                         aria-label="Publicar material {{ $material->title }}" title="Publicar material"
                                         class="!size-12 !p-0 shrink-0 justify-center">

@@ -41,7 +41,6 @@
 
                         @if ($material->status !== \App\Enums\MaterialStatus::PUBLISHED)
                             <x-ts-button color="emerald" wire:click="publish" aria-label="Publicar material"
-                                wire:confirm="Publicar este material na biblioteca?"
                                 title="Publicar material" class="!size-12 !p-0 shrink-0 justify-center">
                                 <x-ts-icon icon="cloud-arrow-up" outline class="size-7 text-white" />
                             </x-ts-button>

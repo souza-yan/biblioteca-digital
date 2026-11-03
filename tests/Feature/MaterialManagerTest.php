@@ -243,6 +243,26 @@ it('publishes a material when it has a current version', function () {
     ]);
 });
 
+it('publishes an archived material with a current version without browser confirmation', function () {
+    $staff = User::factory()->admin()->create();
+    $material = Material::factory()->archived()->create();
+    $version = MaterialVersion::factory()->for($material)->create();
+    $material->update(['current_version_id' => $version->getKey()]);
+    $this->actingAs($staff);
+
+    Livewire::test(MaterialManager::class)
+        ->set('statusFilter', MaterialStatus::ARCHIVED->value)
+        ->assertSee('wire:click="publish('.$material->getKey().')"', false)
+        ->assertDontSee('wire:confirm', false)
+        ->call('publish', $material->getKey())
+        ->assertHasNoErrors();
+
+    $this->assertDatabaseHas('materials', [
+        'id' => $material->getKey(),
+        'status' => MaterialStatus::PUBLISHED->value,
+    ]);
+});
+
 it('renders the material manager route for admins', function () {
     $this->actingAs(User::factory()->admin()->create())
         ->get('/painel/materiais')
