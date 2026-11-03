@@ -68,7 +68,6 @@ class CategoryManager extends Component
         $this->form->name = $category->name;
         $this->form->slug = $category->slug;
         $this->form->description = $category->description ?? '';
-        $this->form->is_active = $category->is_active;
         $this->showForm = true;
     }
 

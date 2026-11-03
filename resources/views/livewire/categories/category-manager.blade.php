@@ -72,11 +72,6 @@
             <form id="category-form" wire:submit="save" class="space-y-4">
                 <x-ts-input wire:model="form.name" label="Nome *" required />
                 <x-ts-input wire:model="form.description" label="Descrição" />
-                <label class="flex items-center gap-2 text-base text-gray-700">
-                    <input type="checkbox" wire:model="form.is_active"
-                        class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
-                    Categoria ativa
-                </label>
 
                 @error('form.slug')
                     <p class="text-base text-red-600">{{ $message }}</p>

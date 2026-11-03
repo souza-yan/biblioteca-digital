@@ -18,15 +18,13 @@ class UpdateCategory
      */
     public function handle(User $actor, Category $category, array $attributes): Category
     {
+        unset($attributes['is_active']);
+
         $updatedCategory = DB::transaction(function () use ($actor, $category, $attributes): Category {
             $lockedActor = User::query()->lockForUpdate()->findOrFail($actor->getKey());
             $lockedCategory = Category::query()->lockForUpdate()->findOrFail($category->getKey());
             Gate::forUser($lockedActor)->authorize('update', $lockedCategory);
             $lockedCategory->update($attributes);
-
-            if (! $lockedCategory->is_active) {
-                $lockedCategory->materials()->update(['category_id' => null]);
-            }
 
             $this->logActivity->handle($lockedActor, ActivityAction::CATEGORY_UPDATED, 'Categoria atualizada.');
 

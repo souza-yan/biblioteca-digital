@@ -24,7 +24,10 @@ class CreateCategory
             $lockedActor = User::query()->lockForUpdate()->findOrFail($actor->getKey());
             Gate::forUser($lockedActor)->authorize('create', Category::class);
 
-            $category = Category::create($attributes);
+            $category = Category::create([
+                ...$attributes,
+                'is_active' => true,
+            ]);
 
             $this->logActivity->handle($lockedActor, ActivityAction::CATEGORY_CREATED, 'Categoria criada.');
 

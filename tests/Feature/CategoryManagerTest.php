@@ -85,25 +85,22 @@ it('updates and toggles categories without deleting them', function () {
     $this->assertModelExists($material->fresh());
 });
 
-it('removes material category links when a category is deactivated through the form', function () {
+it('does not expose category status in the edit form', function () {
     $admin = User::factory()->admin()->create();
-    $category = Category::factory()->create();
-    $material = Material::factory()->for($category)->create();
+    $category = Category::factory()->inactive()->create();
 
     Livewire::actingAs($admin)
         ->test(CategoryManager::class)
         ->call('editCategory', $category->getKey())
-        ->set('form.is_active', false)
+        ->assertDontSee('Categoria ativa')
+        ->set('form.name', 'Categoria atualizada')
         ->call('save')
         ->assertHasNoErrors();
 
     $this->assertDatabaseHas('categories', [
         'id' => $category->getKey(),
+        'name' => 'Categoria atualizada',
         'is_active' => false,
-    ]);
-    $this->assertDatabaseHas('materials', [
-        'id' => $material->getKey(),
-        'category_id' => null,
     ]);
 });
 
@@ -176,7 +173,6 @@ it('allows staff to create active categories', function () {
         ->call('openCreate')
         ->set('form.name', 'Categoria enviada pela gestão')
         ->set('form.description', 'Categoria da biblioteca compartilhada')
-        ->set('form.is_active', true)
         ->call('save')
         ->assertHasNoErrors();
 

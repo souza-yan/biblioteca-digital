@@ -18,8 +18,6 @@ class CategoryForm extends Form
 
     public string $description = '';
 
-    public bool $is_active = true;
-
     public function generateSlugFromName(): void
     {
         if (trim($this->slug) === '') {
@@ -41,7 +39,6 @@ class CategoryForm extends Form
                 Rule::unique('categories', 'slug')->ignore($this->categoryId),
             ],
             'description' => ['nullable', 'string'],
-            'is_active' => ['sometimes', 'boolean'],
         ];
     }
 
@@ -59,7 +56,6 @@ class CategoryForm extends Form
             'slug.max' => 'O slug da categoria não pode ultrapassar 255 caracteres.',
             'slug.unique' => 'O slug informado já está em uso.',
             'description.string' => 'A descrição deve ser um texto.',
-            'is_active.boolean' => 'O campo ativo deve ser verdadeiro ou falso.',
         ];
     }
 }
