@@ -48,7 +48,7 @@
                         @endif
 
                         @if ($material->status !== \App\Enums\MaterialStatus::ARCHIVED)
-                            <x-ts-button color="red" wire:click="archive" aria-label="Arquivar material"
+                            <x-ts-button color="yellow" wire:click="archive" aria-label="Arquivar material"
                                 wire:confirm="Arquivar este material? Ele deixará de aparecer na biblioteca."
                                 title="Arquivar material" class="!size-12 !p-0 shrink-0 justify-center">
                                 <x-ts-icon icon="archive-box" outline class="size-7 text-white" />
