@@ -233,7 +233,7 @@ it('shows the correct preview element for supported image and media types', func
     'MP3 audio' => ['audio/mpeg', '<audio'],
 ]);
 
-it('keeps the file preview collapsed until the user opens it', function () {
+it('shows the complete file preview without a collapsible control', function () {
     $material = Material::factory()->published()->create();
     $version = MaterialVersion::factory()->for($material)->create([
         'mime_type' => 'application/pdf',
@@ -243,10 +243,10 @@ it('keeps the file preview collapsed until the user opens it', function () {
 
     Livewire::actingAs(User::factory()->teacher()->create())
         ->test(MaterialDetail::class, ['material' => $material])
-        ->assertSee('Visualizar arquivo')
         ->assertSee('arquivo-completo.pdf')
-        ->assertSee('x-collapse', false)
-        ->assertSee('h-[75vh]', false);
+        ->assertSee('h-[75vh]', false)
+        ->assertDontSee('Visualizar arquivo')
+        ->assertDontSee('x-collapse', false);
 });
 
 it('forbids staff from previewing historical versions of archived materials', function () {

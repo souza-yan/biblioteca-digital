@@ -1,45 +1,20 @@
-<div x-data="{ previewOpen: false }" class="mt-6 border-t border-gray-100 pt-5">
-    <button
-        type="button"
-        class="flex w-full items-center justify-between gap-4 rounded-md px-1 py-2 text-left transition hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-        @click="previewOpen = ! previewOpen"
-        :aria-expanded="previewOpen.toString()"
-        aria-controls="file-preview-{{ $version->getKey() }}"
-    >
-        <span class="min-w-0">
-            <span class="block font-semibold text-gray-900">Visualizar arquivo</span>
-            <span class="block truncate text-sm text-gray-500">{{ $version->original_name }}</span>
-        </span>
-        <svg
-            class="h-5 w-5 shrink-0 text-blue-700 transition-transform duration-300"
-            :class="{ 'rotate-180': previewOpen }"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            aria-hidden="true"
-        >
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m6 9 6 6 6-6" />
-        </svg>
-    </button>
+<div class="mt-6 border-t border-gray-100 pt-5">
+    <dl class="grid grid-cols-1 gap-3 text-sm sm:grid-cols-3">
+        <div class="sm:col-span-3">
+            <dt class="font-semibold text-gray-500">Nome do arquivo</dt>
+            <dd class="break-all text-gray-900">{{ $version->original_name }}</dd>
+        </div>
+        <div>
+            <dt class="font-semibold text-gray-500">Tipo</dt>
+            <dd class="break-all text-gray-700">{{ $version->mime_type }}</dd>
+        </div>
+        <div>
+            <dt class="font-semibold text-gray-500">Tamanho</dt>
+            <dd class="text-gray-700">{{ number_format($version->size / 1024, 1) }} KB</dd>
+        </div>
+    </dl>
 
-    <div id="file-preview-{{ $version->getKey() }}" x-cloak x-show="previewOpen" x-collapse>
-        <div class="pt-5">
-            <dl class="grid grid-cols-1 gap-3 text-sm sm:grid-cols-3">
-                <div class="sm:col-span-3">
-                    <dt class="font-semibold text-gray-500">Nome do arquivo</dt>
-                    <dd class="break-all text-gray-900">{{ $version->original_name }}</dd>
-                </div>
-                <div>
-                    <dt class="font-semibold text-gray-500">Tipo</dt>
-                    <dd class="break-all text-gray-700">{{ $version->mime_type }}</dd>
-                </div>
-                <div>
-                    <dt class="font-semibold text-gray-500">Tamanho</dt>
-                    <dd class="text-gray-700">{{ number_format($version->size / 1024, 1) }} KB</dd>
-                </div>
-            </dl>
-
-            <div class="mt-4 overflow-hidden rounded-md border border-gray-200 bg-gray-50">
+    <div class="mt-4 overflow-hidden rounded-md border border-gray-200 bg-gray-50">
         @if ($version->mime_type === 'application/pdf')
             <iframe
                 class="h-[75vh] min-h-[36rem] w-full"
@@ -83,7 +58,5 @@
                 <span>Prévia não disponível para este tipo</span>
             </div>
         @endif
-            </div>
-        </div>
     </div>
 </div>
