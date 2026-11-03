@@ -33,7 +33,9 @@
             @forelse ($categories as $category)
                 <tr wire:key="category-{{ $category->id }}">
                     <td class="px-5 py-4 text-lg font-medium text-gray-900">{{ $category->name }}</td>
-                    <td class="px-5 py-4 text-lg text-black">{{ $category->is_active ? 'Ativa' : 'Inativa' }}</td>
+                    <td class="px-5 py-4 text-lg text-black">
+                        <x-categories.status-badge :active="$category->is_active" />
+                    </td>
                     @if ($canManageCategories)
                         <td class="px-5 py-4 text-right text-lg">
                             @can('update', $category)
