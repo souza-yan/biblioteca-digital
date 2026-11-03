@@ -1,7 +1,6 @@
 <?php
 
 use App\Enums\MaterialStatus;
-use App\Livewire\Categories\CategoryLibrary;
 use App\Livewire\Materials\MaterialManager;
 use App\Models\Category;
 use App\Models\Material;
@@ -329,14 +328,6 @@ it('shows the material creation flow to staff with publication control', functio
         ->call('openCreate')
         ->assertSet('showForm', true)
         ->assertSee('Status inicial');
-});
-
-it('keeps staff material creation in the material manager', function () {
-    $staff = User::factory()->staffInSchool()->create();
-
-    Livewire::actingAs($staff)
-        ->test(CategoryLibrary::class)
-        ->assertDontSee('Novo material');
 });
 
 it('shows staff a download action for published materials with a current version', function () {

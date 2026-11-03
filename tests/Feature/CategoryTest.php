@@ -8,8 +8,10 @@ use App\Models\Category;
 use App\Models\Material;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Storage;
 use Livewire\Livewire;
 
 it('does not expose management category filters to teachers', function () {
@@ -80,7 +82,7 @@ it('searches the teacher category library by name, slug, or description', functi
         ->assertDontSee($other->name);
 });
 
-it('keeps the category library focused on browsing for staff', function () {
+it('shows creation controls in the category library for staff', function () {
     $staff = User::factory()->staffInSchool()->create();
     $category = Category::factory()->create(['name' => 'Categoria da gestão']);
     Material::factory()->published()->for($category)->create();
@@ -89,27 +91,50 @@ it('keeps the category library focused on browsing for staff', function () {
         ->get(route('painel.library.categories'))
         ->assertOk()
         ->assertSee($category->name)
-        ->assertDontSee('Nova categoria')
-        ->assertDontSee('Novo material')
-        ->assertDontSee(route('painel.materials', ['create' => 1]), false);
+        ->assertSee('Nova categoria')
+        ->assertSee('Novo material');
 
     Livewire::actingAs($staff)
         ->test(CategoryLibrary::class)
         ->assertSee($category->name)
-        ->assertDontSee('Nova categoria')
-        ->assertDontSee('Novo material');
+        ->assertSee('Nova categoria')
+        ->assertSee('Novo material')
+        ->call('openCategoryCreate')
+        ->assertSet('showCategoryForm', true)
+        ->call('openMaterialCreate')
+        ->assertSet('showMaterialForm', true);
 });
 
-it('does not expose material and category write actions in the category library', function () {
+it('allows staff to create a category and material from the category library', function () {
     $staff = User::factory()->staffInSchool()->create();
-    $activeCategory = Category::factory()->create();
+    $category = Category::factory()->create();
+    Storage::fake('local');
 
     Livewire::actingAs($staff)
         ->test(CategoryLibrary::class)
-        ->assertDontSee('Nova categoria')
-        ->assertDontSee('Novo material');
+        ->call('openCategoryCreate')
+        ->set('categoryForm.name', 'Categoria criada na biblioteca')
+        ->set('categoryForm.description', 'Descrição da nova categoria')
+        ->call('saveCategory')
+        ->assertHasNoErrors()
+        ->call('openMaterialCreate')
+        ->set('materialForm.title', 'Material criado na biblioteca')
+        ->set('materialForm.description', 'Conteúdo da gestão')
+        ->set('materialForm.category_id', (string) $category->getKey())
+        ->set('materialForm.author', 'Equipe Escolar')
+        ->set('materialForm.file', UploadedFile::fake()->create('material.pdf', 100, 'application/pdf'))
+        ->call('saveMaterial')
+        ->assertHasNoErrors();
 
-    expect($activeCategory->exists)->toBeTrue();
+    $this->assertDatabaseHas('categories', [
+        'name' => 'Categoria criada na biblioteca',
+        'is_active' => true,
+    ]);
+    $this->assertDatabaseHas('materials', [
+        'title' => 'Material criado na biblioteca',
+        'category_id' => $category->getKey(),
+        'created_by' => $staff->getKey(),
+    ]);
 });
 
 it('allows admins to create a category with a generated slug', function () {
