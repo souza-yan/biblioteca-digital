@@ -131,14 +131,16 @@ it('forbids staff from downloading historical versions of archived materials', f
     $this->assertDatabaseCount('downloads', 0);
 });
 
-it('shows historical download links to admins in the material version history', function () {
+it('does not show historical download links in the material version history', function () {
     $material = Material::factory()->published()->create();
     $version = MaterialVersion::factory()->for($material)->create();
+    $material->update(['current_version_id' => $version->getKey()]);
 
     $this->actingAs(User::factory()->admin()->create());
 
     Livewire::test(MaterialDetail::class, ['material' => $material])
-        ->assertSee(route('downloads.version', [$material, $version]), false);
+        ->assertDontSee(route('downloads.version', [$material, $version]), false)
+        ->assertSee(route('downloads.show', $material), false);
 });
 
 it('does not allow inactive or unauthenticated users to download materials', function () {

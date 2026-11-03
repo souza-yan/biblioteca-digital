@@ -178,7 +178,7 @@ it('renders escaped text content in a pre element', function () {
         ->assertDontSee('<script>alert("x")</script>', false);
 });
 
-it('shows the preview fallback and download link for unsupported files', function () {
+it('shows unsupported current files in the full-screen preview dialog', function () {
     $material = Material::factory()->published()->create();
     $version = MaterialVersion::factory()->for($material)->create([
         'mime_type' => 'application/zip',
@@ -189,19 +189,22 @@ it('shows the preview fallback and download link for unsupported files', functio
 
     Livewire::actingAs(User::factory()->teacher()->create())
         ->test(MaterialDetail::class, ['material' => $material])
-        ->assertSee('Prévia não disponível para este tipo')
+        ->assertSee('Visualizar conteúdo')
+        ->assertSee('A visualização não está disponível para este tipo de arquivo.')
         ->assertSee('application/zip')
         ->assertSee('recursos.zip')
         ->assertSee('2.0 KB')
         ->assertSee(route('downloads.show', $material), false);
 });
 
-it('shows a preview control and download link for each historical version to admins', function () {
+it('shows a preview control only for historical versions to admins', function () {
     $material = Material::factory()->published()->create();
     $version = MaterialVersion::factory()->for($material)->create([
         'mime_type' => 'application/pdf',
         'original_name' => 'versao-anterior.pdf',
     ]);
+    $currentVersion = MaterialVersion::factory()->for($material)->create(['version_number' => 2]);
+    $material->update(['current_version_id' => $currentVersion->getKey()]);
 
     Livewire::actingAs(User::factory()->admin()->create())
         ->test(MaterialDetail::class, ['material' => $material])
@@ -209,7 +212,9 @@ it('shows a preview control and download link for each historical version to adm
         ->assertSee('versao-anterior.pdf')
         ->assertSee('application/pdf')
         ->assertSee(route('previews.version', [$material, $version]), false)
-        ->assertSee(route('downloads.version', [$material, $version]), false);
+        ->assertDontSee(route('previews.version', [$material, $currentVersion]), false)
+        ->assertDontSee(route('downloads.version', [$material, $version]), false)
+        ->assertSee(route('downloads.show', $material), false);
 });
 
 it('shows the correct preview element for supported image and media types', function (string $mimeType, string $element) {
@@ -220,6 +225,8 @@ it('shows the correct preview element for supported image and media types', func
     Livewire::actingAs(User::factory()->teacher()->create())
         ->test(MaterialDetail::class, ['material' => $material])
         ->assertSee($element, false)
+        ->assertSee('Visualizar conteúdo')
+        ->assertSee('fixed inset-0', false)
         ->assertSee(route('previews.show', $material), false);
 })->with([
     'PDF document' => ['application/pdf', '<iframe'],

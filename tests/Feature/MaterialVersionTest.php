@@ -71,7 +71,7 @@ it('shows version history to administrators but not teachers', function (string 
         ->assertOk()
         ->assertSee('Versões')
         ->assertSee($version->original_name)
-        ->assertSee(route('downloads.version', [$material, $version]), false)
+        ->assertDontSee(route('downloads.version', [$material, $version]), false)
         ->assertDontSee($version->file_path);
 })->with(['admin']);
 

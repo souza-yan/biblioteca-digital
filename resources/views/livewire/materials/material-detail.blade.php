@@ -173,7 +173,8 @@
                                     <td class="whitespace-nowrap px-4 py-3 text-sm text-gray-600">
                                         {{ $version->created_at?->format('d/m/Y H:i') }}</td>
                                     <td class="px-4 py-3 text-right text-sm">
-                                        @if (in_array($version->mime_type, ['application/pdf', 'image/png', 'image/jpeg', 'image/webp', 'image/gif', 'text/plain', 'video/mp4', 'video/webm', 'audio/mpeg'], true))
+                                        @if ($version->isNot($material->currentVersion)
+                                            && in_array($version->mime_type, ['application/pdf', 'image/png', 'image/jpeg', 'image/webp', 'image/gif', 'text/plain', 'video/mp4', 'video/webm', 'audio/mpeg'], true))
                                             <x-ts-button color="blue"
                                                 href="{{ route('previews.version', [$material, $version]) }}"
                                                 aria-label="Ver prévia da versão {{ $version->version_number }}"
@@ -181,12 +182,6 @@
                                                 <x-ts-icon icon="eye" outline class="size-7 text-white" />
                                             </x-ts-button>
                                         @endif
-                                        <x-ts-button color="emerald"
-                                            href="{{ route('downloads.version', [$material, $version]) }}"
-                                            aria-label="Baixar versão {{ $version->version_number }}" title="Baixar versão"
-                                            class="!size-12 !p-0 justify-center">
-                                            <x-ts-icon icon="document-arrow-down" outline class="size-7 text-white" />
-                                        </x-ts-button>
                                     </td>
                                 </tr>
                             @empty
@@ -205,9 +200,6 @@
 
                     <div>
                         <h3 class="text-base font-semibold text-slate-900">Enviar nova versão</h3>
-                        <p class="mt-1 text-sm text-slate-500">
-                            Selecione o arquivo e descreva o que mudou.
-                        </p>
                     </div>
 
                     <div>
