@@ -94,7 +94,7 @@
                                 </x-ts-button>
                             @endif
                             @can('resetPassword', $user)
-                                <x-ts-button color="slate" wire:click="openPasswordResetConfirmation({{ $user->id }})"
+                                <x-ts-button color="yellow" wire:click="openPasswordResetConfirmation({{ $user->id }})"
                                     wire:loading.attr="disabled" wire:target="openPasswordResetConfirmation"
                                     aria-label="Redefinir a senha de {{ $user->name }}"
                                     title="Redefinir senha para o padrão" class="!size-12 !p-0 justify-center">
