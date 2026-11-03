@@ -18,12 +18,12 @@
         Enviando arquivo...
     </div>
     @if ($file instanceof \Livewire\Features\SupportFileUploads\TemporaryUploadedFile)
-        <dl class="mt-3 grid grid-cols-1 gap-2 rounded-md bg-gray-50 p-3 text-base sm:grid-cols-2">
-            <div class="min-w-0">
+        <dl class="mt-3 flex items-start gap-4 rounded-md bg-gray-50 p-3 text-base">
+            <div class="min-w-0 flex-1">
                 <dt class="font-medium text-gray-500">Nome</dt>
-                <dd class="truncate text-gray-900">{{ $file->getClientOriginalName() }}</dd>
+                <dd class="truncate text-gray-900" title="{{ $file->getClientOriginalName() }}">{{ $file->getClientOriginalName() }}</dd>
             </div>
-            <div>
+            <div class="shrink-0 text-right">
                 <dt class="font-medium text-gray-500">Tamanho</dt>
                 <dd class="text-gray-900">{{ number_format($file->getSize() / 1024, 1, ',', '.') }} KB</dd>
             </div>
