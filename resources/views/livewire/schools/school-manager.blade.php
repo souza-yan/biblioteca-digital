@@ -39,7 +39,7 @@
                                 class="!size-12 !p-0 justify-center">
                                 <x-ts-icon icon="pencil-square" outline class="size-7 text-white" />
                             </x-ts-button>
-                            <x-ts-button color="blue" wire:click="openManagerForm({{ $school->id }})"
+                            <x-ts-button color="emerald" wire:click="openManagerForm({{ $school->id }})"
                                 aria-label="Adicionar gestor à escola {{ $school->name }}" title="Adicionar gestor"
                                 class="!size-12 !p-0 justify-center">
                                 <x-ts-icon icon="user-plus" outline class="size-7 text-white" />
