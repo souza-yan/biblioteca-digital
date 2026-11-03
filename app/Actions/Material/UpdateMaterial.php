@@ -18,6 +18,10 @@ class UpdateMaterial
      */
     public function handle(User $actor, Material $material, array $attributes): Material
     {
+        if (array_key_exists('category_id', $attributes)) {
+            $attributes['detached_category_id'] = null;
+        }
+
         return DB::transaction(function () use ($actor, $material, $attributes): Material {
             $lockedActor = User::query()->lockForUpdate()->findOrFail($actor->getKey());
             $lockedMaterial = Material::query()->lockForUpdate()->findOrFail($material->getKey());

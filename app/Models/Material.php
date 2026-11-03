@@ -25,6 +25,7 @@ class Material extends Model
         'title',
         'description',
         'category_id',
+        'detached_category_id',
         'type',
         'author',
         'status',

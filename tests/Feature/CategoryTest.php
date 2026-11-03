@@ -85,18 +85,21 @@ it('searches the teacher category library by name, slug, or description', functi
 it('shows creation controls in the category library for staff', function () {
     $staff = User::factory()->staffInSchool()->create();
     $category = Category::factory()->create(['name' => 'Categoria da gestão']);
+    $emptyCategory = Category::factory()->create(['name' => 'Categoria vazia da gestão']);
     Material::factory()->published()->for($category)->create();
 
     $this->actingAs($staff)
         ->get(route('painel.library.categories'))
         ->assertOk()
         ->assertSee($category->name)
+        ->assertSee($emptyCategory->name)
         ->assertSee('Nova categoria')
         ->assertSee('Novo material');
 
     Livewire::actingAs($staff)
         ->test(CategoryLibrary::class)
         ->assertSee($category->name)
+        ->assertSee($emptyCategory->name)
         ->assertSee('Nova categoria')
         ->assertSee('Novo material')
         ->call('openCategoryCreate')

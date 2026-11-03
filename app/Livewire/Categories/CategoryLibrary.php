@@ -149,6 +149,7 @@ class CategoryLibrary extends Component
     public function render(ListCategoryOptions $listCategoryOptions): View
     {
         Gate::authorize('viewAny', Category::class);
+        $actor = $this->currentUser();
 
         $categories = Category::query()
             ->withCount([
@@ -156,8 +157,9 @@ class CategoryLibrary extends Component
                     ->where('status', MaterialStatus::PUBLISHED),
             ])
             ->where('is_active', true)
-            ->whereHas('materials', fn (Builder $query): Builder => $query
-                ->where('status', MaterialStatus::PUBLISHED))
+            ->when(! $actor->isStaff(), fn (Builder $query): Builder => $query
+                ->whereHas('materials', fn (Builder $query): Builder => $query
+                    ->where('status', MaterialStatus::PUBLISHED)))
             ->when($this->search !== '', function (Builder $query): void {
                 $query->where(function (Builder $query): void {
                     $query

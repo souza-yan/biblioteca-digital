@@ -59,10 +59,11 @@ it('updates and toggles categories without deleting them', function () {
         'slug' => 'ciencias',
         'is_active' => true,
     ]);
-    $material = Material::factory()->for($category)->create();
+    $firstMaterial = Material::factory()->for($category)->create();
+    $secondMaterial = Material::factory()->for($category)->create();
     $this->actingAs($staff);
 
-    Livewire::test(CategoryManager::class)
+    $component = Livewire::test(CategoryManager::class)
         ->call('editCategory', $category->getKey())
         ->set('form.name', 'Ciências Naturais')
         ->set('form.slug', '')
@@ -78,11 +79,35 @@ it('updates and toggles categories without deleting them', function () {
         'is_active' => false,
     ]);
     $this->assertDatabaseHas('materials', [
-        'id' => $material->getKey(),
+        'id' => $firstMaterial->getKey(),
         'category_id' => null,
+        'detached_category_id' => $category->getKey(),
+    ]);
+    $this->assertDatabaseHas('materials', [
+        'id' => $secondMaterial->getKey(),
+        'category_id' => null,
+        'detached_category_id' => $category->getKey(),
+    ]);
+
+    $component->call('toggleActive', $category->getKey())->assertHasNoErrors();
+
+    $this->assertDatabaseHas('categories', [
+        'id' => $category->getKey(),
+        'is_active' => true,
+    ]);
+    $this->assertDatabaseHas('materials', [
+        'id' => $firstMaterial->getKey(),
+        'category_id' => $category->getKey(),
+        'detached_category_id' => null,
+    ]);
+    $this->assertDatabaseHas('materials', [
+        'id' => $secondMaterial->getKey(),
+        'category_id' => $category->getKey(),
+        'detached_category_id' => null,
     ]);
     $this->assertModelExists($category->fresh());
-    $this->assertModelExists($material->fresh());
+    $this->assertModelExists($firstMaterial->fresh());
+    $this->assertModelExists($secondMaterial->fresh());
 });
 
 it('does not expose category status in the edit form', function () {

@@ -5,6 +5,7 @@ namespace App\Actions\Category;
 use App\Actions\Activity\LogActivity;
 use App\Enums\ActivityAction;
 use App\Models\Category;
+use App\Models\Material;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
@@ -22,7 +23,18 @@ class ToggleCategoryActive
             $lockedCategory->update(['is_active' => ! $lockedCategory->is_active]);
 
             if (! $lockedCategory->is_active) {
-                $lockedCategory->materials()->update(['category_id' => null]);
+                $lockedCategory->materials()->update([
+                    'category_id' => null,
+                    'detached_category_id' => $lockedCategory->getKey(),
+                ]);
+            } else {
+                Material::query()
+                    ->where('detached_category_id', $lockedCategory->getKey())
+                    ->whereNull('category_id')
+                    ->update([
+                        'category_id' => $lockedCategory->getKey(),
+                        'detached_category_id' => null,
+                    ]);
             }
 
             $this->logActivity->handle($lockedActor, ActivityAction::CATEGORY_TOGGLED, 'Status da categoria alterado.');
