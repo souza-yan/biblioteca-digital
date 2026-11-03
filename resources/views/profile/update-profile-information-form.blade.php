@@ -29,8 +29,10 @@
                 <div class="min-w-0 max-w-full flex-1">
                     <h2 class="break-words text-2xl font-bold leading-tight text-gray-900 sm:text-3xl">{{ $this->user->name }}</h2>
                     <div class="mt-2 flex flex-col gap-1 text-sm text-gray-500 sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-2 sm:text-base">
-                        <span class="font-medium text-blue-800">{{ $this->user->role->label() }}</span>
-                        <span aria-hidden="true" class="hidden text-gray-300 sm:inline">•</span>
+                        @if (! $this->user->isStaff())
+                            <span class="font-medium text-blue-800">{{ $this->user->role->label() }}</span>
+                            <span aria-hidden="true" class="hidden text-gray-300 sm:inline">•</span>
+                        @endif
                         <span class="break-all">{{ $this->user->email }}</span>
                     </div>
                 </div>
