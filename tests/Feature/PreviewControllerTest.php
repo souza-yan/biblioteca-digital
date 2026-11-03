@@ -233,7 +233,7 @@ it('shows the correct preview element for supported image and media types', func
     'MP3 audio' => ['audio/mpeg', '<audio'],
 ]);
 
-it('shows the complete file preview without a collapsible control', function () {
+it('opens PDF previews in a full-screen dialog', function () {
     $material = Material::factory()->published()->create();
     $version = MaterialVersion::factory()->for($material)->create([
         'mime_type' => 'application/pdf',
@@ -244,9 +244,10 @@ it('shows the complete file preview without a collapsible control', function () 
     Livewire::actingAs(User::factory()->teacher()->create())
         ->test(MaterialDetail::class, ['material' => $material])
         ->assertSee('arquivo-completo.pdf')
-        ->assertSee('h-[75vh]', false)
+        ->assertSee('Visualizar em tela cheia')
+        ->assertSee('fixed inset-0', false)
         ->assertSee('#view=Fit', false)
-        ->assertDontSee('Visualizar arquivo')
+        ->assertDontSee('h-[75vh]', false)
         ->assertDontSee('x-collapse', false);
 });
 
