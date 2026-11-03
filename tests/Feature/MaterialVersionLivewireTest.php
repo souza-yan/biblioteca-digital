@@ -60,6 +60,17 @@ it('allows admins to upload sequential versions and updates the current version'
     ]);
 });
 
+it('uses the localized file selector when submitting a new version', function () {
+    $material = Material::factory()->create();
+
+    Livewire::actingAs(User::factory()->admin()->create())
+        ->test(MaterialDetail::class, ['material' => $material])
+        ->assertSee('Selecionar arquivo')
+        ->assertSee('Nenhum arquivo selecionado')
+        ->assertDontSee('Browse...')
+        ->assertDontSee('No file selected.');
+});
+
 it('forbids teachers from uploading a version to a published material', function () {
     $material = Material::factory()->published()->create();
     $this->actingAs(User::factory()->teacher()->create());

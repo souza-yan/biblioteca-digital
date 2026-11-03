@@ -211,21 +211,7 @@
                     </div>
 
                     <div>
-                        <label for="version-file" class="mb-1.5 block text-sm font-medium text-slate-700">
-                            Arquivo <span aria-hidden="true" class="font-bold text-red-600">*</span>
-                            <span class="sr-only">(obrigatório)</span>
-                        </label>
-                        <input id="version-file" type="file" wire:model="versionForm.file" required
-                            accept="{{ implode(',', array_map(fn($mime) => '.' . $mime, config('materials.upload.allowed_mimes'))) }}"
-                            class="block w-full cursor-pointer rounded-lg border border-slate-300 bg-white text-sm text-slate-700
-                   shadow-xs transition
-                   file:mr-4 file:cursor-pointer file:border-0 file:bg-blue-50 file:px-4 file:py-2.5
-                   file:text-sm file:font-medium file:text-blue-700
-                   hover:file:bg-blue-100
-                   focus:border-blue-500 focus:outline-hidden focus:ring-2 focus:ring-blue-500/30">
-                        @error('versionForm.file')
-                            <p class="mt-1.5 text-sm text-red-600">{{ $message }}</p>
-                        @enderror
+                        <x-materials.file-upload id="version-file" model="versionForm.file" :file="$versionForm->file" />
                     </div>
 
                     <div>
