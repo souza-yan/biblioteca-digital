@@ -25,6 +25,8 @@ it('creates a draft material with its first private version', function () {
     Livewire::test(MaterialManager::class)
         ->call('openCreate')
         ->assertViewHas('creationStatuses', [MaterialStatus::DRAFT, MaterialStatus::PUBLISHED])
+        ->assertSee('Selecionar arquivo')
+        ->assertSee('Nenhum arquivo selecionado')
         ->set('form.title', 'Apostila de Robótica')
         ->set('form.description', 'Atividades introdutórias.')
         ->set('form.category_id', (string) $category->getKey())
