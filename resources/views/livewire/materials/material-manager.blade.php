@@ -102,7 +102,6 @@
 
                                 @if ($material->status->value !== \App\Enums\MaterialStatus::ARCHIVED->value)
                                     <x-ts-button color="yellow" wire:click="archive({{ $material->id }})"
-                                        wire:confirm="Arquivar este material? Ele deixará de aparecer na biblioteca."
                                         wire:loading.attr="disabled" wire:target="archive({{ $material->id }})"
                                         aria-label="Arquivar material {{ $material->title }}" title="Arquivar material"
                                         class="!size-12 !p-0 shrink-0 justify-center">
