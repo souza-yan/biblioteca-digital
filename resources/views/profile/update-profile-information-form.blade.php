@@ -6,6 +6,7 @@
         class="p-5 sm:p-6">
             @if (Laravel\Jetstream\Jetstream::managesProfilePhotos())
                 <input type="file" id="photo" class="hidden" wire:model.live="photo" x-ref="photo"
+                    accept="{{ implode(',', array_map(fn ($mime) => '.'.$mime, config('profile.photo.allowed_mimes'))) }}"
                     x-on:change="
                         const file = $refs.photo.files[0];
                         if (! file) return;
@@ -43,8 +44,8 @@
                         </button>
 
                         <span class="min-w-0 flex-1 text-sm leading-6 text-gray-600">
-                            <strong class="block font-semibold text-gray-800">JPG ou PNG</strong>
-                            Tamanho máximo de 1MB
+                            <strong class="block font-semibold text-gray-800">{{ strtoupper(implode(' ou ', config('profile.photo.allowed_mimes'))) }}</strong>
+                            Tamanho máximo de {{ number_format(config('profile.photo.max_size_kilobytes') / 1024, 2, ',', '.') }} MB
                         </span>
 
                         @if ($this->user->profile_photo_path)

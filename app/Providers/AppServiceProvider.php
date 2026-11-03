@@ -28,13 +28,19 @@ class AppServiceProvider extends ServiceProvider
         $postLimitKilobytes = $postLimitBytes > 0
             ? intdiv(max(0, $postLimitBytes - 1024 * 1024), 1024)
             : PHP_INT_MAX;
-        $effectiveLimitKilobytes = min(
-            $configuredLimitKilobytes,
+        $serverLimitKilobytes = min(
             $uploadLimitKilobytes,
             $postLimitKilobytes,
         );
+        $effectiveLimitKilobytes = min($configuredLimitKilobytes, $serverLimitKilobytes);
+        $configuredProfilePhotoLimitKilobytes = (int) config('profile.photo.max_size_kilobytes');
+        $effectiveProfilePhotoLimitKilobytes = min(
+            $configuredProfilePhotoLimitKilobytes,
+            $serverLimitKilobytes,
+        );
 
         config()->set('materials.upload.max_size_kilobytes', $effectiveLimitKilobytes);
+        config()->set('profile.photo.max_size_kilobytes', $effectiveProfilePhotoLimitKilobytes);
         config()->set('livewire.temporary_file_upload.rules', [
             'required',
             'file',

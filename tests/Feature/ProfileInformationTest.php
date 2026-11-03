@@ -42,3 +42,28 @@ test('profile photo can be updated without redirecting away from the profile', f
 
     expect($user->fresh()->profile_photo_path)->not->toBeNull();
 });
+
+test('profile photo accepts the configured maximum and exposes it in the form', function () {
+    Storage::fake('public');
+    $this->actingAs($user = User::factory()->create());
+
+    Livewire::test(UpdateProfileInformationForm::class)
+        ->assertSee('Tamanho máximo de 5,00 MB')
+        ->assertSee('accept=".jpg,.jpeg,.png"', false)
+        ->set('photo', UploadedFile::fake()->image('avatar.png')->size(5120))
+        ->call('updateProfileInformation')
+        ->assertHasNoErrors();
+
+    expect($user->fresh()->profile_photo_path)->not->toBeNull();
+});
+
+test('profile photo rejects files above the configured maximum', function () {
+    Storage::fake('public');
+    config()->set('profile.photo.max_size_kilobytes', 1);
+    $this->actingAs(User::factory()->create());
+
+    Livewire::test(UpdateProfileInformationForm::class)
+        ->set('photo', UploadedFile::fake()->image('avatar.png')->size(2))
+        ->call('updateProfileInformation')
+        ->assertHasErrors('photo');
+});
