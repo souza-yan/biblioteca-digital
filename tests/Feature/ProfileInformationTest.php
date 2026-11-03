@@ -15,14 +15,18 @@ test('current profile information is available', function () {
     expect($component->state['email'])->toEqual($user->email);
 });
 
-test('does not show the staff role label in the profile summary', function () {
-    $staff = User::factory()->staffInSchool()->create();
+test('does not show role labels in the profile summary', function (string $role) {
+    $user = match ($role) {
+        'admin' => User::factory()->admin()->create(),
+        'staff' => User::factory()->staffInSchool()->create(),
+        'teacher' => User::factory()->teacher()->create(),
+    };
 
-    Livewire::actingAs($staff)
+    Livewire::actingAs($user)
         ->test(UpdateProfileInformationForm::class)
-        ->assertDontSee('Funcionário da Gestão')
-        ->assertSee($staff->email);
-});
+        ->assertDontSee($user->role->label())
+        ->assertSee($user->email);
+})->with(['admin', 'staff', 'teacher']);
 
 test('profile information can be updated', function () {
     $this->actingAs($user = User::factory()->create());
