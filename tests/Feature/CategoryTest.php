@@ -110,20 +110,27 @@ it('shows creation controls in the category library for staff', function () {
 
 it('allows staff to create a category and material from the category library', function () {
     $staff = User::factory()->staffInSchool()->create();
-    $category = Category::factory()->create();
     Storage::fake('local');
 
-    Livewire::actingAs($staff)
+    $component = Livewire::actingAs($staff)
         ->test(CategoryLibrary::class)
         ->call('openCategoryCreate')
         ->set('categoryForm.name', 'Categoria criada na biblioteca')
         ->set('categoryForm.description', 'Descrição da nova categoria')
         ->call('saveCategory')
-        ->assertHasNoErrors()
+        ->assertHasNoErrors();
+
+    $category = Category::query()
+        ->where('name', 'Categoria criada na biblioteca')
+        ->firstOrFail();
+
+    $component
         ->call('openMaterialCreate')
+        ->assertSet('showMaterialForm', true)
+        ->assertSet('materialForm.category_id', (string) $category->getKey())
+        ->assertSee($category->name)
         ->set('materialForm.title', 'Material criado na biblioteca')
         ->set('materialForm.description', 'Conteúdo da gestão')
-        ->set('materialForm.category_id', (string) $category->getKey())
         ->set('materialForm.author', 'Equipe Escolar')
         ->set('materialForm.file', UploadedFile::fake()->create('material.pdf', 100, 'application/pdf'))
         ->call('saveMaterial')

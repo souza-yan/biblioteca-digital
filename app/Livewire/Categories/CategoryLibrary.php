@@ -39,6 +39,8 @@ class CategoryLibrary extends Component
 
     public bool $showMaterialForm = false;
 
+    public ?int $preferredMaterialCategoryId = null;
+
     public function mount(): void
     {
         Gate::authorize('viewAny', Category::class);
@@ -70,7 +72,7 @@ class CategoryLibrary extends Component
         Gate::authorize('create', Category::class);
 
         $this->categoryForm->generateSlugFromName();
-        $createCategory->handle($actor, $this->categoryForm->validate());
+        $category = $createCategory->handle($actor, $this->categoryForm->validate());
 
         $this->toast()
             ->success('Categoria cadastrada!', 'A categoria foi cadastrada com sucesso.')
@@ -78,6 +80,7 @@ class CategoryLibrary extends Component
 
         $this->resetCategoryForm();
         $this->showCategoryForm = false;
+        $this->preferredMaterialCategoryId = $category->getKey();
     }
 
     public function openMaterialCreate(): void
@@ -85,6 +88,8 @@ class CategoryLibrary extends Component
         Gate::authorize('create', Material::class);
 
         $this->resetMaterialForm();
+        $this->materialForm->category_id = (string) $this->preferredMaterialCategoryId;
+        $this->preferredMaterialCategoryId = null;
         $this->showMaterialForm = true;
     }
 

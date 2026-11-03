@@ -113,7 +113,8 @@
                 <form id="material-library-form" wire:submit="saveMaterial" class="space-y-4">
                     <x-ts-input wire:model="materialForm.title" label="Título *" required />
                     <x-ts-input wire:model="materialForm.description" label="Descrição" />
-                    <x-ts-select.styled wire:model="materialForm.category_id" label="Categoria *"
+                    <x-ts-select.styled wire:key="material-category-select-{{ $activeCategories->pluck('id')->join('-') }}"
+                        wire:model="materialForm.category_id" label="Categoria *"
                         placeholder="Selecione uma categoria ativa" :options="$activeCategories
                             ->map(fn($category) => ['label' => $category->name, 'value' => $category->id])
                             ->all()"
