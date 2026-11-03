@@ -17,15 +17,17 @@
             <div>
                 <h1 class="text-3xl font-bold tracking-tight text-blue-800 sm:text-4xl">Categorias</h1>
             </div>
+        </div>
+
+        <div class="mb-5 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+            <div class="w-full max-w-xl">
+                <x-search-field model="search" label="Buscar categoria" placeholder="Digite o nome da categoria" />
+            </div>
             @can('create', \App\Models\Category::class)
-                <x-ts-button color="blue" wire:click="openCreate">
+                <x-ts-button color="blue" wire:click="openCreate" class="w-full justify-center sm:w-auto">
                     <span class="text-white text-base">Nova categoria</span>
                 </x-ts-button>
             @endcan
-        </div>
-
-        <div class="mb-5 max-w-xl">
-            <x-search-field model="search" label="Buscar categoria" placeholder="Digite o nome da categoria" />
         </div>
 
         {{-- Categorias e controles administrativos de ativação. --}}
