@@ -233,6 +233,22 @@ it('shows the correct preview element for supported image and media types', func
     'MP3 audio' => ['audio/mpeg', '<audio'],
 ]);
 
+it('keeps the file preview collapsed until the user opens it', function () {
+    $material = Material::factory()->published()->create();
+    $version = MaterialVersion::factory()->for($material)->create([
+        'mime_type' => 'application/pdf',
+        'original_name' => 'arquivo-completo.pdf',
+    ]);
+    $material->update(['current_version_id' => $version->getKey()]);
+
+    Livewire::actingAs(User::factory()->teacher()->create())
+        ->test(MaterialDetail::class, ['material' => $material])
+        ->assertSee('Visualizar arquivo')
+        ->assertSee('arquivo-completo.pdf')
+        ->assertSee('x-collapse', false)
+        ->assertSee('h-[75vh]', false);
+});
+
 it('forbids staff from previewing historical versions of archived materials', function () {
     Storage::fake('local');
     $staff = User::factory()->staffInSchool()->create();
