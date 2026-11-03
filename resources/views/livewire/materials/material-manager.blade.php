@@ -84,11 +84,19 @@
                                 @endif
 
                                 @can('update', $material)
-                                    <x-ts-button color="blue" href="{{ route('painel.materials.show', $material) }}"
-                                        aria-label="Editar material {{ $material->title }}" title="Editar material"
-                                        class="!size-12 !p-0 shrink-0 justify-center">
-                                        <x-ts-icon icon="pencil-square" outline class="size-7 text-white" />
-                                    </x-ts-button>
+                                    @if ($actor?->isStaff())
+                                        <x-ts-button color="blue" wire:click="editMaterial({{ $material->id }})"
+                                            aria-label="Editar material {{ $material->title }}" title="Editar material"
+                                            class="!size-12 !p-0 shrink-0 justify-center">
+                                            <x-ts-icon icon="pencil-square" outline class="size-7 text-white" />
+                                        </x-ts-button>
+                                    @else
+                                        <x-ts-button color="blue" href="{{ route('painel.materials.show', $material) }}"
+                                            aria-label="Editar material {{ $material->title }}" title="Editar material"
+                                            class="!size-12 !p-0 shrink-0 justify-center">
+                                            <x-ts-icon icon="pencil-square" outline class="size-7 text-white" />
+                                        </x-ts-button>
+                                    @endif
 
                                 @if ($material->status->value !== \App\Enums\MaterialStatus::PUBLISHED->value)
                                     <x-ts-button color="emerald" wire:click="publish({{ $material->id }})"

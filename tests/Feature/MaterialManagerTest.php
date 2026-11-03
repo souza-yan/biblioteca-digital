@@ -342,6 +342,22 @@ it('shows staff a download action for published materials with a current version
         ->assertSee(route('downloads.show', $material), false);
 });
 
+it('opens the edit modal for materials created by staff', function () {
+    $staff = User::factory()->staffInSchool()->create();
+    $material = Material::factory()->published()->create([
+        'created_by' => $staff->getKey(),
+        'title' => 'Material da gestão',
+    ]);
+
+    Livewire::actingAs($staff)
+        ->test(MaterialManager::class)
+        ->assertSee('wire:click="editMaterial('.$material->getKey().')"', false)
+        ->call('editMaterial', $material->getKey())
+        ->assertSet('showForm', true)
+        ->assertSee('Editar material')
+        ->assertSet('form.title', 'Material da gestão');
+});
+
 it('uses the edit button to open material details instead of making the title a link', function () {
     $admin = User::factory()->admin()->create();
     $material = Material::factory()->published()->create(['title' => 'Material para editar']);
