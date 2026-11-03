@@ -67,7 +67,9 @@
                     <tr wire:key="material-{{ $material->id }}">
                         <td class="px-5 py-4 text-lg font-medium text-black">{{ $material->title }}</td>
                         <td class="px-5 py-4 text-lg text-black">{{ $material->category->name }}</td>
-                        <td class="px-5 py-4 text-lg text-black">{{ $material->status->label() }}</td>
+                        <td class="px-5 py-4 text-lg text-black">
+                            <x-materials.status-badge :status="$material->status" />
+                        </td>
                         @if ($actor?->isAdmin() || $actor?->isStaff())
                             <td class="px-5 py-4 text-right text-lg">
                                 <div class="flex flex-row flex-nowrap items-center justify-end gap-2">

@@ -65,7 +65,9 @@
             <dl class="mt-6 grid grid-cols-1 gap-4 border-t border-gray-100 pt-5 sm:grid-cols-2">
                 <div>
                     <dt class="text-xs font-semibold uppercase text-gray-500">Status</dt>
-                    <dd class="mt-1 text-base text-gray-900">{{ $material->status->label() }}</dd>
+                    <dd class="mt-1">
+                        <x-materials.status-badge :status="$material->status" />
+                    </dd>
                 </div>
                 <div>
                     <dt class="text-xs font-semibold uppercase text-gray-500">Criado por</dt>
