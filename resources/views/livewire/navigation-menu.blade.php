@@ -53,7 +53,7 @@
     <aside id="app-sidebar" :class="{ 'mobile-menu-open': menuOpen }"
         class="flex flex-col overflow-hidden border-r border-blue-900 bg-blue-800"
         aria-label="Navegação principal" x-trap.inert.noscroll="menuOpen">
-        <div class="sidebar-brand flex shrink-0 items-center border-b border-blue-700 px-5" style="height: 4rem">
+        <div class="sidebar-brand flex shrink-0 items-center border-b border-blue-700 px-4 lg:px-5" style="height: 4rem">
             <button type="button"
                 class="inline-flex size-12 shrink-0 items-center justify-center rounded-xl text-white transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-white"
                 @click="window.innerWidth < 1024 ? closeMobileMenu() : toggleDesktopSidebar()"
@@ -63,7 +63,7 @@
                 <x-ts-icon icon="bars-3" outline class="hidden size-7 lg:block" />
             </button>
             <div class="sidebar-brand-title sidebar-label ml-3 shrink-0 whitespace-nowrap">
-                <p class="text-base font-bold text-white">Biblioteca de Robótica</p>
+                <p class="text-sm font-bold text-white sm:text-base">Biblioteca de Robótica</p>
             </div>
         </div>
 
@@ -96,8 +96,9 @@
                 <form method="POST" action="{{ route('logout') }}" class="mt-1 sm:hidden">
                     @csrf
                     <button type="submit" title="Sair" aria-label="Sair"
-                        class="flex w-full items-center justify-center rounded-xl py-3 text-white transition hover:bg-blue-700">
+                        class="flex w-full items-center gap-3 rounded-xl px-[18px] py-3 text-white transition hover:bg-blue-700">
                         <x-ts-icon icon="arrow-right-start-on-rectangle" outline class="size-7" />
+                        <span class="sidebar-label shrink-0 whitespace-nowrap text-base font-medium">Sair</span>
                     </button>
                 </form>
             </div>

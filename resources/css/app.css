@@ -20,10 +20,6 @@
     --sidebar-speed: 400ms;
 }
 
-html.sidebar-collapsed {
-    --sidebar-w: var(--sidebar-w-mini);
-}
-
 #app-sidebar {
     position: fixed;
     inset: 0 auto 0 0;
@@ -60,19 +56,8 @@ html.sidebar-collapsed {
     transition: max-width var(--sidebar-speed), opacity var(--sidebar-speed), margin-left var(--sidebar-speed);
 }
 
-html.sidebar-collapsed .sidebar-label {
-    max-width: 0;
-    margin-left: 0;
-    opacity: 0;
-}
-
 #app-sidebar .sidebar-brand {
     transition: padding var(--sidebar-speed);
-}
-
-html.sidebar-collapsed #app-sidebar .sidebar-brand {
-    padding-right: 1rem;
-    padding-left: 1rem;
 }
 
 #app-sidebar .sidebar-nav-link,
@@ -80,22 +65,45 @@ html.sidebar-collapsed #app-sidebar .sidebar-brand {
     transition: gap var(--sidebar-speed), background-color 150ms, color 150ms;
 }
 
-html.sidebar-collapsed #app-sidebar .sidebar-nav-link,
-html.sidebar-collapsed #app-sidebar .sidebar-account-link {
-    gap: 0;
-}
-
 #app-sidebar p.sidebar-label {
     max-height: 4rem;
     transition: max-width var(--sidebar-speed), max-height var(--sidebar-speed), padding var(--sidebar-speed), opacity var(--sidebar-speed);
 }
 
-html.sidebar-collapsed #app-sidebar p.sidebar-label {
-    max-height: 0;
-    padding: 0;
+@media (max-width: 63.999rem) {
+    #app-sidebar {
+        width: min(var(--sidebar-w), calc(100vw - 4rem));
+        max-width: calc(100vw - 4rem);
+        box-shadow: 12px 0 28px rgb(15 23 42 / 25%);
+    }
 }
 
 @media (min-width: 64rem) {
+    html.sidebar-collapsed {
+        --sidebar-w: var(--sidebar-w-mini);
+    }
+
+    html.sidebar-collapsed .sidebar-label {
+        max-width: 0;
+        margin-left: 0;
+        opacity: 0;
+    }
+
+    html.sidebar-collapsed #app-sidebar .sidebar-brand {
+        padding-right: 1rem;
+        padding-left: 1rem;
+    }
+
+    html.sidebar-collapsed #app-sidebar .sidebar-nav-link,
+    html.sidebar-collapsed #app-sidebar .sidebar-account-link {
+        gap: 0;
+    }
+
+    html.sidebar-collapsed #app-sidebar p.sidebar-label {
+        max-height: 0;
+        padding: 0;
+    }
+
     #app-sidebar {
         transform: translateX(0);
     }
