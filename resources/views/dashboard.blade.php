@@ -106,41 +106,82 @@
                         <a href="{{ route('painel.library') }}" class="shrink-0 text-sm font-semibold text-blue-800 hover:underline">Ver materiais</a>
                     </div>
 
-                    <div class="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-                        @forelse ($publishedMaterials as $material)
-                            @php
-                                $materialType = strtolower((string) $material->type);
-                                $typeBadgeClass = match (true) {
-                                    $materialType === 'pdf' => 'bg-red-50 text-red-700',
-                                    in_array($materialType, ['png', 'jpg', 'jpeg', 'webp', 'gif'], true) => 'bg-violet-50 text-violet-700',
-                                    in_array($materialType, ['xls', 'xlsx', 'csv'], true) => 'bg-emerald-50 text-emerald-700',
-                                    in_array($materialType, ['ppt', 'pptx'], true) => 'bg-amber-50 text-amber-700',
-                                    in_array($materialType, ['doc', 'docx'], true) => 'bg-blue-50 text-blue-700',
-                                    default => 'bg-slate-100 text-slate-600',
-                                };
-                            @endphp
-                            <article class="group relative overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition hover:-translate-y-0.5 hover:border-blue-200 hover:shadow-md">
-                                <a href="{{ route('painel.library.show', $material) }}" class="block p-3" aria-label="Abrir {{ $material->title }}">
-                                    <x-materials.pdf-cover :material="$material" :version="$material->currentVersion" :alt="'Capa do material '.$material->title" fit="contain" class="mx-auto w-40 rounded-xl sm:w-full" />
-                                </a>
-                                <div class="p-4 pt-1">
-                                    <p class="truncate text-sm font-medium text-blue-700">{{ $material->category->name }}</p>
-                                    <a href="{{ route('painel.library.show', $material) }}" class="mt-1 block truncate text-base font-bold text-slate-900 hover:text-blue-800">{{ $material->title }}</a>
-                                    <div class="mt-3 flex items-center justify-between gap-3 text-xs text-slate-500">
-                                        <span>{{ $material->published_at?->format('d/m/Y') ?? 'Data não informada' }}</span>
-                                        <span @class(['rounded-full px-2 py-1 font-semibold uppercase tracking-wide', $typeBadgeClass])>{{ $material->type }}</span>
+                    <div x-data="{
+                        movePublishedCarousel(direction) {
+                            const carousel = this.$refs.publishedCarousel;
+                            const maxScrollLeft = carousel.scrollWidth - carousel.clientWidth;
+                            const isAtStart = carousel.scrollLeft <= 1;
+                            const isAtEnd = carousel.scrollLeft >= maxScrollLeft - 1;
+
+                            let nextPosition = carousel.scrollLeft + (direction * carousel.clientWidth);
+
+                            if (direction < 0 && isAtStart) {
+                                nextPosition = maxScrollLeft;
+                            }
+
+                            if (direction > 0 && isAtEnd) {
+                                nextPosition = 0;
+                            }
+
+                            carousel.scrollTo({ left: nextPosition, behavior: 'smooth' });
+                        },
+                    }" class="mt-5">
+                        <div @class([
+                            'grid grid-cols-[2.25rem_minmax(0,1fr)_2.25rem] items-center gap-2 sm:block' => $publishedMaterials->count() > 1,
+                        ])>
+                            @if ($publishedMaterials->count() > 1)
+                                <button type="button" x-on:click="movePublishedCarousel(-1)"
+                                    aria-label="Ver materiais publicados anteriores" title="Ver materiais publicados anteriores"
+                                    class="inline-flex size-9 items-center justify-center justify-self-center rounded-full border border-slate-200 bg-white text-blue-800 shadow-md transition hover:border-blue-200 hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-600 sm:hidden">
+                                    <x-ts-icon icon="chevron-left" outline class="size-5" />
+                                </button>
+                            @endif
+
+                            <div x-ref="publishedCarousel" class="flex snap-x snap-mandatory gap-3 overflow-x-auto scroll-smooth pb-2 sm:grid sm:grid-cols-2 sm:gap-5 sm:overflow-visible sm:pb-0 lg:grid-cols-3" aria-label="Materiais publicados recentemente">
+                                @forelse ($publishedMaterials as $material)
+                                    @php
+                                        $materialType = strtolower((string) $material->type);
+                                        $typeBadgeClass = match (true) {
+                                            $materialType === 'pdf' => 'bg-red-50 text-red-700',
+                                            in_array($materialType, ['png', 'jpg', 'jpeg', 'webp', 'gif'], true) => 'bg-violet-50 text-violet-700',
+                                            in_array($materialType, ['xls', 'xlsx', 'csv'], true) => 'bg-emerald-50 text-emerald-700',
+                                            in_array($materialType, ['ppt', 'pptx'], true) => 'bg-amber-50 text-amber-700',
+                                            in_array($materialType, ['doc', 'docx'], true) => 'bg-blue-50 text-blue-700',
+                                            default => 'bg-slate-100 text-slate-600',
+                                        };
+                                    @endphp
+                                    <article class="group relative w-44 shrink-0 snap-start overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition hover:-translate-y-0.5 hover:border-blue-200 hover:shadow-md sm:w-auto">
+                                        <a href="{{ route('painel.library.show', $material) }}" class="block p-3" aria-label="Abrir {{ $material->title }}">
+                                            <x-materials.pdf-cover :material="$material" :version="$material->currentVersion" :alt="'Capa do material '.$material->title" fit="contain" class="mx-auto w-32 rounded-xl sm:w-full" />
+                                        </a>
+                                        <div class="p-4 pt-1">
+                                            <p class="truncate text-sm font-medium text-blue-700">{{ $material->category->name }}</p>
+                                            <a href="{{ route('painel.library.show', $material) }}" class="mt-1 block truncate text-base font-bold text-slate-900 hover:text-blue-800">{{ $material->title }}</a>
+                                            <div class="mt-3 flex items-center justify-between gap-3 text-xs text-slate-500">
+                                                <span>{{ $material->published_at?->format('d/m/Y') ?? 'Data não informada' }}</span>
+                                                <span @class(['rounded-full px-2 py-1 font-semibold uppercase tracking-wide', $typeBadgeClass])>{{ $material->type }}</span>
+                                            </div>
+                                        </div>
+                                        <div class="absolute right-5 top-5">
+                                            @livewire('materials.favorite-button', ['material' => $material, 'isFavorited' => $material->is_favorited], key('dashboard-favorite-'.$material->getKey()))
+                                        </div>
+                                    </article>
+                                @empty
+                                    <div class="w-full rounded-2xl border border-dashed border-slate-300 bg-white px-6 py-12 text-center sm:col-span-2 lg:col-span-3">
+                                        <x-ts-icon icon="document-text" outline class="mx-auto size-10 text-slate-400" />
+                                        <p class="mt-3 font-semibold text-slate-700">Ainda não há materiais publicados.</p>
                                     </div>
-                                </div>
-                                <div class="absolute right-5 top-5">
-                                    @livewire('materials.favorite-button', ['material' => $material, 'isFavorited' => $material->is_favorited], key('dashboard-favorite-'.$material->getKey()))
-                                </div>
-                            </article>
-                        @empty
-                            <div class="rounded-2xl border border-dashed border-slate-300 bg-white px-6 py-12 text-center sm:col-span-2 lg:col-span-3">
-                                <x-ts-icon icon="document-text" outline class="mx-auto size-10 text-slate-400" />
-                                <p class="mt-3 font-semibold text-slate-700">Ainda não há materiais publicados.</p>
+                                @endforelse
                             </div>
-                        @endforelse
+
+                            @if ($publishedMaterials->count() > 1)
+                                <button type="button" x-on:click="movePublishedCarousel(1)"
+                                    aria-label="Ver próximos materiais publicados" title="Ver próximos materiais publicados"
+                                    class="inline-flex size-9 items-center justify-center justify-self-center rounded-full border border-slate-200 bg-white text-blue-800 shadow-md transition hover:border-blue-200 hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-600 sm:hidden">
+                                    <x-ts-icon icon="chevron-right" outline class="size-5" />
+                                </button>
+                            @endif
+                        </div>
                     </div>
                 </section>
 
