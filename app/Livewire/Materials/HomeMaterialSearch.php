@@ -30,9 +30,13 @@ class HomeMaterialSearch extends Component
         $materials = Material::query()
             ->with(['category', 'currentVersion'])
             ->published()
-            ->when($search !== '', fn (Builder $query): Builder => $this->applySearch($query, $search))
-            ->orderByDesc('published_at')
-            ->orderByDesc('id')
+            ->when(
+                $search === '',
+                fn (Builder $query): Builder => $query->orderBy('title')->orderBy('id'),
+                fn (Builder $query): Builder => $this->applySearch($query, $search)
+                    ->orderByDesc('published_at')
+                    ->orderByDesc('id'),
+            )
             ->limit(6)
             ->get();
 

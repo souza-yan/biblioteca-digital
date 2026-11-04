@@ -26,7 +26,7 @@
         <div class="mt-3 overflow-hidden rounded-2xl border border-blue-100 bg-white text-slate-900 shadow-xl">
             <div class="flex items-center justify-between gap-4 border-b border-slate-100 px-4 py-3 sm:px-5">
                 <p class="text-sm font-semibold text-slate-700">
-                    {{ $normalizedSearch === '' ? 'Materiais recentes' : 'Resultados encontrados' }}
+                    {{ $normalizedSearch === '' ? 'Materiais em ordem alfabética' : 'Resultados encontrados' }}
                 </p>
                 @if ($normalizedSearch !== '')
                     <a href="{{ route('painel.library', ['q' => $normalizedSearch]) }}"

@@ -32,20 +32,26 @@ it('updates published material results while a teacher types', function () {
         ->assertDontSee($draft->title);
 });
 
-it('shows the six latest published materials before a search', function () {
+it('shows published materials alphabetically before a search', function () {
     $teacher = User::factory()->teacher()->create();
-    $oldestMaterial = Material::factory()->published()->create([
-        'title' => 'Material publicado mais antigo',
-        'published_at' => now()->subDays(10),
+    $zebra = Material::factory()->published()->create([
+        'title' => 'Zebra',
     ]);
-    Material::factory()->count(6)->published()->create([
-        'published_at' => now(),
+    $abacaxi = Material::factory()->published()->create([
+        'title' => 'Abacaxi',
+    ]);
+    Material::factory()->count(5)->published()->create([
+        'title' => 'Material adicional',
     ]);
 
     Livewire::actingAs($teacher)
         ->test(HomeMaterialSearch::class)
-        ->assertViewHas('materials', fn ($materials): bool => $materials->count() === 6)
-        ->assertDontSee($oldestMaterial->title);
+        ->assertSee('Materiais em ordem alfabética')
+        ->assertViewHas('materials', function ($materials) use ($abacaxi, $zebra): bool {
+            return $materials->count() === 6
+                && $materials->first()?->is($abacaxi)
+                && $materials->doesntContain($zebra);
+        });
 });
 
 it('forbids administrators from querying the teacher home search', function () {
