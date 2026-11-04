@@ -152,7 +152,7 @@
                                     @endphp
                                     <article class="group relative w-full shrink-0 snap-start overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition hover:-translate-y-0.5 hover:border-blue-200 hover:shadow-md sm:w-auto">
                                         <a href="{{ route('painel.library.show', $material) }}" class="block p-3" aria-label="Abrir {{ $material->title }}">
-                                            <x-materials.pdf-cover :material="$material" :version="$material->currentVersion" :alt="'Capa do material '.$material->title" fit="contain" class="mx-auto w-32 rounded-xl sm:w-full" />
+                                            <x-materials.pdf-cover :material="$material" :version="$material->currentVersion" :alt="'Capa do material '.$material->title" fit="contain" class="mx-auto w-44 rounded-xl sm:w-full" />
                                         </a>
                                         <div class="p-4 pt-1">
                                             <p class="truncate text-sm font-medium text-blue-700">{{ $material->category->name }}</p>
