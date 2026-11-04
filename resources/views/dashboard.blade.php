@@ -150,7 +150,7 @@
                                             default => 'bg-slate-100 text-slate-600',
                                         };
                                     @endphp
-                                    <article class="group relative w-44 shrink-0 snap-start overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition hover:-translate-y-0.5 hover:border-blue-200 hover:shadow-md sm:w-auto">
+                                    <article class="group relative w-full shrink-0 snap-start overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition hover:-translate-y-0.5 hover:border-blue-200 hover:shadow-md sm:w-auto">
                                         <a href="{{ route('painel.library.show', $material) }}" class="block p-3" aria-label="Abrir {{ $material->title }}">
                                             <x-materials.pdf-cover :material="$material" :version="$material->currentVersion" :alt="'Capa do material '.$material->title" fit="contain" class="mx-auto w-32 rounded-xl sm:w-full" />
                                         </a>
