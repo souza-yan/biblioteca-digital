@@ -1,16 +1,48 @@
 @php
     $showPreviewButtonOnMobile = $showPreviewButtonOnMobile ?? false;
+    $compact = $compact ?? false;
+    $iconOnlyPreviewButton = $iconOnlyPreviewButton ?? false;
+    $typeBadge = match (true) {
+        $version->mime_type === 'application/pdf' => ['label' => 'PDF', 'class' => 'bg-red-50 text-red-700'],
+        str_starts_with($version->mime_type, 'image/') => ['label' => 'Imagem', 'class' => 'bg-violet-50 text-violet-700'],
+        str_contains($version->mime_type, 'spreadsheetml') || str_contains($version->mime_type, 'ms-excel') => ['label' => 'Excel', 'class' => 'bg-emerald-50 text-emerald-700'],
+        str_contains($version->mime_type, 'presentationml') || str_contains($version->mime_type, 'ms-powerpoint') => ['label' => 'PowerPoint', 'class' => 'bg-amber-50 text-amber-700'],
+        str_contains($version->mime_type, 'wordprocessingml') || $version->mime_type === 'application/msword' => ['label' => 'Word', 'class' => 'bg-blue-50 text-blue-700'],
+        str_starts_with($version->mime_type, 'video/') => ['label' => 'Vídeo', 'class' => 'bg-slate-100 text-slate-700'],
+        str_starts_with($version->mime_type, 'audio/') => ['label' => 'Áudio', 'class' => 'bg-slate-100 text-slate-700'],
+        $version->mime_type === 'text/plain' => ['label' => 'Texto', 'class' => 'bg-slate-100 text-slate-700'],
+        default => ['label' => 'Arquivo', 'class' => 'bg-slate-100 text-slate-700'],
+    };
 @endphp
 
-<div class="mt-4 border-t border-gray-100 pt-4 sm:mt-6 sm:pt-5">
-    <dl class="grid grid-cols-1 gap-2 text-sm sm:gap-3 sm:grid-cols-3">
-        <div class="sm:col-span-3">
+<div @class([
+    'border-t border-gray-100',
+    'mt-3 pt-3' => $compact,
+    'mt-4 pt-4 sm:mt-6 sm:pt-5' => ! $compact,
+])>
+    <dl @class([
+        'grid text-sm',
+        'grid-cols-2 gap-2' => $compact,
+        'grid-cols-1 gap-2 sm:gap-3 sm:grid-cols-3' => ! $compact,
+    ])>
+        @if (! $compact)
+            <div class="sm:col-span-3">
             <dt class="font-semibold text-gray-500">Nome do arquivo</dt>
             <dd class="break-all text-gray-900">{{ $version->original_name }}</dd>
-        </div>
+            </div>
+        @endif
         <div>
             <dt class="font-semibold text-gray-500">Tipo</dt>
-            <dd class="break-all text-gray-700">{{ $version->mime_type }}</dd>
+            @if ($compact)
+                <dd class="mt-1">
+                    <span @class([
+                        'inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold',
+                        $typeBadge['class'],
+                    ])>{{ $typeBadge['label'] }}</span>
+                </dd>
+            @else
+                <dd class="break-all text-gray-700">{{ $version->mime_type }}</dd>
+            @endif
         </div>
         <div>
             <dt class="font-semibold text-gray-500">Tamanho</dt>
@@ -21,13 +53,15 @@
             'hidden sm:flex' => ! $showPreviewButtonOnMobile,
             'flex' => $showPreviewButtonOnMobile,
         ])>
-            <button
-                type="button"
-                class="inline-flex items-center gap-2 rounded-md bg-blue-700 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-                @click="isPreviewOpen = true"
-            >
+            <button type="button" @class([
+                'inline-flex items-center rounded-md bg-blue-700 text-sm font-semibold text-white transition hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2',
+                'size-10 justify-center' => $iconOnlyPreviewButton,
+                'gap-2 px-4 py-2.5' => ! $iconOnlyPreviewButton,
+            ]) @click="isPreviewOpen = true" aria-label="Visualizar conteúdo" title="Visualizar conteúdo">
                 <x-ts-icon icon="arrows-pointing-out" outline class="size-5" />
-                Visualizar conteúdo
+                @if (! $iconOnlyPreviewButton)
+                    Visualizar conteúdo
+                @endif
             </button>
         </div>
     </dl>

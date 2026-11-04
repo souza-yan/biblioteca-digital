@@ -37,9 +37,8 @@ it('opens published material details in the mobile library modal and records the
         ->call('openMobileMaterialDetail', $material->getKey())
         ->assertSet('showMobileMaterialDetail', true)
         ->assertSet('mobileMaterialId', $material->getKey())
-        ->assertSee('Detalhes do material')
         ->assertSee($material->description)
-        ->assertSee('Visualizar conteúdo')
+        ->assertSee('aria-label="Visualizar conteúdo"', false)
         ->assertSee(route('downloads.show', $material), false);
 
     $this->assertDatabaseHas('activity_logs', [

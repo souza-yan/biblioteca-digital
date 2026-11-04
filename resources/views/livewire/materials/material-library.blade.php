@@ -157,13 +157,13 @@
             </x-data-table>
         </div>
 
-        <x-ts-modal wire="showMobileMaterialDetail" title="Detalhes do material" size="lg" center>
+        <x-ts-modal wire="showMobileMaterialDetail" size="lg" center>
             @if ($mobileMaterial)
                 <div x-data="{ isPreviewOpen: false }">
-                    <h2 class="text-xl font-semibold text-slate-900">{{ $mobileMaterial->title }}</h2>
+                    <h2 class="text-lg font-semibold text-slate-900">{{ $mobileMaterial->title }}</h2>
                     <p class="mt-1 text-sm text-slate-600">Por {{ $mobileMaterial->author }}</p>
 
-                    <dl class="mt-4 grid grid-cols-1 gap-3 border-t border-slate-100 pt-4 text-sm">
+                    <dl class="mt-3 grid grid-cols-1 gap-2 border-t border-slate-100 pt-3 text-sm">
                         <div>
                             <dt class="font-semibold text-slate-500">Categoria</dt>
                             <dd class="mt-1 text-slate-900">{{ $mobileMaterial->category->name }}</dd>
@@ -181,19 +181,18 @@
                             'version' => $mobileMaterial->currentVersion,
                             'previewUrl' => $mobilePreviewUrl,
                             'showPreviewButtonOnMobile' => true,
+                            'compact' => true,
+                            'iconOnlyPreviewButton' => true,
                         ])
                     @endif
                 </div>
             @endif
 
             <x-slot:footer>
-                <x-ts-button color="slate" type="button" wire:click="closeMobileMaterialDetail">
-                    Fechar
-                </x-ts-button>
                 @if ($mobileMaterial?->currentVersion)
-                    <x-ts-button color="emerald" href="{{ route('downloads.show', $mobileMaterial) }}">
-                        Baixar material
-                    </x-ts-button>
+                    <x-icon-button icon="document-arrow-down" variant="success"
+                        :href="route('downloads.show', $mobileMaterial)"
+                        label="Baixar {{ $mobileMaterial->title }}" />
                 @endif
             </x-slot:footer>
         </x-ts-modal>
