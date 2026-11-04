@@ -45,6 +45,10 @@ it('shows active categories with their real published material counts to teacher
     Material::factory()->count(2)->published()->for($category)->create();
     Material::factory()->draft()->for($category)->create();
     Material::factory()->published()->for($inactiveCategory)->create();
+    $additionalCategories = Category::factory()->count(4)->create(['is_active' => true]);
+    $additionalCategories->each(
+        fn (Category $additionalCategory) => Material::factory()->published()->for($additionalCategory)->create(),
+    );
 
     $this->actingAs($teacher)
         ->get(route('dashboard'))
@@ -53,9 +57,10 @@ it('shows active categories with their real published material counts to teacher
         ->assertSee('2 materiais publicados')
         ->assertSee(route('painel.library', ['categoryFilter' => $category->getKey()]), false)
         ->assertViewHas('categories', function ($categories) use ($category): bool {
-            return $categories->count() === 1
-                && $categories->first()?->is($category)
-                && $categories->first()?->published_materials_count === 2;
+            $arduino = $categories->firstWhere('id', $category->getKey());
+
+            return $categories->count() === 5
+                && $arduino?->published_materials_count === 2;
         });
 });
 

@@ -43,7 +43,6 @@ class BuildTeacherDashboard
                 ])
                 ->having('published_materials_count', '>', 0)
                 ->orderBy('name')
-                ->limit(6)
                 ->get(['id', 'name']),
             'recentlyAccessedMaterials' => $this->recentlyAccessedMaterials($teacher),
         ];
