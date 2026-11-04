@@ -47,6 +47,7 @@
 
         {{-- Resultados e ações disponíveis para cada material publicado. --}}
         <x-data-table :columns="[
+            ['label' => 'Prévia', 'nowrap' => true],
             ['label' => 'Título', 'sortAction' => 'toggleTitleSort', 'sortDirection' => $titleSortDirection],
             ['label' => 'Categoria'],
             ['label' => 'Autor'],
@@ -54,7 +55,19 @@
         ]">
             @forelse ($materials as $material)
                 <tr wire:key="published-material-{{ $material->id }}">
-                    <td class="px-5 py-4 text-lg font-medium text-black">{{ $material->title }}</td>
+                    <td class="w-24 px-5 py-3">
+                        @if ($material->currentVersion)
+                            <x-materials.pdf-cover :material="$material" :version="$material->currentVersion"
+                                :alt="'Prévia de ' . $material->title" fit="contain"
+                                class="h-20 w-14 !aspect-auto rounded-lg" />
+                        @else
+                            <div class="flex h-20 w-14 items-center justify-center rounded-lg border border-slate-200 bg-slate-100 text-slate-400"
+                                aria-label="Prévia indisponível">
+                                <x-ts-icon icon="document" outline class="size-6" />
+                            </div>
+                        @endif
+                    </td>
+                    <td class="px-8 py-4 text-lg font-medium text-black">{{ $material->title }}</td>
                     <td class="px-5 py-4 text-lg text-black">{{ $material->category->name }}</td>
                     <td class="px-5 py-4 text-lg text-black">{{ $material->author }}</td>
                     <td class="px-5 py-4 text-right">
@@ -90,7 +103,7 @@
                     </td>
                 </tr>
             @empty
-                <x-data-table.empty-state :colspan="4">
+                <x-data-table.empty-state :colspan="5">
                     <span class="text-lg">Nenhum material publicado encontrado.</span>
                 </x-data-table.empty-state>
             @endforelse
