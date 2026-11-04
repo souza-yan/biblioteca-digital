@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DownloadController;
+use App\Http\Controllers\MaterialCoverController;
 use App\Http\Controllers\MostDownloadedMaterialsController;
 use App\Http\Controllers\PreviewController;
 use App\Livewire\Activity\ActivityLogIndex;
@@ -33,6 +34,10 @@ Route::middleware([
         ->name('previews.show');
     Route::get('/materiais/{material}/versoes/{version}/preview', [PreviewController::class, 'version'])
         ->name('previews.version');
+    Route::get('/materiais/{material}/capa', [MaterialCoverController::class, 'show'])
+        ->name('covers.show');
+    Route::get('/materiais/{material}/versoes/{version}/capa', [MaterialCoverController::class, 'version'])
+        ->name('covers.version');
 
     Route::get('/painel/usuarios', UserManager::class)
         ->middleware('role:admin,staff')

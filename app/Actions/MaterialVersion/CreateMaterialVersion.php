@@ -4,6 +4,7 @@ namespace App\Actions\MaterialVersion;
 
 use App\Actions\Activity\LogActivity;
 use App\Enums\ActivityAction;
+use App\Jobs\GenerateMaterialVersionCover;
 use App\Models\Material;
 use App\Models\MaterialVersion;
 use App\Models\User;
@@ -75,6 +76,10 @@ class CreateMaterialVersion
                     'Nova versão criada para o material.',
                     $lockedMaterial,
                 );
+
+                if ($mimeType === 'application/pdf') {
+                    GenerateMaterialVersionCover::dispatch($version->getKey())->afterCommit();
+                }
 
                 return $version;
             });

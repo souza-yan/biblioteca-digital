@@ -19,6 +19,7 @@ class MaterialVersion extends Model
         'material_id',
         'version_number',
         'file_path',
+        'cover_path',
         'original_name',
         'mime_type',
         'size',
