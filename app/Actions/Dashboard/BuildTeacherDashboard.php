@@ -5,9 +5,11 @@ namespace App\Actions\Dashboard;
 use App\Enums\ActivityAction;
 use App\Enums\MaterialStatus;
 use App\Models\ActivityLog;
+use App\Models\Category;
 use App\Models\Download;
 use App\Models\Material;
 use App\Models\User;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Database\Query\JoinClause;
 use Illuminate\Support\Facades\DB;
@@ -19,21 +21,30 @@ class BuildTeacherDashboard
      */
     public function handle(User $teacher): array
     {
+        $teacherId = $teacher->getKey();
+
         return [
             'isTeacher' => true,
             'publishedMaterials' => Material::query()
-                ->with('category')
-                ->where('status', MaterialStatus::PUBLISHED)
+                ->with(['category', 'currentVersion'])
+                ->withExists([
+                    'favoritedBy as is_favorited' => fn (Builder $query): Builder => $query->whereKey($teacherId),
+                ])
+                ->published()
                 ->orderByDesc('published_at')
                 ->orderByDesc('id')
                 ->limit(3)
                 ->get(),
-            'favoriteMaterials' => $teacher->favorites()
-                ->with('category')
-                ->where('materials.status', MaterialStatus::PUBLISHED)
-                ->orderBy('materials.title')
-                ->limit(5)
-                ->get(),
+            'teacherSchool' => $teacher->school(),
+            'categories' => Category::query()
+                ->where('is_active', true)
+                ->withCount([
+                    'materials as published_materials_count' => fn (Builder $query): Builder => $query->published(),
+                ])
+                ->having('published_materials_count', '>', 0)
+                ->orderBy('name')
+                ->limit(6)
+                ->get(['id', 'name']),
             'recentlyAccessedMaterials' => $this->recentlyAccessedMaterials($teacher),
         ];
     }
@@ -75,7 +86,7 @@ class BuildTeacherDashboard
         }
 
         $materials = Material::query()
-            ->with('category')
+            ->with(['category', 'currentVersion'])
             ->whereKey($materialIds)
             ->get()
             ->keyBy('id');

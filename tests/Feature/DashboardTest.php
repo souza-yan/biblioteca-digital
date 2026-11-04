@@ -2,6 +2,7 @@
 
 use App\Actions\Dashboard\BuildDashboard;
 use App\Enums\ActivityAction;
+use App\Livewire\Materials\FavoriteButton;
 use App\Models\ActivityLog;
 use App\Models\Category;
 use App\Models\Download;
@@ -9,9 +10,8 @@ use App\Models\Material;
 use App\Models\MaterialVersion;
 use App\Models\User;
 
-it('shows teachers recent published materials and only their published favorites', function () {
+it('shows teachers recent published materials in the educational library home', function () {
     $teacher = User::factory()->teacher()->create();
-    $otherTeacher = User::factory()->teacher()->create();
     $recentMaterial = Material::factory()->published()->create([
         'title' => 'Publicado recentemente',
         'published_at' => now(),
@@ -21,27 +21,42 @@ it('shows teachers recent published materials and only their published favorites
         'published_at' => now()->subDays(2),
     ]);
     $draft = Material::factory()->draft()->create(['title' => 'Rascunho interno']);
-    $favorite = Material::factory()->published()->create(['title' => 'Meu favorito']);
-    $archivedFavorite = Material::factory()->archived()->create(['title' => 'Favorito arquivado']);
-    $otherTeacherFavorite = Material::factory()->published()->create([
-        'title' => 'Favorito de outra pessoa',
-        'published_at' => now()->subDays(10),
-    ]);
-    $teacher->favorites()->attach([$favorite->getKey(), $archivedFavorite->getKey()]);
-    $otherTeacher->favorites()->attach($otherTeacherFavorite->getKey());
 
     $this->actingAs($teacher)
         ->get(route('dashboard'))
         ->assertOk()
+        ->assertSee('Encontre recursos para suas aulas')
+        ->assertSee('Explore por categoria')
+        ->assertSee('Materiais publicados recentemente')
         ->assertSee('Publicado recentemente')
         ->assertSee('Publicado anteriormente')
-        ->assertSee('Meu favorito')
         ->assertDontSee('Rascunho interno')
-        ->assertDontSee('Favorito arquivado')
         ->assertViewHas(
-            'favoriteMaterials',
-            fn ($materials): bool => ! $materials->contains('id', $otherTeacherFavorite->getKey()),
-        );
+            'publishedMaterials',
+            fn ($materials): bool => $materials->every->relationLoaded('currentVersion'),
+        )
+        ->assertSeeLivewire(FavoriteButton::class);
+});
+
+it('shows active categories with their real published material counts to teachers', function () {
+    $teacher = User::factory()->teacher()->create();
+    $category = Category::factory()->create(['name' => 'Arduino', 'is_active' => true]);
+    $inactiveCategory = Category::factory()->create(['name' => 'Categoria inativa', 'is_active' => false]);
+    Material::factory()->count(2)->published()->for($category)->create();
+    Material::factory()->draft()->for($category)->create();
+    Material::factory()->published()->for($inactiveCategory)->create();
+
+    $this->actingAs($teacher)
+        ->get(route('dashboard'))
+        ->assertOk()
+        ->assertSee('Arduino')
+        ->assertSee('2 materiais publicados')
+        ->assertSee(route('painel.library', ['categoryFilter' => $category->getKey()]), false)
+        ->assertViewHas('categories', function ($categories) use ($category): bool {
+            return $categories->count() === 1
+                && $categories->first()?->is($category)
+                && $categories->first()?->published_materials_count === 2;
+        });
 });
 
 it('shows teachers only their three latest unique published downloads and previews', function () {
@@ -99,7 +114,7 @@ it('shows teachers only their three latest unique published downloads and previe
     $this->actingAs($teacher)
         ->get(route('dashboard'))
         ->assertOk()
-        ->assertSee('Últimos materiais acessados ou baixados')
+        ->assertSee('Continue de onde parou')
         ->assertSee('Baixado por mim')
         ->assertSee('Prévia por mim')
         ->assertSee('Terceiro acesso por mim')
@@ -302,10 +317,10 @@ it('shows teacher navigation without management links or administrative metrics'
     $this->actingAs($teacher)
         ->get(route('dashboard'))
         ->assertOk()
-        ->assertSee('Explorar materiais')
+        ->assertSee('Explore por categoria')
         ->assertSee(route('painel.library.categories'), false)
-        ->assertSee('Meus favoritos')
-        ->assertSee('Últimos materiais acessados ou baixados')
+        ->assertSee('Favoritos')
+        ->assertSee('Continue de onde parou')
         ->assertDontSee('Usuários ativos')
         ->assertDontSee('Atividades recentes')
         ->assertDontSee('Gerenciar materiais');

@@ -13,225 +13,133 @@
 
         @if ($isTeacher)
 
-            {{-- Visão Geral --}}
-            <header class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-                <div class="min-w-0">
-                    <h1 class="text-3xl font-bold tracking-tight text-blue-800 sm:text-4xl">Visão Geral</h1>
-                </div>
-
-                <a href="{{ route('painel.library.categories') }}"
-                    class="inline-flex shrink-0 items-center gap-2 text-base font-semibold text-blue-800 hover:text-blue-800">
-                    Ver materiais
-                    <span aria-hidden="true">›</span>
-                </a>
-            </header>
-
-            {{-- Acesso rápido --}}
-            <section aria-labelledby="quick-links-title">
-                <div class="mb-4">
-                    <p class="text-sm font-semibold uppercase tracking-[0.14em] text-blue-800">
-                        Acesso rápido
+            <section class="overflow-hidden rounded-3xl bg-blue-800 px-5 py-7 text-white shadow-sm sm:px-8 sm:py-9" aria-labelledby="teacher-welcome-title">
+                <p class="text-sm font-semibold uppercase tracking-[0.16em] text-blue-200">
+                    Biblioteca digital de robótica
+                </p>
+                <div class="mt-3 max-w-2xl">
+                    <h1 id="teacher-welcome-title" class="text-3xl font-bold tracking-tight sm:text-4xl">
+                        Encontre recursos para suas aulas
+                    </h1>
+                    <p class="mt-3 text-base text-blue-100 sm:text-lg">
+                        Explore projetos, atividades e materiais de robótica educacional.
                     </p>
-
-                    <h2 id="quick-links-title" class="mt-1 text-xl font-bold text-slate-900">
-                        O que você precisa fazer?
-                    </h2>
+                    @if ($teacherSchool)
+                        <p class="mt-3 text-sm font-medium text-blue-200">Professor(a) · {{ $teacherSchool->name }}</p>
+                    @endif
                 </div>
 
-                @php
-                    $quickLinks = [
-                        [
-                            'href' => route('painel.library'),
-                            'title' => 'Pesquisar materiais',
-                            'text' => 'Encontre por título ou autor',
-                            'box' => 'bg-blue-50 text-blue-600',
-                            'border' => 'border-blue-100',
-                            'icon' => 'magnifying-glass',
-                        ],
-                        [
-                            'href' => route('painel.library.categories'),
-                            'title' => 'Explorar materiais',
-                            'text' => 'Filtre a biblioteca por categoria',
-                            'box' => 'bg-violet-50 text-violet-600',
-                            'border' => 'border-violet-100',
-                            'icon' => 'folder-open',
-                        ],
-                        [
-                            'href' => route('painel.favorites'),
-                            'title' => 'Meus favoritos',
-                            'text' => 'Acesse seus materiais salvos',
-                            'box' => 'bg-rose-50 text-rose-600',
-                            'border' => 'border-rose-100',
-                            'icon' => 'bookmark',
-                        ],
-                        [
-                            'href' => route('profile.show'),
-                            'title' => 'Meu perfil',
-                            'text' => 'Consulte seus dados da conta',
-                            'box' => 'bg-amber-50 text-amber-600',
-                            'border' => 'border-amber-100',
-                            'icon' => 'user',
-                        ],
-                    ];
-                @endphp
+                <form action="{{ route('painel.library') }}" method="GET" class="mt-6 flex flex-col gap-3 sm:flex-row">
+                    <label for="dashboard-material-search" class="sr-only">Pesquisar materiais</label>
+                    <div class="relative min-w-0 flex-1">
+                        <x-ts-icon icon="magnifying-glass" outline class="pointer-events-none absolute left-4 top-1/2 size-5 -translate-y-1/2 text-slate-400" />
+                        <input id="dashboard-material-search" name="q" type="search" placeholder="Busque por título ou autor"
+                            class="h-12 w-full rounded-xl border-0 bg-white py-3 pl-12 pr-4 text-slate-900 shadow-sm placeholder:text-slate-400 focus:ring-2 focus:ring-blue-200">
+                    </div>
+                    <button type="submit" class="inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-blue-600 px-5 text-sm font-semibold text-white transition hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-blue-800">
+                        Buscar materiais
+                        <x-ts-icon icon="arrow-right" outline class="size-5" />
+                    </button>
+                </form>
+            </section>
 
-                <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-                    @foreach ($quickLinks as $link)
-                        <a href="{{ $link['href'] }}"
-                            class="group flex items-center gap-4 rounded-2xl border {{ $link['border'] }} bg-white p-5 transition hover:bg-blue-50/40 sm:p-6">
-                            <span
-                                class="flex size-14 shrink-0 items-center justify-center rounded-2xl {{ $link['box'] }}">
-                                <x-ts-icon :icon="$link['icon']" outline class="size-7" />
+            <section aria-labelledby="categories-title">
+                <div class="flex items-end justify-between gap-4">
+                    <div>
+                        <p class="text-sm font-semibold uppercase tracking-[0.14em] text-blue-800">Descubra conteúdos</p>
+                        <h2 id="categories-title" class="mt-1 text-2xl font-bold tracking-tight text-slate-900">Explore por categoria</h2>
+                    </div>
+                    <a href="{{ route('painel.library.categories') }}" class="shrink-0 text-sm font-semibold text-blue-800 hover:underline">Ver todas</a>
+                </div>
+
+                <div class="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
+                    @forelse ($categories as $category)
+                        @php
+                            $categoryName = \Illuminate\Support\Str::lower($category->name);
+                            $categoryIcon = match (true) {
+                                str_contains($categoryName, 'arduino') => 'cpu-chip',
+                                str_contains($categoryName, 'eletr') => 'bolt',
+                                str_contains($categoryName, 'lego') => 'cube',
+                                str_contains($categoryName, 'program') => 'command-line',
+                                default => 'folder-open',
+                            };
+                        @endphp
+                        <a href="{{ route('painel.library', ['categoryFilter' => $category->getKey()]) }}" class="group flex items-center gap-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm transition hover:border-blue-200 hover:bg-blue-50/50">
+                            <span class="flex size-11 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-700">
+                                <x-ts-icon :icon="$categoryIcon" outline class="size-6" />
                             </span>
-
                             <span class="min-w-0 flex-1">
-                                <span class="block text-lg font-semibold text-blue-800">
-                                    {{ $link['title'] }}
-                                </span>
-
-                                <span class="mt-1 block text-base text-slate-500">
-                                    {{ $link['text'] }}
-                                </span>
+                                <span class="block truncate font-semibold text-slate-800 group-hover:text-blue-800">{{ $category->name }}</span>
+                                <span class="mt-0.5 block text-sm text-slate-500">{{ $category->published_materials_count }} {{ $category->published_materials_count === 1 ? 'material publicado' : 'materiais publicados' }}</span>
                             </span>
-
-                            <span class="shrink-0 text-lg text-blue-600 transition group-hover:translate-x-0.5"
-                                aria-hidden="true">
-                                →
-                            </span>
+                            <x-ts-icon icon="chevron-right" outline class="size-5 shrink-0 text-slate-400 group-hover:text-blue-700" />
                         </a>
-                    @endforeach
+                    @empty
+                        <p class="rounded-2xl border border-dashed border-slate-300 bg-white px-5 py-8 text-sm text-slate-500 sm:col-span-2 xl:col-span-3">Ainda não há categorias com materiais publicados.</p>
+                    @endforelse
                 </div>
             </section>
 
-
-            <div class="grid min-w-0 grid-cols-1 gap-6 lg:grid-cols-12">
-
-                {{-- Materiais mais baixados/acessados --}}
-                <section class="w-full min-w-0 space-y-4 lg:col-span-6" aria-labelledby="recently-accessed-title">
+            <div class="grid min-w-0 grid-cols-1 gap-8 xl:grid-cols-[minmax(0,3fr)_minmax(19rem,2fr)]">
+                <section class="min-w-0" aria-labelledby="recent-materials-title">
                     <div class="flex items-end justify-between gap-4">
                         <div>
-                            <p class="text-sm font-semibold uppercase tracking-[0.14em] text-blue-800">
-                                Continue de onde parou
-                            </p>
-
-                            <h2 id="recently-accessed-title" class="mt-1 text-xl font-bold text-slate-900">
-                                Últimos materiais acessados ou baixados
-                            </h2>
+                            <p class="text-sm font-semibold uppercase tracking-[0.14em] text-blue-800">Novidades</p>
+                            <h2 id="recent-materials-title" class="mt-1 text-2xl font-bold tracking-tight text-slate-900">Materiais publicados recentemente</h2>
                         </div>
+                        <a href="{{ route('painel.library') }}" class="shrink-0 text-sm font-semibold text-blue-800 hover:underline">Ver materiais</a>
                     </div>
 
-                    <div class="w-full min-w-0 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-                        @forelse ($recentlyAccessedMaterials as $material)
-                            <a href="{{ route('painel.library.show', ['material' => $material->getKey()]) }}"
-                                class="group flex w-full min-w-0 items-center justify-between gap-4 border-b border-slate-100 p-4 transition last:border-b-0 hover:bg-blue-50/50 sm:p-5">
-                                <span class="min-w-0 flex-1">
-                                    <span
-                                        class="block truncate text-base font-semibold text-slate-800 group-hover:text-blue-800">
-                                        {{ $material->title }}
-                                    </span>
-
-                                    <span class="mt-1 block truncate text-sm text-slate-500">
-                                        {{ $material->category->name }}
-                                        <span aria-hidden="true">·</span>
-                                        {{ $material->type }}
-                                    </span>
-                                </span>
-
-                                <span class="shrink-0 whitespace-nowrap text-sm font-semibold text-blue-800">
-                                    Abrir material
-                                    <span aria-hidden="true">→</span>
-                                </span>
-                            </a>
-                        @empty
-                            <p class="px-6 py-10 text-center text-sm text-slate-500">
-                                Você ainda não acessou materiais publicados.
-                            </p>
-                        @endforelse
-                    </div>
-                </section>
-
-
-                {{-- Materiais publicados recentemente --}}
-                <section class="w-full min-w-0 space-y-4 lg:col-span-6" aria-labelledby="recent-materials-title">
-                    <div class="flex items-end justify-between gap-4">
-                        <div>
-                            <p class="text-sm font-semibold uppercase tracking-[0.14em] text-blue-800">
-                                Descubra conteúdos
-                            </p>
-
-                            <h2 id="recent-materials-title" class="mt-1 text-xl font-bold text-slate-900">
-                                Materiais publicados recentemente
-                            </h2>
-                        </div>
-
-                        <a href="{{ route('painel.library.categories') }}"
-                            class="shrink-0 text-sm font-semibold text-blue-800 hover:text-blue-800">
-                            Ver materiais
-                            <span aria-hidden="true">→</span>
-                        </a>
-                    </div>
-
-                    <div class="w-full min-w-0 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+                    <div class="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
                         @forelse ($publishedMaterials as $material)
-                            <a href="{{ route('painel.library.show', ['material' => $material->getKey()]) }}"
-                                class="group flex items-center gap-4 border-b border-slate-100 p-4 transition last:border-b-0 hover:bg-blue-50/50 sm:p-5">
-                                <span
-                                    class="flex size-14 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-blue-100 to-sky-50 text-blue-800 ring-1 ring-blue-100">
-                                    <svg class="size-7" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                        stroke-width="1.6" aria-hidden="true">
-                                        <rect x="3" y="7" width="18" height="13" rx="2" />
-                                        <path stroke-linecap="round" stroke-linejoin="round"
-                                            d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M8 13h8m-4-3v6" />
-                                    </svg>
-                                </span>
-
-                                <span class="min-w-0 flex-1">
-                                    <span
-                                        class="block truncate text-base font-semibold text-slate-800 group-hover:text-blue-800">
-                                        {{ $material->title }}
-                                    </span>
-
-                                    <span class="mt-1 block truncate text-sm text-slate-500">
-                                        {{ $material->category->name }}
-                                        <span aria-hidden="true">·</span>
-                                        {{ $material->type }}
-                                    </span>
-
-                                    <span class="mt-1 block text-sm text-slate-400">
-                                        {{ $material->published_at?->format('d/m/Y') ?? 'Data não informada' }}
-                                    </span>
-                                </span>
-
-                                <svg class="size-5 shrink-0 text-slate-300 transition group-hover:translate-x-0.5 group-hover:text-blue-800"
-                                    viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
-                                    aria-hidden="true">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14m-6-6 6 6-6 6" />
-                                </svg>
-                            </a>
+                            <article class="group relative overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition hover:-translate-y-0.5 hover:border-blue-200 hover:shadow-md">
+                                <a href="{{ route('painel.library.show', $material) }}" class="block p-3" aria-label="Abrir {{ $material->title }}">
+                                    <x-materials.pdf-cover :material="$material" :version="$material->currentVersion" :alt="'Capa do material '.$material->title" fit="contain" class="rounded-xl" />
+                                </a>
+                                <div class="p-4 pt-1">
+                                    <p class="truncate text-sm font-medium text-blue-700">{{ $material->category->name }}</p>
+                                    <a href="{{ route('painel.library.show', $material) }}" class="mt-1 block truncate text-base font-bold text-slate-900 hover:text-blue-800">{{ $material->title }}</a>
+                                    <div class="mt-3 flex items-center justify-between gap-3 text-xs text-slate-500">
+                                        <span>{{ $material->published_at?->format('d/m/Y') ?? 'Data não informada' }}</span>
+                                        <span class="rounded-full bg-slate-100 px-2 py-1 font-semibold uppercase tracking-wide text-slate-600">{{ $material->type }}</span>
+                                    </div>
+                                </div>
+                                <div class="absolute right-5 top-5">
+                                    @livewire('materials.favorite-button', ['material' => $material, 'isFavorited' => $material->is_favorited], key('dashboard-favorite-'.$material->getKey()))
+                                </div>
+                            </article>
                         @empty
-                            <div class="px-6 py-12 text-center">
-                                <span
-                                    class="mx-auto flex size-12 items-center justify-center rounded-2xl bg-slate-100 text-slate-500">
-                                    <svg class="size-6" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                        stroke-width="1.7" aria-hidden="true">
-                                        <path stroke-linecap="round" stroke-linejoin="round"
-                                            d="M6 3.75h8.5L19 8.25v12H6a2 2 0 0 1-2-2v-12a2 2 0 0 1 2-2Z" />
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M14 4v5h5" />
-                                    </svg>
-                                </span>
-
-                                <p class="mt-3 text-base font-semibold text-slate-700">
-                                    Ainda não há materiais publicados.
-                                </p>
-
-                                <p class="mt-1 text-sm text-slate-500">
-                                    Quando houver novos conteúdos, eles aparecerão aqui.
-                                </p>
+                            <div class="rounded-2xl border border-dashed border-slate-300 bg-white px-6 py-12 text-center sm:col-span-2 lg:col-span-3">
+                                <x-ts-icon icon="document-text" outline class="mx-auto size-10 text-slate-400" />
+                                <p class="mt-3 font-semibold text-slate-700">Ainda não há materiais publicados.</p>
                             </div>
                         @endforelse
                     </div>
                 </section>
 
+                <section class="min-w-0 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6" aria-labelledby="recently-accessed-title">
+                    <div>
+                        <p class="text-sm font-semibold uppercase tracking-[0.14em] text-blue-800">Sua jornada</p>
+                        <h2 id="recently-accessed-title" class="mt-1 text-xl font-bold text-slate-900">Continue de onde parou</h2>
+                    </div>
+                    <div class="mt-5 space-y-3">
+                        @forelse ($recentlyAccessedMaterials as $material)
+                            <article class="flex min-w-0 items-center gap-3 rounded-xl border border-slate-100 p-3 transition hover:border-blue-100 hover:bg-blue-50/40">
+                                <x-materials.pdf-cover :material="$material" :version="$material->currentVersion" :alt="'Miniatura de '.$material->title" fit="contain" class="h-20 w-14 shrink-0 !aspect-auto rounded-lg" />
+                                <div class="min-w-0 flex-1">
+                                    <p class="truncate font-semibold text-slate-800">{{ $material->title }}</p>
+                                    <p class="mt-1 truncate text-sm text-slate-500">{{ $material->category->name }} · {{ $material->type }}</p>
+                                    <a href="{{ route('painel.library.show', $material) }}" class="mt-2 inline-flex items-center gap-1 text-sm font-semibold text-blue-800 hover:underline">
+                                        Abrir material
+                                        <x-ts-icon icon="arrow-right" outline class="size-4" />
+                                    </a>
+                                </div>
+                            </article>
+                        @empty
+                            <div class="rounded-xl bg-slate-50 px-4 py-8 text-center text-sm text-slate-500">Os materiais acessados ou baixados aparecerão aqui.</div>
+                        @endforelse
+                    </div>
+                </section>
             </div>
         @elseif ($isStaff)
             <header class="rounded-2xl bg-blue-800 px-5 py-6 text-white sm:px-7 sm:py-7">

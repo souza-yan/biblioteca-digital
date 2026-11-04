@@ -2,6 +2,7 @@
     'material',
     'version' => null,
     'alt' => null,
+    'fit' => 'cover',
 ])
 
 @php
@@ -18,7 +19,11 @@
 
 <div {{ $attributes->class('relative flex aspect-[3/4] items-center justify-center overflow-hidden rounded-xl border border-slate-200 bg-slate-100') }}>
     @if ($coverUrl)
-        <img src="{{ $coverUrl }}" alt="{{ $label }}" class="size-full object-cover" loading="lazy">
+        <img src="{{ $coverUrl }}" alt="{{ $label }}" @class([
+            'size-full',
+            'object-contain' => $fit === 'contain',
+            'object-cover' => $fit !== 'contain',
+        ]) loading="lazy">
     @else
         <div role="img" aria-label="Capa indisponível para {{ $material->title }}"
             class="flex size-full flex-col items-center justify-center gap-2 bg-slate-100 px-3 text-center text-slate-500">
