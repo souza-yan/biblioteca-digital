@@ -55,11 +55,11 @@
         aria-label="Navegação principal" x-trap.inert.noscroll="menuOpen">
         <div class="sidebar-brand flex shrink-0 items-center border-b border-blue-700 px-4 lg:px-5" style="height: 4rem">
             <button type="button"
-                class="inline-flex size-12 shrink-0 items-center justify-center rounded-xl text-white transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-white"
+                class="inline-flex size-10 shrink-0 items-center justify-center rounded-lg border border-blue-500 bg-blue-700/50 text-white transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-white lg:size-12 lg:rounded-xl lg:border-0 lg:bg-transparent"
                 @click="window.innerWidth < 1024 ? closeMobileMenu() : toggleDesktopSidebar()"
                 :aria-label="window.innerWidth < 1024 ? 'Fechar menu principal' : 'Recolher ou expandir barra lateral'"
                 aria-controls="app-sidebar" title="Recolher, expandir ou fechar o menu">
-                <x-ts-icon icon="x-mark" outline class="size-7 lg:hidden" />
+                <x-ts-icon icon="x-mark" outline class="size-5 lg:hidden" />
                 <x-ts-icon icon="bars-3" outline class="hidden size-7 lg:block" />
             </button>
             <div class="sidebar-brand-title sidebar-label ml-3 shrink-0 whitespace-nowrap">
