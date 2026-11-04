@@ -14,19 +14,13 @@
         @if ($isTeacher)
 
             <section class="overflow-hidden rounded-3xl bg-blue-800 px-5 py-7 text-white shadow-sm sm:px-8 sm:py-9" aria-labelledby="teacher-welcome-title">
-                <p class="text-sm font-semibold uppercase tracking-[0.16em] text-blue-200">
-                    Biblioteca digital de robótica
-                </p>
-                <div class="mt-3 max-w-2xl">
+                <div class="max-w-2xl">
                     <h1 id="teacher-welcome-title" class="text-3xl font-bold tracking-tight sm:text-4xl">
                         Encontre recursos para suas aulas
                     </h1>
                     <p class="mt-3 text-base text-blue-100 sm:text-lg">
                         Explore projetos, atividades e materiais de robótica educacional.
                     </p>
-                    @if ($teacherSchool)
-                        <p class="mt-3 text-sm font-medium text-blue-200">Professor(a) · {{ $teacherSchool->name }}</p>
-                    @endif
                 </div>
 
                 <form action="{{ route('painel.library') }}" method="GET" class="mt-6 flex flex-col gap-3 sm:flex-row">
@@ -131,7 +125,7 @@
                     </div>
                 </section>
 
-                <section class="min-w-0 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6" aria-labelledby="recently-accessed-title">
+                <section class="min-w-0" aria-labelledby="recently-accessed-title">
                     <div>
                         <h2 id="recently-accessed-title" class="text-xl font-bold text-slate-900">Continue de onde parou</h2>
                     </div>

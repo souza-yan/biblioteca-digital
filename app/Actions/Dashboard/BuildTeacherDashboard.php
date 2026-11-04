@@ -35,7 +35,6 @@ class BuildTeacherDashboard
                 ->orderByDesc('id')
                 ->limit(3)
                 ->get(),
-            'teacherSchool' => $teacher->school(),
             'categories' => Category::query()
                 ->where('is_active', true)
                 ->withCount([
