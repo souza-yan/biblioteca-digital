@@ -1,26 +1,25 @@
 <div>
     <div class="mx-auto w-full max-w-screen-2xl space-y-6 px-4 py-6 sm:px-6 lg:space-y-8 lg:px-8 lg:py-8">
-        <article x-data="{ isPreviewOpen: false }" class="rounded-md border border-gray-200 bg-white p-6 shadow-sm">
-            <div class="flex flex-col justify-between gap-4 sm:flex-row sm:items-start">
+        <article x-data="{ isPreviewOpen: false }" class="rounded-md border border-gray-200 bg-white p-4 shadow-sm sm:p-6">
+            <div class="flex flex-col justify-between gap-3 sm:flex-row sm:items-start sm:gap-4">
                 <div>
-                    <p class="text-base text-gray-500">{{ $material->category->name }} · {{ $material->type }}</p>
-                    <h1 class="mt-2 text-3xl font-bold tracking-tight text-gray-900">{{ $material->title }}</h1>
-                    <p class="mt-2 text-base text-gray-600">Por {{ $material->author }}</p>
+                    <h1 class="text-2xl font-bold tracking-tight text-gray-900 sm:text-3xl">{{ $material->title }}</h1>
+                    <p class="mt-1 text-sm text-gray-600 sm:text-base">Por {{ $material->author }}</p>
                 </div>
 
                 {{-- Bloco de botões padronizados e alinhados --}}
-                <div class="flex flex-row flex-nowrap items-center gap-2 shrink-0">
+                <div class="flex shrink-0 flex-wrap items-center gap-2 sm:flex-nowrap">
                     @if ($isTeacher)
                         <x-ts-button :color="$isFavorited ? 'yellow' : 'blue'"
                             wire:click.stop="toggleFavorite"
                             :aria-label="$isFavorited ? 'Remover dos favoritos' : 'Adicionar aos favoritos'"
                             :title="$isFavorited ? 'Remover dos favoritos' : 'Adicionar aos favoritos'"
                             wire:loading.attr="disabled" wire:target="toggleFavorite"
-                            class="!size-12 !p-0 shrink-0 justify-center">
+                            class="!size-10 sm:!size-12 !p-0 shrink-0 justify-center">
                             @if ($isFavorited)
-                                <x-ts-icon icon="bookmark" solid class="size-7 text-amber-950" />
+                                <x-ts-icon icon="bookmark" solid class="size-6 sm:size-7 text-amber-950" />
                             @else
-                                <x-ts-icon icon="bookmark" outline class="size-7 text-white" />
+                                <x-ts-icon icon="bookmark" outline class="size-6 sm:size-7 text-white" />
                             @endif
                         </x-ts-button>
                     @endif
@@ -28,35 +27,35 @@
                     @if ($material->currentVersion)
                         <x-ts-button color="emerald" href="{{ route('downloads.show', $material) }}"
                             aria-label="Baixar {{ $material->title }}" title="Baixar material"
-                            class="!size-12 !p-0 shrink-0 justify-center">
-                            <x-ts-icon icon="document-arrow-down" outline class="size-7 text-white" />
+                            class="!size-10 sm:!size-12 !p-0 shrink-0 justify-center">
+                            <x-ts-icon icon="document-arrow-down" outline class="size-6 sm:size-7 text-white" />
                         </x-ts-button>
 
                         <button type="button"
-                            class="inline-flex size-12 shrink-0 items-center justify-center rounded-lg bg-blue-700 text-white shadow-sm transition hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 sm:hidden"
+                            class="inline-flex size-10 shrink-0 items-center justify-center rounded-lg bg-blue-700 text-white shadow-sm transition hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 sm:hidden"
                             @click="isPreviewOpen = true" aria-label="Visualizar conteúdo"
                             title="Visualizar conteúdo">
-                            <x-ts-icon icon="eye" outline class="size-7" />
+                            <x-ts-icon icon="eye" outline class="size-6" />
                         </button>
                     @endif
 
                     @if ($canManageVersions)
                         <x-ts-button color="blue" wire:click="openEditForm" aria-label="Editar material"
-                            title="Editar material" class="!size-12 !p-0 shrink-0 justify-center">
-                            <x-ts-icon icon="pencil-square" outline class="size-7 text-white" />
+                            title="Editar material" class="!size-10 sm:!size-12 !p-0 shrink-0 justify-center">
+                            <x-ts-icon icon="pencil-square" outline class="size-6 sm:size-7 text-white" />
                         </x-ts-button>
 
                         @if ($material->status !== \App\Enums\MaterialStatus::PUBLISHED)
                             <x-ts-button color="emerald" wire:click="publish" aria-label="Publicar material"
-                                title="Publicar material" class="!size-12 !p-0 shrink-0 justify-center">
-                                <x-ts-icon icon="cloud-arrow-up" outline class="size-7 text-white" />
+                                title="Publicar material" class="!size-10 sm:!size-12 !p-0 shrink-0 justify-center">
+                                <x-ts-icon icon="cloud-arrow-up" outline class="size-6 sm:size-7 text-white" />
                             </x-ts-button>
                         @endif
 
                         @if ($material->status !== \App\Enums\MaterialStatus::ARCHIVED)
                             <x-ts-button color="yellow" wire:click="archive" aria-label="Arquivar material"
-                                title="Arquivar material" class="!size-12 !p-0 shrink-0 justify-center">
-                                <x-ts-icon icon="archive-box" outline class="size-7 text-white" />
+                                title="Arquivar material" class="!size-10 sm:!size-12 !p-0 shrink-0 justify-center">
+                                <x-ts-icon icon="archive-box" outline class="size-6 sm:size-7 text-white" />
                             </x-ts-button>
                         @endif
                     @endif
@@ -67,7 +66,7 @@
                 <p class="mt-4 rounded border border-red-200 bg-red-50 p-3 text-base text-red-700">{{ $message }}</p>
             @enderror
 
-            <dl class="mt-6 grid grid-cols-1 gap-4 border-t border-gray-100 pt-5 sm:grid-cols-2">
+            <dl class="mt-4 grid grid-cols-1 gap-3 border-t border-gray-100 pt-4 sm:mt-6 sm:gap-4 sm:pt-5 sm:grid-cols-2">
                 <div>
                     <dt class="text-xs font-semibold uppercase text-gray-500">Status</dt>
                     <dd class="mt-1">
@@ -76,17 +75,17 @@
                 </div>
                 <div>
                     <dt class="text-xs font-semibold uppercase text-gray-500">Criado por</dt>
-                    <dd class="mt-1 text-base text-gray-900">{{ $material->creator->name }}</dd>
+                    <dd class="mt-1 text-sm text-gray-900 sm:text-base">{{ $material->creator->name }}</dd>
                 </div>
                 <div class="sm:col-span-2">
                     <dt class="text-xs font-semibold uppercase text-gray-500">Descrição</dt>
-                    <dd class="mt-1 whitespace-pre-line text-base text-gray-700">
+                    <dd class="mt-1 whitespace-pre-line text-sm text-gray-700 sm:text-base">
                         {{ $material->description ?: 'Sem descrição.' }}</dd>
                 </div>
                 @if ($material->currentVersion)
                     <div>
                         <dt class="text-xs font-semibold uppercase text-gray-500">Versão atual</dt>
-                        <dd class="mt-1 text-base text-gray-900">{{ $material->currentVersion->version_number }} ·
+                        <dd class="mt-1 text-sm text-gray-900 sm:text-base">{{ $material->currentVersion->version_number }} ·
                             {{ $material->currentVersion->original_name }}</dd>
                     </div>
                 @endif

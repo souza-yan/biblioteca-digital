@@ -1,5 +1,5 @@
-<div class="mt-6 border-t border-gray-100 pt-5">
-    <dl class="grid grid-cols-1 gap-3 text-sm sm:grid-cols-3">
+<div class="mt-4 border-t border-gray-100 pt-4 sm:mt-6 sm:pt-5">
+    <dl class="grid grid-cols-1 gap-2 text-sm sm:gap-3 sm:grid-cols-3">
         <div class="sm:col-span-3">
             <dt class="font-semibold text-gray-500">Nome do arquivo</dt>
             <dd class="break-all text-gray-900">{{ $version->original_name }}</dd>
