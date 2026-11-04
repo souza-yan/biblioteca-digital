@@ -75,7 +75,7 @@ class BuildTeacherDashboard
             ->select('materials.id')
             ->orderByDesc('latest_accesses.last_accessed_at')
             ->orderByDesc('materials.id')
-            ->limit(3)
+            ->limit(1)
             ->pluck('materials.id')
             ->all();
 
