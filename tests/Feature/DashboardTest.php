@@ -3,6 +3,7 @@
 use App\Actions\Dashboard\BuildDashboard;
 use App\Enums\ActivityAction;
 use App\Livewire\Materials\FavoriteButton;
+use App\Livewire\Materials\HomeMaterialSearch;
 use App\Models\ActivityLog;
 use App\Models\Category;
 use App\Models\Download;
@@ -35,6 +36,7 @@ it('shows teachers recent published materials in the educational library home', 
             'publishedMaterials',
             fn ($materials): bool => $materials->every->relationLoaded('currentVersion'),
         )
+        ->assertSeeLivewire(HomeMaterialSearch::class)
         ->assertSeeLivewire(FavoriteButton::class);
 });
 

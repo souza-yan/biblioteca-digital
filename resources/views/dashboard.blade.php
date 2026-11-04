@@ -23,18 +23,7 @@
                     </p>
                 </div>
 
-                <form action="{{ route('painel.library') }}" method="GET" class="mt-6 flex flex-col gap-3 sm:flex-row">
-                    <label for="dashboard-material-search" class="sr-only">Pesquisar materiais</label>
-                    <div class="relative min-w-0 flex-1">
-                        <x-ts-icon icon="magnifying-glass" outline class="pointer-events-none absolute left-4 top-1/2 size-5 -translate-y-1/2 text-slate-400" />
-                        <input id="dashboard-material-search" name="q" type="search" placeholder="Busque por título ou autor"
-                            class="h-12 w-full rounded-xl border-0 bg-white py-3 pl-12 pr-4 text-slate-900 shadow-sm placeholder:text-slate-400 focus:ring-2 focus:ring-blue-200">
-                    </div>
-                    <button type="submit" class="inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-blue-600 px-5 text-sm font-semibold text-white transition hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-blue-800">
-                        Buscar materiais
-                        <x-ts-icon icon="arrow-right" outline class="size-5" />
-                    </button>
-                </form>
+                <livewire:materials.home-material-search />
             </section>
 
             <section aria-labelledby="categories-title" x-data="{
