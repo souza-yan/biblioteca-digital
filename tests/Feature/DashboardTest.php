@@ -112,6 +112,8 @@ it('shows teachers only their three latest unique published downloads and previe
     $recentlyAccessed = app(BuildDashboard::class)->handle($teacher)['recentlyAccessedMaterials'];
     expect($recentlyAccessed->pluck('id')->all())->toBe([
         $downloaded->getKey(),
+        $previewed->getKey(),
+        $thirdAccess->getKey(),
     ]);
 
     $this->actingAs($teacher)
@@ -119,15 +121,20 @@ it('shows teachers only their three latest unique published downloads and previe
         ->assertOk()
         ->assertSee('Continue de onde parou')
         ->assertSee('Baixado por mim')
+        ->assertSee('Prévia por mim')
+        ->assertSee('Terceiro acesso por mim')
         ->assertDontSee('Rascunho acessado')
         ->assertDontSee('Arquivado acessado')
-        ->assertViewHas('recentlyAccessedMaterials', function ($materials) use ($downloaded): bool {
-            return $materials->count() === 1
+        ->assertViewHas('recentlyAccessedMaterials', function ($materials) use ($downloaded, $previewed, $thirdAccess): bool {
+            return $materials->count() === 3
                 && $materials->pluck('id')->all() === [
                     $downloaded->getKey(),
+                    $previewed->getKey(),
+                    $thirdAccess->getKey(),
                 ];
         })
-        ->assertSee(route('painel.library.show', $downloaded), false);
+        ->assertSee(route('painel.library.show', $downloaded), false)
+        ->assertSee(route('painel.library.show', $previewed), false);
 });
 
 it('shows admins and staff totals and the latest ten activities', function (string $role) {

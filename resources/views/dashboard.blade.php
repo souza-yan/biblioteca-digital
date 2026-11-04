@@ -131,12 +131,15 @@
                     </div>
                     <div class="mt-5 space-y-3">
                         @forelse ($recentlyAccessedMaterials as $material)
-                            <article class="min-w-0 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-                                <p class="truncate font-semibold text-slate-800">{{ $material->title }}</p>
-                                <a href="{{ route('painel.library.show', $material) }}" class="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-blue-800 hover:underline">
-                                    Abrir material
-                                    <x-ts-icon icon="arrow-right" outline class="size-4" />
-                                </a>
+                            <article class="flex min-w-0 items-center gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm transition hover:border-blue-100 hover:bg-blue-50/40">
+                                <x-materials.pdf-cover :material="$material" :version="$material->currentVersion" :alt="'Miniatura de '.$material->title" fit="contain" class="h-20 w-14 shrink-0 !aspect-auto rounded-lg" />
+                                <div class="min-w-0 flex-1">
+                                    <p class="truncate font-semibold text-slate-800">{{ $material->title }}</p>
+                                    <a href="{{ route('painel.library.show', $material) }}" class="mt-3 inline-flex items-center gap-1 text-sm font-semibold text-blue-800 hover:underline">
+                                        Abrir material
+                                        <x-ts-icon icon="arrow-right" outline class="size-4" />
+                                    </a>
+                                </div>
                             </article>
                         @empty
                             <div class="rounded-xl bg-slate-50 px-4 py-8 text-center text-sm text-slate-500">Os materiais acessados ou baixados aparecerão aqui.</div>
