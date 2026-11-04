@@ -122,11 +122,12 @@
                     <x-ts-input wire:model="materialForm.author" label="Autor *" required />
 
                     <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                        <x-ts-select.styled wire:model="materialForm.initialStatus" label="Status inicial *"
-                            :options="collect($creationStatuses)
-                                ->map(fn($status) => ['label' => $status->label(), 'value' => $status->value])
-                                ->all()"
-                            select="label:label|value:value" required />
+                        <x-form.select id="category-library-material-status" label="Status inicial" :required="true"
+                            error="materialForm.initialStatus" wire:model="materialForm.initialStatus">
+                            @foreach ($creationStatuses as $status)
+                                <option value="{{ $status->value }}">{{ $status->label() }}</option>
+                            @endforeach
+                        </x-form.select>
                         <div class="flex items-end">
                             <div class="w-full rounded-md border border-blue-100 bg-blue-50 px-4 py-3 text-base text-blue-900">
                                 <span class="font-semibold">Versão 1</span>
