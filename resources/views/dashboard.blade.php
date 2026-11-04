@@ -154,12 +154,14 @@
                                         <a href="{{ route('painel.library.show', $material) }}" class="block p-3" aria-label="Abrir {{ $material->title }}">
                                             <x-materials.pdf-cover :material="$material" :version="$material->currentVersion" :alt="'Capa do material '.$material->title" fit="contain" class="mx-auto w-48 rounded-xl sm:w-full" />
                                         </a>
-                                        <div class="flex justify-end px-4 pb-2 sm:absolute sm:right-5 sm:top-5 sm:p-0">
-                                            @livewire('materials.favorite-button', ['material' => $material, 'isFavorited' => $material->is_favorited], key('dashboard-favorite-'.$material->getKey()))
-                                        </div>
                                         <div class="p-4 pt-1">
                                             <p class="truncate text-sm font-medium text-blue-700">{{ $material->category->name }}</p>
-                                            <a href="{{ route('painel.library.show', $material) }}" class="mt-1 block truncate text-base font-bold text-slate-900 hover:text-blue-800">{{ $material->title }}</a>
+                                            <div class="mt-1 flex items-center gap-3">
+                                                <a href="{{ route('painel.library.show', $material) }}" class="min-w-0 flex-1 truncate text-base font-bold text-slate-900 hover:text-blue-800">{{ $material->title }}</a>
+                                                <div class="shrink-0 sm:absolute sm:right-5 sm:top-5">
+                                                    @livewire('materials.favorite-button', ['material' => $material, 'isFavorited' => $material->is_favorited], key('dashboard-favorite-'.$material->getKey()))
+                                                </div>
+                                            </div>
                                             <div class="mt-3 flex items-center justify-between gap-3 text-xs text-slate-500">
                                                 <span>{{ $material->published_at?->format('d/m/Y') ?? 'Data não informada' }}</span>
                                                 <span @class(['rounded-full px-2 py-1 font-semibold uppercase tracking-wide', $typeBadgeClass])>{{ $material->type }}</span>
