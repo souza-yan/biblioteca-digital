@@ -64,7 +64,7 @@ it('shows active categories with their real published material counts to teacher
         });
 });
 
-it('shows teachers only their three latest unique published downloads and previews', function () {
+it('shows teachers only their four latest unique published downloads and previews', function () {
     $teacher = User::factory()->teacher()->create();
     $otherTeacher = User::factory()->teacher()->create();
     $downloaded = Material::factory()->published()->create(['title' => 'Baixado por mim']);
@@ -114,6 +114,7 @@ it('shows teachers only their three latest unique published downloads and previe
         $downloaded->getKey(),
         $previewed->getKey(),
         $thirdAccess->getKey(),
+        $olderAccess->getKey(),
     ]);
 
     $this->actingAs($teacher)
@@ -123,14 +124,16 @@ it('shows teachers only their three latest unique published downloads and previe
         ->assertSee('Baixado por mim')
         ->assertSee('Prévia por mim')
         ->assertSee('Terceiro acesso por mim')
+        ->assertSee('Acesso mais antigo por mim')
         ->assertDontSee('Rascunho acessado')
         ->assertDontSee('Arquivado acessado')
-        ->assertViewHas('recentlyAccessedMaterials', function ($materials) use ($downloaded, $previewed, $thirdAccess): bool {
-            return $materials->count() === 3
+        ->assertViewHas('recentlyAccessedMaterials', function ($materials) use ($downloaded, $previewed, $thirdAccess, $olderAccess): bool {
+            return $materials->count() === 4
                 && $materials->pluck('id')->all() === [
                     $downloaded->getKey(),
                     $previewed->getKey(),
                     $thirdAccess->getKey(),
+                    $olderAccess->getKey(),
                 ];
         })
         ->assertSee(route('painel.library.show', $downloaded), false)
