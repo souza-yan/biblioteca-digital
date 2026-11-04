@@ -8,7 +8,7 @@
 <div>
     <x-form.field-label :for="$id" :required="$required">{{ $label }}</x-form.field-label>
     <select id="{{ $id }}" {{ $required ? 'required' : '' }}
-        {{ $attributes->class('mt-1 block h-11 w-full rounded-lg border border-slate-300 bg-white px-3 text-base text-slate-900 shadow-sm focus:border-blue-600 focus:ring-blue-600') }}>
+        {{ $attributes->class('mt-1 block h-10 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-900 shadow-sm focus:border-blue-600 focus:ring-blue-600') }}>
         {{ $slot }}
     </select>
     @if ($error)
