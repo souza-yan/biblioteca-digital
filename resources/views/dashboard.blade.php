@@ -71,7 +71,13 @@
                         <p class="rounded-2xl border border-dashed border-slate-300 bg-white px-5 py-8 text-sm text-slate-500">Ainda não há categorias com materiais publicados.</p>
                     @else
                         @foreach ($categorySlides as $slideIndex => $categorySlide)
-                            <div x-show="activeCategorySlide === {{ $slideIndex }}" x-transition.opacity
+                            <div x-show="activeCategorySlide === {{ $slideIndex }}"
+                                x-transition:enter="transition ease-out duration-300 motion-reduce:transition-none"
+                                x-transition:enter-start="translate-x-4 opacity-0"
+                                x-transition:enter-end="translate-x-0 opacity-100"
+                                x-transition:leave="transition ease-in duration-200 motion-reduce:transition-none"
+                                x-transition:leave-start="translate-x-0 opacity-100"
+                                x-transition:leave-end="-translate-x-4 opacity-0"
                                 @if (! $loop->first) x-cloak @endif class="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
                                 @foreach ($categorySlide as $category)
                                     @php
