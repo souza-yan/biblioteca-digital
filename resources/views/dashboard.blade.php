@@ -43,33 +43,17 @@
                 </form>
             </section>
 
-            @php
-                $categorySlides = $categories->chunk(3);
-            @endphp
-            <section aria-labelledby="categories-title" x-data="{
-                activeCategorySlide: 0,
-                totalCategorySlides: {{ $categorySlides->count() }},
-                isCategoryAnimating: false,
-                changeCategorySlide(direction) {
-                    if (this.isCategoryAnimating || this.totalCategorySlides < 2) {
-                        return;
-                    }
-
-                    this.isCategoryAnimating = true;
-                    this.activeCategorySlide = (this.activeCategorySlide + direction + this.totalCategorySlides) % this.totalCategorySlides;
-                    window.setTimeout(() => this.isCategoryAnimating = false, 220);
-                },
-            }">
+            <section aria-labelledby="categories-title" x-data>
                 <div class="flex items-end justify-between gap-4">
                     <h2 id="categories-title" class="text-2xl font-bold tracking-tight text-slate-900">Explore por categoria</h2>
                     <div class="flex items-center gap-2">
                         @if ($categories->count() > 3)
-                            <button type="button" x-on:click="changeCategorySlide(-1)" x-bind:disabled="isCategoryAnimating"
+                            <button type="button" x-on:click="$refs.categoryCarousel.scrollBy({ left: -$refs.categoryCarousel.clientWidth, behavior: 'smooth' })"
                                 aria-label="Ver categorias anteriores" title="Ver categorias anteriores"
                                 class="inline-flex size-9 items-center justify-center rounded-lg border border-slate-200 bg-white text-blue-800 transition hover:border-blue-200 hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-600">
                                 <x-ts-icon icon="chevron-left" outline class="size-5" />
                             </button>
-                            <button type="button" x-on:click="changeCategorySlide(1)" x-bind:disabled="isCategoryAnimating"
+                            <button type="button" x-on:click="$refs.categoryCarousel.scrollBy({ left: $refs.categoryCarousel.clientWidth, behavior: 'smooth' })"
                                 aria-label="Ver próximas categorias" title="Ver próximas categorias"
                                 class="inline-flex size-9 items-center justify-center rounded-lg border border-slate-200 bg-white text-blue-800 transition hover:border-blue-200 hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-600">
                                 <x-ts-icon icon="chevron-right" outline class="size-5" />
@@ -80,36 +64,33 @@
                 </div>
 
                 <div class="mt-5">
-                    @if ($categorySlides->isEmpty())
+                    @if ($categories->isEmpty())
                         <p class="rounded-2xl border border-dashed border-slate-300 bg-white px-5 py-8 text-sm text-slate-500">Ainda não há categorias com materiais publicados.</p>
                     @else
-                        @foreach ($categorySlides as $slideIndex => $categorySlide)
-                            <div x-show="activeCategorySlide === {{ $slideIndex }}" x-transition.opacity.duration.200ms
-                                @if (! $loop->first) x-cloak @endif class="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
-                                @foreach ($categorySlide as $category)
-                                    @php
-                                        $categoryName = \Illuminate\Support\Str::lower($category->name);
-                                        $categoryIcon = match (true) {
-                                            str_contains($categoryName, 'arduino') => 'cpu-chip',
-                                            str_contains($categoryName, 'eletr') => 'bolt',
-                                            str_contains($categoryName, 'lego') => 'cube',
-                                            str_contains($categoryName, 'program') => 'command-line',
-                                            default => 'folder-open',
-                                        };
-                                    @endphp
-                                    <a href="{{ route('painel.library', ['categoryFilter' => $category->getKey()]) }}" class="group flex items-center gap-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm transition hover:border-blue-200 hover:bg-blue-50/50">
-                                        <span class="flex size-11 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-700">
-                                            <x-ts-icon :icon="$categoryIcon" outline class="size-6" />
-                                        </span>
-                                        <span class="min-w-0 flex-1">
-                                            <span class="block truncate font-semibold text-slate-800 group-hover:text-blue-800">{{ $category->name }}</span>
-                                            <span class="mt-0.5 block text-sm text-slate-500">{{ $category->published_materials_count }} {{ $category->published_materials_count === 1 ? 'material publicado' : 'materiais publicados' }}</span>
-                                        </span>
-                                        <x-ts-icon icon="chevron-right" outline class="size-5 shrink-0 text-slate-400 group-hover:text-blue-700" />
-                                    </a>
-                                @endforeach
-                            </div>
-                        @endforeach
+                        <div x-ref="categoryCarousel" class="flex snap-x snap-mandatory gap-3 overflow-x-auto scroll-smooth pb-2" aria-label="Categorias disponíveis">
+                            @foreach ($categories as $category)
+                                @php
+                                    $categoryName = \Illuminate\Support\Str::lower($category->name);
+                                    $categoryIcon = match (true) {
+                                        str_contains($categoryName, 'arduino') => 'cpu-chip',
+                                        str_contains($categoryName, 'eletr') => 'bolt',
+                                        str_contains($categoryName, 'lego') => 'cube',
+                                        str_contains($categoryName, 'program') => 'command-line',
+                                        default => 'folder-open',
+                                    };
+                                @endphp
+                                <a href="{{ route('painel.library', ['categoryFilter' => $category->getKey()]) }}" class="group flex w-full shrink-0 snap-start items-center gap-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm transition hover:border-blue-200 hover:bg-blue-50/50 sm:w-[calc((100%_-_0.75rem)_/_2)] xl:w-[calc((100%_-_1.5rem)_/_3)]">
+                                    <span class="flex size-11 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-700">
+                                        <x-ts-icon :icon="$categoryIcon" outline class="size-6" />
+                                    </span>
+                                    <span class="min-w-0 flex-1">
+                                        <span class="block truncate font-semibold text-slate-800 group-hover:text-blue-800">{{ $category->name }}</span>
+                                        <span class="mt-0.5 block text-sm text-slate-500">{{ $category->published_materials_count }} {{ $category->published_materials_count === 1 ? 'material publicado' : 'materiais publicados' }}</span>
+                                    </span>
+                                    <x-ts-icon icon="chevron-right" outline class="size-5 shrink-0 text-slate-400 group-hover:text-blue-700" />
+                                </a>
+                            @endforeach
+                        </div>
                     @endif
                 </div>
             </section>
