@@ -29,6 +29,8 @@ it('opens published material details in the mobile library modal and records the
         'title' => 'Material para consulta rápida',
         'description' => 'Descrição exibida no modal.',
     ]);
+    $version = MaterialVersion::factory()->for($material)->create();
+    $material->update(['current_version_id' => $version->getKey()]);
     $this->actingAs($teacher);
 
     Livewire::test(MaterialLibrary::class)
@@ -36,7 +38,9 @@ it('opens published material details in the mobile library modal and records the
         ->assertSet('showMobileMaterialDetail', true)
         ->assertSet('mobileMaterialId', $material->getKey())
         ->assertSee('Detalhes do material')
-        ->assertSee($material->description);
+        ->assertSee($material->description)
+        ->assertSee('Visualizar conteúdo')
+        ->assertSee(route('downloads.show', $material), false);
 
     $this->assertDatabaseHas('activity_logs', [
         'user_id' => $teacher->getKey(),

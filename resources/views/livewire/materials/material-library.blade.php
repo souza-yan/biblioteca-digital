@@ -78,12 +78,6 @@
                             </x-ts-button>
                         @endif
 
-                        @if ($material->currentVersion)
-                            <x-icon-button icon="document-arrow-down" variant="success"
-                                :href="route('downloads.show', $material)"
-                                label="Baixar {{ $material->title }}" class="!size-9 [&_svg]:!size-5" />
-                        @endif
-
                         <x-icon-button icon="eye" wire:click="openMobileMaterialDetail({{ $material->id }})"
                             wire:loading.attr="disabled"
                             wire:target="openMobileMaterialDetail({{ $material->id }})"
@@ -165,35 +159,29 @@
 
         <x-ts-modal wire="showMobileMaterialDetail" title="Detalhes do material" size="lg" center>
             @if ($mobileMaterial)
-                <div class="space-y-4">
-                    <div class="flex gap-4">
-                        @if ($mobileMaterial->currentVersion)
-                            <x-materials.pdf-cover :material="$mobileMaterial" :version="$mobileMaterial->currentVersion"
-                                :alt="'Prévia de ' . $mobileMaterial->title" fit="contain"
-                                class="h-32 w-24 shrink-0 !aspect-auto rounded-lg" />
+                <div x-data="{ isPreviewOpen: false }">
+                    <h2 class="text-xl font-semibold text-slate-900">{{ $mobileMaterial->title }}</h2>
+                    <p class="mt-1 text-sm text-slate-600">Por {{ $mobileMaterial->author }}</p>
+
+                    <dl class="mt-4 grid grid-cols-1 gap-3 border-t border-slate-100 pt-4 text-sm">
+                        <div>
+                            <dt class="font-semibold text-slate-500">Categoria</dt>
+                            <dd class="mt-1 text-slate-900">{{ $mobileMaterial->category->name }}</dd>
+                        </div>
+                        @if ($mobileMaterial->description)
+                            <div>
+                                <dt class="font-semibold text-slate-500">Descrição</dt>
+                                <dd class="mt-1 whitespace-pre-line text-slate-700">{{ $mobileMaterial->description }}</dd>
+                            </div>
                         @endif
+                    </dl>
 
-                        <div class="min-w-0">
-                            <h2 class="break-words text-lg font-semibold text-slate-900">{{ $mobileMaterial->title }}</h2>
-                            <p class="mt-1 text-sm text-slate-600">Por {{ $mobileMaterial->author }}</p>
-                            <p class="mt-2 text-sm font-medium text-blue-800">{{ $mobileMaterial->category->name }}</p>
-                        </div>
-                    </div>
-
-                    @if ($mobileMaterial->description)
-                        <div class="border-t border-slate-100 pt-4">
-                            <h3 class="text-xs font-semibold uppercase tracking-wide text-slate-500">Descrição</h3>
-                            <p class="mt-1 whitespace-pre-line text-sm text-slate-700">{{ $mobileMaterial->description }}</p>
-                        </div>
-                    @endif
-
-                    @if ($mobileMaterial->currentVersion)
-                        <div class="rounded-lg bg-slate-50 p-3 text-sm">
-                            <p class="font-medium text-slate-900">{{ $mobileMaterial->currentVersion->original_name }}</p>
-                            <p class="mt-1 text-slate-600">
-                                {{ number_format($mobileMaterial->currentVersion->size / 1024, 1) }} KB
-                            </p>
-                        </div>
+                    @if ($mobileMaterial->currentVersion && $mobilePreviewUrl)
+                        @include('livewire.materials.partials.file-preview', [
+                            'version' => $mobileMaterial->currentVersion,
+                            'previewUrl' => $mobilePreviewUrl,
+                            'showPreviewButtonOnMobile' => true,
+                        ])
                     @endif
                 </div>
             @endif

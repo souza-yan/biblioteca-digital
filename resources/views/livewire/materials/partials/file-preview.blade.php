@@ -1,3 +1,7 @@
+@php
+    $showPreviewButtonOnMobile = $showPreviewButtonOnMobile ?? false;
+@endphp
+
 <div class="mt-4 border-t border-gray-100 pt-4 sm:mt-6 sm:pt-5">
     <dl class="grid grid-cols-1 gap-2 text-sm sm:gap-3 sm:grid-cols-3">
         <div class="sm:col-span-3">
@@ -12,7 +16,11 @@
             <dt class="font-semibold text-gray-500">Tamanho</dt>
             <dd class="text-gray-700">{{ number_format($version->size / 1024, 1) }} KB</dd>
         </div>
-        <div class="hidden items-end sm:flex sm:justify-end">
+        <div @class([
+            'items-end sm:justify-end',
+            'hidden sm:flex' => ! $showPreviewButtonOnMobile,
+            'flex' => $showPreviewButtonOnMobile,
+        ])>
             <button
                 type="button"
                 class="inline-flex items-center gap-2 rounded-md bg-blue-700 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
