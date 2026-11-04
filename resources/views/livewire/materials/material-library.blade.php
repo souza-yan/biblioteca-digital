@@ -41,51 +41,39 @@
         @endif
 
         {{-- Cartões no celular evitam que a tabela exija rolagem horizontal. --}}
-        <div class="space-y-3 md:hidden">
+        <div class="grid grid-cols-2 gap-3 md:hidden">
             @forelse ($materials as $material)
                 <article wire:key="published-material-mobile-{{ $material->id }}"
-                    class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-                    <div class="flex gap-4">
-                        @if ($material->currentVersion)
-                            <x-materials.pdf-cover :material="$material" :version="$material->currentVersion"
-                                :alt="'Prévia de ' . $material->title" fit="contain"
-                                class="h-24 w-16 shrink-0 !aspect-auto rounded-lg" />
-                        @else
-                            <div class="flex h-24 w-16 shrink-0 items-center justify-center rounded-lg border border-slate-200 bg-slate-100 text-slate-400"
-                                aria-label="Prévia indisponível">
-                                <x-ts-icon icon="document" outline class="size-6" />
-                            </div>
-                        @endif
-
-                        <div class="min-w-0 flex-1">
-                            <h2 class="break-words text-base font-semibold leading-6 text-slate-900">
-                                {{ $material->title }}
-                            </h2>
-                            <dl class="mt-3 space-y-1 text-sm">
-                                <div>
-                                    <dt class="inline font-medium text-slate-500">Categoria:</dt>
-                                    <dd class="inline text-slate-700">{{ $material->category->name }}</dd>
-                                </div>
-                                <div>
-                                    <dt class="inline font-medium text-slate-500">Autor:</dt>
-                                    <dd class="inline text-slate-700">{{ $material->author }}</dd>
-                                </div>
-                            </dl>
+                    class="flex min-w-0 flex-col rounded-2xl border border-slate-200 bg-white p-3 shadow-sm">
+                    @if ($material->currentVersion)
+                        <x-materials.pdf-cover :material="$material" :version="$material->currentVersion"
+                            :alt="'Prévia de ' . $material->title" fit="contain" class="w-full rounded-lg" />
+                    @else
+                        <div class="flex aspect-[2480/3508] w-full items-center justify-center rounded-lg border border-slate-200 bg-slate-100 text-slate-400"
+                            aria-label="Prévia indisponível">
+                            <x-ts-icon icon="document" outline class="size-6" />
                         </div>
+                    @endif
+
+                    <div class="min-w-0 pt-3">
+                        <h2 class="break-words text-sm font-semibold leading-5 text-slate-900">
+                            {{ $material->title }}
+                        </h2>
+                        <p class="mt-1 break-words text-xs text-slate-600">{{ $material->category->name }}</p>
                     </div>
 
-                    <div class="mt-4 flex items-center justify-end gap-2 border-t border-slate-100 pt-3">
+                    <div class="mt-3 flex items-center justify-end gap-1.5 border-t border-slate-100 pt-3">
                         @if ($isTeacher)
                             <x-ts-button :color="$material->is_favorited ? 'yellow' : 'blue'"
                                 wire:click.stop="toggleFavorite({{ $material->id }})"
                                 :aria-label="$material->is_favorited ? 'Remover dos favoritos' : 'Adicionar aos favoritos'"
                                 :title="$material->is_favorited ? 'Remover dos favoritos' : 'Adicionar aos favoritos'"
                                 wire:loading.attr="disabled" wire:target="toggleFavorite"
-                                class="!size-11 !p-0 shrink-0 justify-center">
+                                class="!size-9 !p-0 shrink-0 justify-center">
                                 @if ($material->is_favorited)
-                                    <x-ts-icon icon="bookmark" solid class="size-6 text-amber-950" />
+                                    <x-ts-icon icon="bookmark" solid class="size-5 text-amber-950" />
                                 @else
-                                    <x-ts-icon icon="bookmark" outline class="size-6 text-white" />
+                                    <x-ts-icon icon="bookmark" outline class="size-5 text-white" />
                                 @endif
                             </x-ts-button>
                         @endif
@@ -93,7 +81,7 @@
                         @if ($material->currentVersion)
                             <x-icon-button icon="document-arrow-down" variant="success"
                                 :href="route('downloads.show', $material)"
-                                label="Baixar {{ $material->title }}" />
+                                label="Baixar {{ $material->title }}" class="!size-9 [&_svg]:!size-5" />
                         @endif
 
                         <x-icon-button icon="eye"
@@ -101,11 +89,11 @@
                                 'material' => $material,
                                 'categoryFilter' => $categoryFilter ?: null,
                             ])"
-                            label="Ver detalhes de {{ $material->title }}" />
+                            label="Ver detalhes de {{ $material->title }}" class="!size-9 [&_svg]:!size-5" />
                     </div>
                 </article>
             @empty
-                <div class="rounded-2xl border border-slate-200 bg-white px-4 py-10 text-center text-slate-600">
+                <div class="col-span-2 rounded-2xl border border-slate-200 bg-white px-4 py-10 text-center text-slate-600">
                     <span class="text-base">Nenhum material publicado encontrado.</span>
                 </div>
             @endforelse
