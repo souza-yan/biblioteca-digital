@@ -59,7 +59,7 @@
                 @click="window.innerWidth < 1024 ? closeMobileMenu() : toggleDesktopSidebar()"
                 :aria-label="window.innerWidth < 1024 ? 'Fechar menu principal' : 'Recolher ou expandir barra lateral'"
                 aria-controls="app-sidebar" title="Recolher, expandir ou fechar o menu">
-                <x-ts-icon icon="x-mark" outline class="size-5 lg:hidden" />
+                <x-ts-icon icon="chevron-left" outline class="size-6 lg:hidden" />
                 <x-ts-icon icon="bars-3" outline class="hidden size-7 lg:block" />
             </button>
             <div class="sidebar-brand-title sidebar-label ml-3 shrink-0 whitespace-nowrap">
