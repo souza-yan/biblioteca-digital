@@ -1,46 +1,67 @@
-# Dados de demonstração
+# Dados iniciais e demonstração
 
-Os dados descritos aqui são fictícios e destinados a ambientes locais de desenvolvimento. O seeder não é executado pelo `DatabaseSeeder` padrão.
+Os dados deste documento são provisórios e existem para desenvolvimento e testes locais. O seeder de escolas e contas recusa execução fora dos ambientes `local` e `testing`.
 
-## Contas
+## Escolas participantes
 
-Todas as contas usam a senha `DemoRobotics2026!`.
+As escolas são definidas em uma única lista, `SCHOOLS`, no `CaraguatatubaSchoolsSeeder`. Para acrescentar uma escola, basta incluir uma definição nessa lista; o seeder cria ou atualiza a escola e as duas contas vinculadas.
 
-| Perfil | E-mail | Uso |
-| --- | --- | --- |
-| ADMIN | `demo.admin@example.com` | Administração global |
-| STAFF — Norte | `demo.gestao.norte@example.com` | Gestão da EMEF Demonstração Norte |
-| STAFF — Centro | `demo.gestao.centro@example.com` | Gestão da EMEF Demonstração Centro |
-| STAFF — Sul | `demo.gestao.sul@example.com` | Gestão da EMEF Demonstração Sul |
-| STAFF — Vale | `demo.gestao.vale@example.com` | Gestão da EMEF Demonstração do Vale |
-| TEACHER | `demo.professor.multiescola@example.com` | Professor vinculado às escolas Norte e Centro |
+| Escola | Tipo | Região | Endereço |
+| --- | --- | --- | --- |
+| Escola A | EMEF | Centro | A definir |
+| Escola B | EMEF | Centro | A definir |
+| Escola C | EMEF | Centro | A definir |
+| Escola D | EMEF | Centro | A definir |
 
-As outras contas TEACHER são:
+Os nomes, regiões e endereços devem ser substituídos pelos dados oficiais quando forem disponibilizados.
 
-- Norte: `demo.professor.norte.02@example.com`, `demo.professor.norte.03@example.com`, `demo.professor.norte.04@example.com`, `demo.professor.norte.05@example.com`.
-- Centro: `demo.professor.centro.02@example.com`, `demo.professor.centro.03@example.com`, `demo.professor.centro.04@example.com`, `demo.professor.centro.05@example.com`.
-- Sul: `demo.professor.sul.01@example.com`, `demo.professor.sul.02@example.com`, `demo.professor.sul.03@example.com`, `demo.professor.sul.04@example.com`, `demo.professor.sul.05@example.com`.
-- Vale: `demo.professor.vale.01@example.com`, `demo.professor.vale.02@example.com`, `demo.professor.vale.03@example.com`, `demo.professor.vale.04@example.com`, `demo.professor.vale.05@example.com`.
+## Contas iniciais
 
-Todos os endereços usam o domínio reservado `example.com`.
+Todas as contas abaixo são ativas, possuem e-mail verificado e usam a senha padrão `Atividade1!`. Esse valor está centralizado em `config/accounts.php`.
 
-## Telas para validação manual
+| Perfil | Nome | Escola | E-mail |
+| --- | --- | --- | --- |
+| Administrador | Administrador | — | `admin@example.com` |
+| Gestão | Gestão - Escola A | Escola A | `a@educacaocaraguatatuba.com.br` |
+| Gestão | Gestão - Escola B | Escola B | `b@educacaocaraguatatuba.com.br` |
+| Gestão | Gestão - Escola C | Escola C | `c@educacaocaraguatatuba.com.br` |
+| Gestão | Gestão - Escola D | Escola D | `d@educacaocaraguatatuba.com.br` |
+| Professor | Professor - Escola A | Escola A | `professor.a@educacaocaraguatatuba.com.br` |
+| Professor | Professor - Escola B | Escola B | `professor.b@educacaocaraguatatuba.com.br` |
+| Professor | Professor - Escola C | Escola C | `professor.c@educacaocaraguatatuba.com.br` |
+| Professor | Professor - Escola D | Escola D | `professor.d@educacaocaraguatatuba.com.br` |
 
-- ADMIN: dashboard, usuários, materiais, categorias e atividades.
-- STAFF: dashboard, usuários e atividades da escola vinculada; materiais e categorias compartilhados conforme as permissões atuais.
-- TEACHER: biblioteca, detalhes de materiais publicados, favoritos e downloads autorizados.
-- Professor multiescola: entre como cada STAFF de sua escola e confira que o vínculo exibido/administrado é somente o vínculo local.
+Há uma conta de gestão e uma conta de professor por escola. As contas de professor foram mantidas para que os dados de favoritos, downloads e atividades de demonstração continuem coerentes.
 
-Este seeder não cria materiais nem arquivos. Para verificar biblioteca, prévia e download, o banco precisa já conter materiais publicados com versões e arquivos correspondentes.
+## Seeders executados
+
+O `DatabaseSeeder` executa a sequência abaixo:
+
+1. `CaraguatatubaSchoolsSeeder`: escolas e contas iniciais.
+2. `CategorySeeder`: categorias compartilhadas da biblioteca.
+3. `MaterialSeeder`: materiais, versões e arquivos de exemplo, associados ao administrador.
+4. `ActivityLogSeeder`: favoritos, downloads e registros de atividade usando as novas contas da Escola A e da Escola B.
+
+Ao ser executado, o seeder de escolas remove as 16 escolas fictícias anteriores e as contas antigas `gestao1`, `gestao2` e `professor1` a `professor3` do domínio `example.com`. Também remove favoritos, downloads e logs pertencentes a essas contas antes de excluí-las.
 
 ## Execução
 
-O comando abaixo executa somente o seeder de demonstração:
+Para criar uma base local completa do zero:
 
 ```bash
-php artisan db:seed --class='Database\Seeders\DemoDataSeeder'
+php artisan migrate:fresh --seed
 ```
 
-Antes de executar, confirme que o ambiente é `local` e que a conexão e o banco selecionados são próprios para desenvolvimento ou descartáveis. O seeder recusa ambientes diferentes de `local` e `testing`. Ele atualiza somente as escolas e contas com os nomes/e-mails de demonstração acima. A cada execução, preserva as linhas de vínculo existentes dessas contas, marca os vínculos inativos e ativa os vínculos previstos para a demonstração; não remove registros nem modifica contas fora desse conjunto.
+Para executar todos os seeders em um banco já migrado:
 
-O seeder é idempotente: escolas e usuários são localizados por nomes/e-mails estáveis e os vínculos são atualizados sem duplicar as chaves da pivô. Ele não cria materiais nem arquivos.
+```bash
+php artisan db:seed
+```
+
+Para executar somente escolas e contas iniciais:
+
+```bash
+php artisan db:seed --class='Database\Seeders\CaraguatatubaSchoolsSeeder'
+```
+
+O processo é idempotente: escolas e usuários são localizados por nome ou e-mail, e os vínculos são sincronizados sem gerar duplicidades. Como as contas possuem uma senha padrão pública, não execute esses seeders em produção.
