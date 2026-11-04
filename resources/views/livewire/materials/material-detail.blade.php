@@ -1,6 +1,6 @@
 <div>
     <div class="mx-auto w-full max-w-screen-2xl space-y-6 px-4 py-6 sm:px-6 lg:space-y-8 lg:px-8 lg:py-8">
-        <article class="rounded-md border border-gray-200 bg-white p-6 shadow-sm">
+        <article x-data="{ isPreviewOpen: false }" class="rounded-md border border-gray-200 bg-white p-6 shadow-sm">
             <div class="flex flex-col justify-between gap-4 sm:flex-row sm:items-start">
                 <div>
                     <p class="text-base text-gray-500">{{ $material->category->name }} · {{ $material->type }}</p>
@@ -31,6 +31,13 @@
                             class="!size-12 !p-0 shrink-0 justify-center">
                             <x-ts-icon icon="document-arrow-down" outline class="size-7 text-white" />
                         </x-ts-button>
+
+                        <button type="button"
+                            class="inline-flex size-12 shrink-0 items-center justify-center rounded-lg bg-blue-700 text-white shadow-sm transition hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 sm:hidden"
+                            @click="isPreviewOpen = true" aria-label="Visualizar conteúdo"
+                            title="Visualizar conteúdo">
+                            <x-ts-icon icon="eye" outline class="size-7" />
+                        </button>
                     @endif
 
                     @if ($canManageVersions)
