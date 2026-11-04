@@ -88,7 +88,7 @@
             @if ($material->currentVersion)
                 @include('livewire.materials.partials.file-preview', [
                     'version' => $material->currentVersion,
-                    'previewUrl' => route('previews.show', $material),
+                    'previewUrl' => $previewUrl,
                 ])
             @endif
         </article>

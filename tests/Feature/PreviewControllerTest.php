@@ -41,6 +41,25 @@ it('serves a published PDF preview to teachers without recording a download', fu
     ]);
 });
 
+it('does not duplicate a teacher access already recorded by the material detail', function () {
+    Storage::fake('local');
+    $teacher = User::factory()->teacher()->create();
+    $material = Material::factory()->published()->create();
+    $version = MaterialVersion::factory()->for($material)->create(['mime_type' => 'application/pdf']);
+    $material->update(['current_version_id' => $version->getKey()]);
+    Storage::disk('local')->put($version->file_path, '%PDF-1.4 conteúdo');
+
+    $this->actingAs($teacher)
+        ->get(route('previews.show', ['material' => $material, 'access_recorded' => 1]))
+        ->assertOk();
+
+    $this->assertDatabaseMissing('activity_logs', [
+        'user_id' => $teacher->getKey(),
+        'material_id' => $material->getKey(),
+        'action' => ActivityAction::MATERIAL_PREVIEWED->value,
+    ]);
+});
+
 it('forbids teachers from previewing draft or archived materials without logging the attempt', function (MaterialStatus $status) {
     Storage::fake('local');
     $material = Material::factory()->create(['status' => $status]);

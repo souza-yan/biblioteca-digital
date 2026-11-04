@@ -2,11 +2,13 @@
 
 namespace App\Livewire\Materials;
 
+use App\Actions\Activity\LogActivity;
 use App\Actions\Favorite\ToggleFavorite;
 use App\Actions\Material\ArchiveMaterial;
 use App\Actions\Material\PublishMaterial;
 use App\Actions\Material\UpdateMaterial;
 use App\Actions\MaterialVersion\CreateMaterialVersion;
+use App\Enums\ActivityAction;
 use App\Livewire\Concerns\InteractsWithCurrentUser;
 use App\Livewire\Forms\MaterialForm;
 use App\Livewire\Forms\MaterialVersionForm;
@@ -38,10 +40,20 @@ class MaterialDetail extends Component
     #[Locked]
     public int $materialId;
 
-    public function mount(Material $material): void
+    public function mount(Material $material, LogActivity $logActivity): void
     {
         $this->materialId = $material->getKey();
-        $this->findViewableMaterial();
+        $viewableMaterial = $this->findViewableMaterial();
+        $actor = $this->currentUser();
+
+        if ($actor->isTeacher()) {
+            $logActivity->handle(
+                $actor,
+                ActivityAction::MATERIAL_PREVIEWED,
+                'Material consultado.',
+                $viewableMaterial,
+            );
+        }
     }
 
     public function publish(PublishMaterial $publishMaterial): void
@@ -210,6 +222,9 @@ class MaterialDetail extends Component
         return view('livewire.materials.material-detail', [
             'material' => $material,
             'isTeacher' => $actor->isTeacher(),
+            'previewUrl' => $actor->isTeacher()
+                ? route('previews.show', ['material' => $material, 'access_recorded' => 1])
+                : route('previews.show', $material),
             'isFavorited' => $isFavorited,
             'canManageVersions' => $canManageVersions,
             'canEditMaterial' => $canEditMaterial,

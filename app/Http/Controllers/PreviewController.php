@@ -28,7 +28,7 @@ class PreviewController extends Controller
         'audio/mpeg',
     ];
 
-    public function show(Material $material, LogActivity $logActivity): Response
+    public function show(Request $request, Material $material, LogActivity $logActivity): Response
     {
         Gate::authorize('download', $material);
 
@@ -36,7 +36,7 @@ class PreviewController extends Controller
 
         abort_unless($version instanceof MaterialVersion, 404);
 
-        return $this->servePreview($material, $version, $logActivity);
+        return $this->servePreview($material, $version, $logActivity, $request->boolean('access_recorded'));
     }
 
     public function version(
@@ -58,6 +58,7 @@ class PreviewController extends Controller
         Material $material,
         MaterialVersion $version,
         LogActivity $logActivity,
+        bool $accessRecorded = false,
     ): Response {
         abort_unless(in_array($version->mime_type, self::SUPPORTED_MIME_TYPES, true), 404);
 
@@ -91,12 +92,14 @@ class PreviewController extends Controller
             $response = response()->file($disk->path($version->file_path), $headers);
         }
 
-        $logActivity->handle(
-            $user,
-            ActivityAction::MATERIAL_PREVIEWED,
-            'Prévia do material consultada.',
-            $material,
-        );
+        if (! $accessRecorded) {
+            $logActivity->handle(
+                $user,
+                ActivityAction::MATERIAL_PREVIEWED,
+                'Prévia do material consultada.',
+                $material,
+            );
+        }
 
         return $response;
     }

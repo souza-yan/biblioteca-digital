@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\ActivityAction;
 use App\Enums\MaterialStatus;
 use App\Livewire\Materials\MaterialDetail;
 use App\Livewire\Materials\MaterialLibrary;
@@ -224,6 +225,13 @@ it('shows published material details and an enabled download link to teachers', 
         ->assertSee($material->title)
         ->assertSee('aria-label="Baixar '.$material->title.'"', false)
         ->assertSee(route('downloads.show', $material), false);
+
+    $this->assertDatabaseHas('activity_logs', [
+        'user_id' => $teacher->getKey(),
+        'material_id' => $material->getKey(),
+        'action' => ActivityAction::MATERIAL_PREVIEWED->value,
+        'description' => 'Material consultado.',
+    ]);
 
     Livewire::test(MaterialDetail::class, ['material' => $material])
         ->assertSee($material->title);
