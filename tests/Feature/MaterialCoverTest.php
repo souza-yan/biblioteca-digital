@@ -210,6 +210,20 @@ it('renders a standardized placeholder when a version has no PDF cover', functio
         ->and($html)->not->toContain('<img');
 });
 
+it('renders an image thumbnail for a current supported image version', function () {
+    $material = Material::factory()->published()->create();
+    $version = MaterialVersion::factory()->for($material)->create(['mime_type' => 'image/png']);
+    $material->update(['current_version_id' => $version->getKey()]);
+
+    $html = Blade::render(
+        '<x-materials.pdf-cover :material="$material" :version="$version" />',
+        compact('material', 'version'),
+    );
+
+    expect($html)->toContain(route('thumbnails.show', $material))
+        ->and($html)->toContain('<img');
+});
+
 it('continues when the asynchronous cover job cannot convert a PDF', function () {
     $version = MaterialVersion::factory()->create(['cover_path' => null]);
 

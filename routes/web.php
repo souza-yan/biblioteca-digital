@@ -3,6 +3,7 @@
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DownloadController;
 use App\Http\Controllers\MaterialCoverController;
+use App\Http\Controllers\MaterialThumbnailController;
 use App\Http\Controllers\MostDownloadedMaterialsController;
 use App\Http\Controllers\PreviewController;
 use App\Livewire\Activity\ActivityLogIndex;
@@ -36,6 +37,8 @@ Route::middleware([
         ->name('previews.version');
     Route::get('/materiais/{material}/capa', [MaterialCoverController::class, 'show'])
         ->name('covers.show');
+    Route::get('/materiais/{material}/miniatura', [MaterialThumbnailController::class, 'show'])
+        ->name('thumbnails.show');
     Route::get('/materiais/{material}/versoes/{version}/capa', [MaterialCoverController::class, 'version'])
         ->name('covers.version');
 

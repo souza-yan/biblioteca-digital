@@ -46,17 +46,30 @@
             @php
                 $categorySlides = $categories->chunk(3);
             @endphp
-            <section aria-labelledby="categories-title" x-data="{ activeCategorySlide: 0, totalCategorySlides: {{ $categorySlides->count() }} }">
+            <section aria-labelledby="categories-title" x-data="{
+                activeCategorySlide: 0,
+                totalCategorySlides: {{ $categorySlides->count() }},
+                isCategoryAnimating: false,
+                changeCategorySlide(direction) {
+                    if (this.isCategoryAnimating || this.totalCategorySlides < 2) {
+                        return;
+                    }
+
+                    this.isCategoryAnimating = true;
+                    this.activeCategorySlide = (this.activeCategorySlide + direction + this.totalCategorySlides) % this.totalCategorySlides;
+                    window.setTimeout(() => this.isCategoryAnimating = false, 220);
+                },
+            }">
                 <div class="flex items-end justify-between gap-4">
                     <h2 id="categories-title" class="text-2xl font-bold tracking-tight text-slate-900">Explore por categoria</h2>
                     <div class="flex items-center gap-2">
                         @if ($categories->count() > 3)
-                            <button type="button" x-on:click="activeCategorySlide = (activeCategorySlide - 1 + totalCategorySlides) % totalCategorySlides"
+                            <button type="button" x-on:click="changeCategorySlide(-1)" x-bind:disabled="isCategoryAnimating"
                                 aria-label="Ver categorias anteriores" title="Ver categorias anteriores"
                                 class="inline-flex size-9 items-center justify-center rounded-lg border border-slate-200 bg-white text-blue-800 transition hover:border-blue-200 hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-600">
                                 <x-ts-icon icon="chevron-left" outline class="size-5" />
                             </button>
-                            <button type="button" x-on:click="activeCategorySlide = (activeCategorySlide + 1) % totalCategorySlides"
+                            <button type="button" x-on:click="changeCategorySlide(1)" x-bind:disabled="isCategoryAnimating"
                                 aria-label="Ver próximas categorias" title="Ver próximas categorias"
                                 class="inline-flex size-9 items-center justify-center rounded-lg border border-slate-200 bg-white text-blue-800 transition hover:border-blue-200 hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-600">
                                 <x-ts-icon icon="chevron-right" outline class="size-5" />
@@ -71,13 +84,7 @@
                         <p class="rounded-2xl border border-dashed border-slate-300 bg-white px-5 py-8 text-sm text-slate-500">Ainda não há categorias com materiais publicados.</p>
                     @else
                         @foreach ($categorySlides as $slideIndex => $categorySlide)
-                            <div x-show="activeCategorySlide === {{ $slideIndex }}"
-                                x-transition:enter="transition ease-out duration-300 motion-reduce:transition-none"
-                                x-transition:enter-start="translate-x-4 opacity-0"
-                                x-transition:enter-end="translate-x-0 opacity-100"
-                                x-transition:leave="transition ease-in duration-200 motion-reduce:transition-none"
-                                x-transition:leave-start="translate-x-0 opacity-100"
-                                x-transition:leave-end="-translate-x-4 opacity-0"
+                            <div x-show="activeCategorySlide === {{ $slideIndex }}" x-transition.opacity.duration.200ms
                                 @if (! $loop->first) x-cloak @endif class="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
                                 @foreach ($categorySlide as $category)
                                     @php
