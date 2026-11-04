@@ -62,6 +62,7 @@ class CreateMaterialVersion
                     'file_path' => $storedFilePath,
                     'original_name' => $uploadedFile->getClientOriginalName(),
                     'mime_type' => $mimeType,
+                    'has_standard_preview' => $this->hasStandardImagePreview($uploadedFile, $mimeType),
                     'size' => (int) $uploadedFile->getSize(),
                     'change_note' => $changeNote,
                     'published_by' => $lockedActor->getKey(),
@@ -90,5 +91,27 @@ class CreateMaterialVersion
 
             throw $exception;
         }
+    }
+
+    private function hasStandardImagePreview(UploadedFile $uploadedFile, string $mimeType): bool
+    {
+        if (! in_array($mimeType, ['image/jpeg', 'image/png'], true)) {
+            return false;
+        }
+
+        $filePath = $uploadedFile->getRealPath();
+
+        if (! is_string($filePath)) {
+            return false;
+        }
+
+        $dimensions = getimagesize($filePath);
+
+        if ($dimensions === false) {
+            return false;
+        }
+
+        return $dimensions[0] === (int) config('materials.standard_preview.width')
+            && $dimensions[1] === (int) config('materials.standard_preview.height');
     }
 }

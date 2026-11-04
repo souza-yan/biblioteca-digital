@@ -13,7 +13,8 @@
         && filled($version->cover_path);
     $hasImageThumbnail = $version instanceof \App\Models\MaterialVersion
         && (int) $material->current_version_id === (int) $version->getKey()
-        && in_array($mimeType, $imageMimeTypes, true);
+        && in_array($mimeType, $imageMimeTypes, true)
+        && $version->has_standard_preview;
     $coverUrl = $hasCover
         ? ($material->current_version_id === $version->getKey()
             ? route('covers.show', $material)
@@ -21,17 +22,20 @@
         : null;
     $imageUrl = $hasImageThumbnail ? route('thumbnails.show', $material) : null;
     $placeholder = match (true) {
-        $mimeType === 'application/pdf' => ['icon' => 'document-text', 'label' => 'PDF'],
-        str_starts_with((string) $mimeType, 'video/') => ['icon' => 'film', 'label' => 'Vídeo'],
-        str_starts_with((string) $mimeType, 'audio/') => ['icon' => 'speaker-wave', 'label' => 'Áudio'],
-        $mimeType === 'text/plain' => ['icon' => 'document-text', 'label' => 'Texto'],
-        str_starts_with((string) $mimeType, 'application/') => ['icon' => 'archive-box', 'label' => 'Arquivo'],
-        default => ['icon' => 'document', 'label' => 'Arquivo'],
+        $mimeType === 'application/pdf' => ['icon' => 'document-text', 'label' => 'PDF', 'class' => 'bg-red-50 text-red-700'],
+        str_contains((string) $mimeType, 'spreadsheetml') || str_contains((string) $mimeType, 'ms-excel') => ['icon' => 'table-cells', 'label' => 'Excel', 'class' => 'bg-emerald-50 text-emerald-700'],
+        str_contains((string) $mimeType, 'presentationml') || str_contains((string) $mimeType, 'ms-powerpoint') => ['icon' => 'presentation-chart-bar', 'label' => 'PowerPoint', 'class' => 'bg-amber-50 text-amber-700'],
+        str_contains((string) $mimeType, 'wordprocessingml') || $mimeType === 'application/msword' => ['icon' => 'document-text', 'label' => 'Word', 'class' => 'bg-blue-50 text-blue-700'],
+        str_starts_with((string) $mimeType, 'image/') => ['icon' => 'photo', 'label' => 'Imagem', 'class' => 'bg-violet-50 text-violet-700'],
+        str_starts_with((string) $mimeType, 'video/') => ['icon' => 'film', 'label' => 'Vídeo', 'class' => 'bg-slate-100 text-slate-700'],
+        str_starts_with((string) $mimeType, 'audio/') => ['icon' => 'speaker-wave', 'label' => 'Áudio', 'class' => 'bg-slate-100 text-slate-700'],
+        $mimeType === 'text/plain' => ['icon' => 'document-text', 'label' => 'Texto', 'class' => 'bg-slate-100 text-slate-700'],
+        default => ['icon' => 'document', 'label' => 'Arquivo', 'class' => 'bg-slate-100 text-slate-700'],
     };
     $label = $alt ?? "Capa de {$material->title}";
 @endphp
 
-<div {{ $attributes->class('relative flex aspect-[3/4] items-center justify-center overflow-hidden rounded-xl border border-slate-200 bg-slate-100') }}>
+<div {{ $attributes->class('relative flex aspect-[2480/3508] items-center justify-center overflow-hidden rounded-xl border border-slate-200 bg-slate-100') }}>
     @if ($coverUrl)
         <img src="{{ $coverUrl }}" alt="{{ $label }}" @class([
             'size-full',
@@ -46,8 +50,8 @@
         ]) loading="lazy">
     @else
         <div role="img" aria-label="Capa indisponível para {{ $material->title }}"
-            class="flex size-full flex-col items-center justify-center gap-2 bg-slate-100 px-3 text-center text-slate-500">
-            <x-ts-icon :icon="$placeholder['icon']" outline class="size-10 text-slate-400" />
+            @class(['flex size-full flex-col items-center justify-center gap-2 px-3 text-center', $placeholder['class']])>
+            <x-ts-icon :icon="$placeholder['icon']" outline class="size-10" />
             <span class="text-xs font-semibold uppercase tracking-wide">{{ $placeholder['label'] }}</span>
         </div>
     @endif

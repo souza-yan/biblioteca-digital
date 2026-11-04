@@ -22,6 +22,7 @@ class MaterialVersion extends Model
         'cover_path',
         'original_name',
         'mime_type',
+        'has_standard_preview',
         'size',
         'change_note',
         'published_by',
@@ -35,6 +36,7 @@ class MaterialVersion extends Model
         return [
             'version_number' => 'integer',
             'size' => 'integer',
+            'has_standard_preview' => 'boolean',
             'created_at' => 'datetime',
         ];
     }

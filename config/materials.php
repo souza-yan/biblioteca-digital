@@ -19,4 +19,9 @@ return [
         'idle_timeout_seconds' => 10,
         'lock_seconds' => 90,
     ],
+
+    'standard_preview' => [
+        'width' => 2480,
+        'height' => 3508,
+    ],
 ];
