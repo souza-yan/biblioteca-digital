@@ -23,6 +23,29 @@ it('allows teachers to browse published materials only', function () {
         ->assertDontSee($archived->title);
 });
 
+it('opens published material details in the mobile library modal and records the access', function () {
+    $teacher = User::factory()->teacher()->create();
+    $material = Material::factory()->published()->create([
+        'title' => 'Material para consulta rápida',
+        'description' => 'Descrição exibida no modal.',
+    ]);
+    $this->actingAs($teacher);
+
+    Livewire::test(MaterialLibrary::class)
+        ->call('openMobileMaterialDetail', $material->getKey())
+        ->assertSet('showMobileMaterialDetail', true)
+        ->assertSet('mobileMaterialId', $material->getKey())
+        ->assertSee('Detalhes do material')
+        ->assertSee($material->description);
+
+    $this->assertDatabaseHas('activity_logs', [
+        'user_id' => $teacher->getKey(),
+        'material_id' => $material->getKey(),
+        'action' => ActivityAction::MATERIAL_PREVIEWED->value,
+        'description' => 'Material consultado.',
+    ]);
+});
+
 it('allows staff to browse published materials and forbids administrators from the library', function () {
     $published = Material::factory()->published()->create(['title' => 'Conteúdo para a gestão']);
 

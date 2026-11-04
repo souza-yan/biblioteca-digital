@@ -2,7 +2,9 @@
 
 namespace App\Livewire\Materials;
 
+use App\Actions\Activity\LogActivity;
 use App\Actions\Favorite\ToggleFavorite;
+use App\Enums\ActivityAction;
 use App\Enums\MaterialStatus;
 use App\Livewire\Concerns\InteractsWithCurrentUser;
 use App\Models\Category;
@@ -34,6 +36,10 @@ class MaterialLibrary extends Component
 
     #[Url]
     public string $authorFilter = '';
+
+    public bool $showMobileMaterialDetail = false;
+
+    public ?int $mobileMaterialId = null;
 
     public function mount(): void
     {
@@ -106,6 +112,35 @@ class MaterialLibrary extends Component
             ->send();
     }
 
+    public function openMobileMaterialDetail(int $materialId, LogActivity $logActivity): void
+    {
+        $material = Material::query()
+            ->with(['category', 'currentVersion'])
+            ->findOrFail($materialId);
+
+        Gate::authorize('view', $material);
+
+        $user = $this->currentUser();
+
+        if ($user->isTeacher()) {
+            $logActivity->handle(
+                $user,
+                ActivityAction::MATERIAL_PREVIEWED,
+                'Material consultado.',
+                $material,
+            );
+        }
+
+        $this->mobileMaterialId = $material->getKey();
+        $this->showMobileMaterialDetail = true;
+    }
+
+    public function closeMobileMaterialDetail(): void
+    {
+        $this->showMobileMaterialDetail = false;
+        $this->mobileMaterialId = null;
+    }
+
     #[Layout('layouts.app')]
     public function render(): View
     {
@@ -145,12 +180,22 @@ class MaterialLibrary extends Component
             ->whereHas('materials', fn (Builder $query): Builder => $query->published())
             ->orderBy('name')
             ->get();
+        $mobileMaterial = $this->showMobileMaterialDetail && $this->mobileMaterialId !== null
+            ? Material::query()
+                ->with(['category', 'currentVersion'])
+                ->findOrFail($this->mobileMaterialId)
+            : null;
+
+        if ($mobileMaterial instanceof Material) {
+            Gate::authorize('view', $mobileMaterial);
+        }
 
         return view('livewire.materials.material-library', [
             'materials' => $materials,
             'isTeacher' => $user->isTeacher(),
             'authors' => $authors,
             'categories' => $categories,
+            'mobileMaterial' => $mobileMaterial,
             'recentSearches' => session()->get('material_library_recent_searches', []),
             'searchSuggestions' => $this->searchSuggestions(),
         ]);

@@ -84,11 +84,9 @@
                                 label="Baixar {{ $material->title }}" class="!size-9 [&_svg]:!size-5" />
                         @endif
 
-                        <x-icon-button icon="eye"
-                            :href="route('painel.library.show', [
-                                'material' => $material,
-                                'categoryFilter' => $categoryFilter ?: null,
-                            ])"
+                        <x-icon-button icon="eye" wire:click="openMobileMaterialDetail({{ $material->id }})"
+                            wire:loading.attr="disabled"
+                            wire:target="openMobileMaterialDetail({{ $material->id }})"
                             label="Ver detalhes de {{ $material->title }}" class="!size-9 [&_svg]:!size-5" />
                     </div>
                 </article>
@@ -164,6 +162,53 @@
             @endforelse
             </x-data-table>
         </div>
+
+        <x-ts-modal wire="showMobileMaterialDetail" title="Detalhes do material" size="lg" center>
+            @if ($mobileMaterial)
+                <div class="space-y-4">
+                    <div class="flex gap-4">
+                        @if ($mobileMaterial->currentVersion)
+                            <x-materials.pdf-cover :material="$mobileMaterial" :version="$mobileMaterial->currentVersion"
+                                :alt="'Prévia de ' . $mobileMaterial->title" fit="contain"
+                                class="h-32 w-24 shrink-0 !aspect-auto rounded-lg" />
+                        @endif
+
+                        <div class="min-w-0">
+                            <h2 class="break-words text-lg font-semibold text-slate-900">{{ $mobileMaterial->title }}</h2>
+                            <p class="mt-1 text-sm text-slate-600">Por {{ $mobileMaterial->author }}</p>
+                            <p class="mt-2 text-sm font-medium text-blue-800">{{ $mobileMaterial->category->name }}</p>
+                        </div>
+                    </div>
+
+                    @if ($mobileMaterial->description)
+                        <div class="border-t border-slate-100 pt-4">
+                            <h3 class="text-xs font-semibold uppercase tracking-wide text-slate-500">Descrição</h3>
+                            <p class="mt-1 whitespace-pre-line text-sm text-slate-700">{{ $mobileMaterial->description }}</p>
+                        </div>
+                    @endif
+
+                    @if ($mobileMaterial->currentVersion)
+                        <div class="rounded-lg bg-slate-50 p-3 text-sm">
+                            <p class="font-medium text-slate-900">{{ $mobileMaterial->currentVersion->original_name }}</p>
+                            <p class="mt-1 text-slate-600">
+                                {{ number_format($mobileMaterial->currentVersion->size / 1024, 1) }} KB
+                            </p>
+                        </div>
+                    @endif
+                </div>
+            @endif
+
+            <x-slot:footer>
+                <x-ts-button color="slate" type="button" wire:click="closeMobileMaterialDetail">
+                    Fechar
+                </x-ts-button>
+                @if ($mobileMaterial?->currentVersion)
+                    <x-ts-button color="emerald" href="{{ route('downloads.show', $mobileMaterial) }}">
+                        Baixar material
+                    </x-ts-button>
+                @endif
+            </x-slot:footer>
+        </x-ts-modal>
 
         <x-pagination :paginator="$materials" class="mt-4" />
     </div>
