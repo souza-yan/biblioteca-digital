@@ -52,7 +52,7 @@
                 <div class="min-h-0 flex-1 bg-slate-100">
                     @if ($version->mime_type === 'application/pdf')
                     <iframe
-                        class="min-h-0 flex-1 w-full bg-slate-100"
+                        class="block h-full w-full bg-slate-100"
                         src="{{ $previewUrl }}#view=Fit"
                         title="Prévia de {{ $version->original_name }}"
                         loading="lazy"
