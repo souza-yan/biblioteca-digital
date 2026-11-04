@@ -37,7 +37,26 @@
                 </form>
             </section>
 
-            <section aria-labelledby="categories-title" x-data>
+            <section aria-labelledby="categories-title" x-data="{
+                moveCategoryCarousel(direction) {
+                    const carousel = this.$refs.categoryCarousel;
+                    const maxScrollLeft = carousel.scrollWidth - carousel.clientWidth;
+                    const isAtStart = carousel.scrollLeft <= 1;
+                    const isAtEnd = carousel.scrollLeft >= maxScrollLeft - 1;
+
+                    let nextPosition = carousel.scrollLeft + (direction * carousel.clientWidth);
+
+                    if (direction < 0 && isAtStart) {
+                        nextPosition = maxScrollLeft;
+                    }
+
+                    if (direction > 0 && isAtEnd) {
+                        nextPosition = 0;
+                    }
+
+                    carousel.scrollTo({ left: nextPosition, behavior: 'smooth' });
+                },
+            }">
                 <h2 id="categories-title" class="text-2xl font-bold tracking-tight text-slate-900">Explore por categoria</h2>
 
                 <div class="mt-5">
@@ -46,7 +65,7 @@
                     @else
                         @if ($categories->count() > 3)
                             <div class="grid grid-cols-[2.25rem_minmax(0,1fr)_2.25rem] items-center gap-2 sm:grid-cols-[2.5rem_minmax(0,1fr)_2.5rem] sm:gap-3">
-                                <button type="button" x-on:click="$refs.categoryCarousel.scrollBy({ left: -$refs.categoryCarousel.clientWidth, behavior: 'smooth' })"
+                                <button type="button" x-on:click="moveCategoryCarousel(-1)"
                                     aria-label="Ver categorias anteriores" title="Ver categorias anteriores"
                                     class="inline-flex size-9 justify-self-center self-center items-center justify-center rounded-full border border-slate-200 bg-white text-blue-800 shadow-md transition hover:border-blue-200 hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-600 sm:size-10">
                                     <x-ts-icon icon="chevron-left" outline class="size-5" />
@@ -78,7 +97,7 @@
                         </div>
 
                         @if ($categories->count() > 3)
-                                <button type="button" x-on:click="$refs.categoryCarousel.scrollBy({ left: $refs.categoryCarousel.clientWidth, behavior: 'smooth' })"
+                                <button type="button" x-on:click="moveCategoryCarousel(1)"
                                     aria-label="Ver próximas categorias" title="Ver próximas categorias"
                                     class="inline-flex size-9 justify-self-center self-center items-center justify-center rounded-full border border-slate-200 bg-white text-blue-800 shadow-md transition hover:border-blue-200 hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-600 sm:size-10">
                                     <x-ts-icon icon="chevron-right" outline class="size-5" />
