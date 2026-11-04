@@ -30,7 +30,7 @@ class ResetUserPasswordToDefault
             Gate::forUser($lockedActor)->authorize('resetPassword', $target);
 
             $target->forceFill([
-                'password' => Hash::make('password'),
+                'password' => Hash::make((string) config('accounts.default_password')),
                 'remember_token' => Str::random(60),
             ])->save();
 

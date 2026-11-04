@@ -160,7 +160,7 @@
             @endif
 
             <p class="text-sm text-slate-600">
-                O gestor será criado com o cargo Gestão e receberá a senha inicial padrão do sistema.
+                O gestor será criado com o cargo Gestão e receberá a senha inicial padrão: <strong>“{{ config('accounts.default_password') }}”</strong>.
             </p>
 
             <x-form.input id="manager-name" label="Nome" :required="true" error="managerName"

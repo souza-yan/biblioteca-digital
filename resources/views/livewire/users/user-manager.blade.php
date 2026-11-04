@@ -194,7 +194,7 @@
             Deseja redefinir a senha de {{ $passwordResetUser?->name ?? 'este usuário' }}?
         </p>
         <p class="mt-2 text-sm text-slate-600">
-            A senha voltará ao padrão <strong>“password”</strong>. Todas as sessões abertas desse usuário serão encerradas.
+            A senha voltará ao padrão <strong>“{{ config('accounts.default_password') }}”</strong>. Todas as sessões abertas desse usuário serão encerradas.
         </p>
 
         <x-slot:footer>

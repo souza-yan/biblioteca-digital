@@ -34,7 +34,7 @@ it('allows staff to create a teacher from the user manager', function () {
         'email' => 'ana.professora@example.com',
         'role' => 'teacher',
     ]);
-    expect(Hash::check('password', User::query()->where('email', 'ana.professora@example.com')->value('password')))
+    expect(Hash::check(config('accounts.default_password'), User::query()->where('email', 'ana.professora@example.com')->value('password')))
         ->toBeTrue();
 });
 
@@ -262,12 +262,12 @@ it('lets an admin reset a password to the default and invalidate stored sessions
         ->test(UserManager::class)
         ->call('openPasswordResetConfirmation', $teacher->getKey())
         ->assertSet('showPasswordResetConfirmation', true)
-        ->assertSee('password')
+        ->assertSee(config('accounts.default_password'))
         ->call('resetPassword')
         ->assertHasNoErrors()
         ->assertSet('showPasswordResetConfirmation', false);
 
-    expect(Hash::check('password', $teacher->fresh()->password))->toBeTrue();
+    expect(Hash::check(config('accounts.default_password'), $teacher->fresh()->password))->toBeTrue();
     $this->assertDatabaseMissing('sessions', ['id' => 'teacher-active-session']);
     $this->assertDatabaseHas('activity_logs', [
         'user_id' => $admin->getKey(),

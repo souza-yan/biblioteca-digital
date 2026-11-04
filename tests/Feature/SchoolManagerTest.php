@@ -84,7 +84,7 @@ it('creates a staff manager with one active school membership', function () {
     expect($manager->role)->toBe(Role::STAFF)
         ->and($manager->school()?->is($school))->toBeTrue()
         ->and($manager->schools()->wherePivot('is_active', true)->count())->toBe(1)
-        ->and(Hash::check('password', $manager->password))->toBeTrue();
+        ->and(Hash::check(config('accounts.default_password'), $manager->password))->toBeTrue();
 });
 
 it('creates managers directly from schools', function () {

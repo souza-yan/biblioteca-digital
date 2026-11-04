@@ -25,7 +25,7 @@ class CreateUser
         $schoolId = $attributes['school_id'] ?? null;
         $schoolIds = $attributes['school_ids'] ?? [];
         $attributes = array_intersect_key($attributes, array_flip(['name', 'email', 'role']));
-        $attributes['password'] = Hash::make('password');
+        $attributes['password'] = Hash::make((string) config('accounts.default_password'));
 
         return DB::transaction(function () use ($actor, $attributes, $schoolId, $schoolIds): User {
             $lockedActor = User::query()->lockForUpdate()->findOrFail($actor->getKey());

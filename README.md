@@ -162,13 +162,23 @@ Para executar:
 php artisan migrate --seed
 ```
 
-## 9. Usuários de Teste
+## 9. Contas iniciais
 
-| Perfil        | E-mail                  | Senha      |
-| ------------- | ----------------------- | ---------- |
-| Administrador | `admin@example.com`     | `password` |
-| Gestão        | `gestao@example.com`    | `password` |
-| Professor     | `professor@example.com` | `password` |
+As contas abaixo são criadas somente nos ambientes `local` e `testing`. A senha padrão é `Atividade1!`.
+
+| Perfil | Escola | E-mail |
+| --- | --- | --- |
+| Administrador | — | `admin@example.com` |
+| Gestão | Escola A | `a@educacaocaraguatatuba.com.br` |
+| Gestão | Escola B | `b@educacaocaraguatatuba.com.br` |
+| Gestão | Escola C | `c@educacaocaraguatatuba.com.br` |
+| Gestão | Escola D | `d@educacaocaraguatatuba.com.br` |
+| Professor | Escola A | `professor.a@educacaocaraguatatuba.com.br` |
+| Professor | Escola B | `professor.b@educacaocaraguatatuba.com.br` |
+| Professor | Escola C | `professor.c@educacaocaraguatatuba.com.br` |
+| Professor | Escola D | `professor.d@educacaocaraguatatuba.com.br` |
+
+As escolas e os e-mails são provisórios até o envio dos dados oficiais. Para adicionar uma escola ao seed, inclua apenas uma definição na lista `SCHOOLS` de `CaraguatatubaSchoolsSeeder`.
 
 ## 10. Decisões Técnicas
 
@@ -183,7 +193,7 @@ O banco armazena as informações necessárias para identificar e gerenciar cada
 O sistema utiliza diferentes perfis para controlar as funcionalidades disponíveis.
 
 * **Administrador:** gerencia escolas, usuários, categorias, materiais, versões e auditoria global.
-* **Gestão escolar:** gerencia professores da sua escola e envia categorias e materiais para revisão.
+* **Gestão escolar:** gerencia professores da sua escola e publica categorias e materiais na biblioteca compartilhada.
 * **Professor:** consulta, visualiza, baixa e favorita materiais publicados.
 
 ### 10.3 Versionamento

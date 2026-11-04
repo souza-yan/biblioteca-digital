@@ -13,7 +13,7 @@ test('users can authenticate using the login screen', function () {
 
     $response = $this->post('/login', [
         'email' => $user->email,
-        'password' => 'password',
+        'password' => config('accounts.default_password'),
     ]);
 
     $this->assertAuthenticated();
@@ -41,7 +41,7 @@ test('users cannot authenticate with invalid password', function () {
 
         $response = $this->post('/login', [
             'email' => $user->email,
-            'password' => 'password',
+            'password' => config('accounts.default_password'),
         ]);
 
         $this->assertAuthenticated();
@@ -66,7 +66,7 @@ test('users cannot authenticate with invalid password', function () {
 
         $this->post('/login', [
             'email' => $user->email,
-            'password' => 'password',
+            'password' => config('accounts.default_password'),
         ]);
 
         $this->assertGuest();
@@ -77,7 +77,7 @@ test('users cannot authenticate with invalid password', function () {
 
         $this->post('/login', [
             'email' => $user->email,
-            'password' => 'password',
+            'password' => config('accounts.default_password'),
         ]);
 
         $this->assertAuthenticated();

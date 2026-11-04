@@ -8,7 +8,7 @@ test('other browser sessions can be logged out', function () {
     $this->actingAs(User::factory()->create());
 
     Livewire::test(LogoutOtherBrowserSessionsForm::class)
-        ->set('password', 'password')
+        ->set('password', config('accounts.default_password'))
         ->call('logoutOtherBrowserSessions')
         ->assertSuccessful();
 });

@@ -37,7 +37,7 @@ class ResetDefaultPassword extends Component
         $this->showConfirmation = false;
 
         Auth::guard('web')->setUser($updatedActor);
-        Auth::guard('web')->logoutOtherDevices('password');
+        Auth::guard('web')->logoutOtherDevices((string) config('accounts.default_password'));
         Auth::guard('web')->logout();
         session()->invalidate();
         session()->regenerateToken();

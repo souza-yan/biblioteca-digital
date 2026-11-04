@@ -13,9 +13,9 @@ it('seeds Caraguatatuba schools and initial accounts without duplicates', functi
     $this->travelTo(now()->addDay());
     $this->seed(DatabaseSeeder::class);
 
-    $this->assertDatabaseCount('schools', 16);
-    $this->assertDatabaseCount('users', 6);
-    $this->assertDatabaseCount('school_user', 5);
+    $this->assertDatabaseCount('schools', 4);
+    $this->assertDatabaseCount('users', 9);
+    $this->assertDatabaseCount('school_user', 8);
     $this->assertDatabaseCount('categories', 7);
     $this->assertDatabaseCount('materials', 16);
     $this->assertDatabaseCount('material_versions', 13);
@@ -24,10 +24,13 @@ it('seeds Caraguatatuba schools and initial accounts without duplicates', functi
     $this->assertDatabaseCount('activity_logs', 4);
 
     expect(User::query()->where('role', Role::ADMIN)->count())->toBe(1)
-        ->and(User::query()->where('role', Role::STAFF)->count())->toBe(2)
-        ->and(User::query()->where('role', Role::TEACHER)->count())->toBe(3);
+        ->and(User::query()->where('role', Role::STAFF)->count())->toBe(4)
+        ->and(User::query()->where('role', Role::TEACHER)->count())->toBe(4);
 
     expect(User::query()->where('email', 'admin@example.com')->firstOrFail()->schools()->count())->toBe(0);
+
+    $this->assertDatabaseMissing('users', ['email' => 'gestao1@example.com']);
+    $this->assertDatabaseMissing('schools', ['name' => 'EMEF Centro']);
 
     $publishedMaterial = Material::query()->where('title', 'Introdução ao Arduino Uno')->firstOrFail();
 

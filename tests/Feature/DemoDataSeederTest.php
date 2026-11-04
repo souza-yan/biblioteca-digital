@@ -1,31 +1,54 @@
 <?php
 
 use App\Enums\Role;
+use App\Models\School;
 use App\Models\User;
 use Database\Seeders\CaraguatatubaSchoolsSeeder;
 use Illuminate\Support\Facades\Hash;
 
-test('creates repeatable Caraguatatuba school accounts in the requested order', function () {
+test('creates repeatable participating school accounts from the central definitions', function () {
     $seeder = app(CaraguatatubaSchoolsSeeder::class);
 
     $seeder->run();
     $seeder->run();
 
-    $this->assertDatabaseCount('schools', 16);
-    $this->assertDatabaseCount('users', 6);
-    $this->assertDatabaseCount('school_user', 5);
+    $this->assertDatabaseCount('schools', 4);
+    $this->assertDatabaseCount('users', 9);
+    $this->assertDatabaseCount('school_user', 8);
 
     expect(User::query()->where('role', Role::ADMIN)->count())->toBe(1)
-        ->and(User::query()->where('role', Role::STAFF)->count())->toBe(2)
-        ->and(User::query()->where('role', Role::TEACHER)->count())->toBe(3);
+        ->and(User::query()->where('role', Role::STAFF)->count())->toBe(4)
+        ->and(User::query()->where('role', Role::TEACHER)->count())->toBe(4);
 
-    $manager = User::query()->where('email', 'gestao2@example.com')->firstOrFail();
+    foreach ([
+        'a' => 'Escola A',
+        'b' => 'Escola B',
+        'c' => 'Escola C',
+        'd' => 'Escola D',
+    ] as $emailSlug => $schoolName) {
+        $manager = User::query()->where('email', "{$emailSlug}@educacaocaraguatatuba.com.br")->firstOrFail();
+        $teacher = User::query()->where('email', "professor.{$emailSlug}@educacaocaraguatatuba.com.br")->firstOrFail();
 
-    expect($manager->role)->toBe(Role::STAFF)
-        ->and($manager->schools()->wherePivot('is_active', true)->count())->toBe(1)
-        ->and(Hash::check('password', $manager->password))->toBeTrue();
+        expect($manager->name)->toBe("Gestão - {$schoolName}")
+            ->and($manager->role)->toBe(Role::STAFF)
+            ->and($manager->schools()->wherePivot('is_active', true)->count())->toBe(1)
+            ->and($manager->school()?->name)->toBe($schoolName)
+            ->and(Hash::check(config('accounts.default_password'), $manager->password))->toBeTrue()
+            ->and($teacher->name)->toBe("Professor - {$schoolName}")
+            ->and($teacher->role)->toBe(Role::TEACHER)
+            ->and($teacher->schools()->wherePivot('is_active', true)->count())->toBe(1)
+            ->and($teacher->school()?->name)->toBe($schoolName)
+            ->and(Hash::check(config('accounts.default_password'), $teacher->password))->toBeTrue();
+    }
+});
 
-    expect(User::query()->where('email', 'professor1@example.com')->firstOrFail()->school()?->name)->toBe('EMEF Centro')
-        ->and(User::query()->where('email', 'professor2@example.com')->firstOrFail()->school()?->name)->toBe('EMEF Indaiá')
-        ->and(User::query()->where('email', 'professor3@example.com')->firstOrFail()->school()?->name)->toBe('EMEF Martim de Sá');
+test('removes legacy demonstration schools and accounts', function () {
+    $legacySchool = School::factory()->create(['name' => 'EMEF Centro']);
+    $legacyUser = User::factory()->staff()->create(['email' => 'gestao1@example.com']);
+    $legacyUser->schools()->attach($legacySchool->getKey(), ['is_active' => true]);
+
+    app(CaraguatatubaSchoolsSeeder::class)->run();
+
+    $this->assertDatabaseMissing('users', ['email' => 'gestao1@example.com']);
+    $this->assertDatabaseMissing('schools', ['name' => 'EMEF Centro']);
 });

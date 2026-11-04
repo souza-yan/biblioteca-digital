@@ -9,7 +9,7 @@
     <x-ts-modal wire="showConfirmation" title="Redefinir senha" size="md" center>
         <p class="text-base font-semibold text-slate-900">Deseja mesmo redefinir sua senha?</p>
         <p class="mt-2 text-sm text-slate-600">
-            Ao redefinir sua senha, ela voltará ao padrão <strong>“password”</strong>.
+            Ao redefinir sua senha, ela voltará ao padrão <strong>“{{ config('accounts.default_password') }}”</strong>.
         </p>
         <div class="mt-4 flex items-start gap-3 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">
             <x-ts-icon icon="exclamation-triangle" outline class="mt-0.5 size-5 shrink-0" />

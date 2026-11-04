@@ -136,7 +136,7 @@ it('prevents staff from creating an administrator through the direct action', fu
     expect(fn () => app(CreateUser::class)->handle($staff, [
         'name' => 'Escalação de cargo',
         'email' => 'staff-escalation@example.test',
-        'password' => 'password',
+        'password' => config('accounts.default_password'),
         'role' => Role::ADMIN,
     ]))->toThrow(AuthorizationException::class);
 

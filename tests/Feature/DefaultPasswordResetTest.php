@@ -26,20 +26,20 @@ it('allows every active role to restore its own password to the default', functi
         ->call('openConfirmation')
         ->assertSet('showConfirmation', true)
         ->assertSee('Deseja mesmo redefinir sua senha?')
-        ->assertSee('password')
+        ->assertSee(config('accounts.default_password'))
         ->assertSee('Você será desconectado imediatamente')
         ->call('resetPassword')
         ->assertHasNoErrors()
         ->assertSet('showConfirmation', false)
         ->assertRedirect(route('login'));
 
-    expect(Hash::check('password', $user->fresh()->password))->toBeTrue();
+    expect(Hash::check(config('accounts.default_password'), $user->fresh()->password))->toBeTrue();
     $this->assertDatabaseHas('activity_logs', [
         'user_id' => $user->getKey(),
         'action' => ActivityAction::USER_PASSWORD_RESET_TO_DEFAULT->value,
         'description' => 'O usuário redefiniu a própria senha para o padrão.',
     ]);
-    expect(ActivityLog::query()->latest('id')->value('description'))->not->toContain('password');
+    expect(ActivityLog::query()->latest('id')->value('description'))->not->toContain(config('accounts.default_password'));
 })->with(Role::cases());
 
 it('refuses the default password action for an inactive account', function () {

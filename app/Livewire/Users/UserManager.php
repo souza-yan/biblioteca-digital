@@ -258,7 +258,7 @@ class UserManager extends Component
         $this->showPasswordResetConfirmation = false;
 
         $this->toast()
-            ->success('Senha redefinida!', 'A senha voltou ao padrão “password” e as sessões foram encerradas.')
+            ->success('Senha redefinida!', 'A senha voltou ao padrão “'.config('accounts.default_password').'” e as sessões foram encerradas.')
             ->send();
     }
 

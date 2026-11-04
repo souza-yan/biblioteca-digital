@@ -24,8 +24,8 @@ it('prevents staff from creating an admin account', function () {
         ->call('openCreate')
         ->set('form.name', 'Conta Administrativa')
         ->set('form.email', 'admin.candidate@example.com')
-        ->set('form.password', 'password')
-        ->set('form.password_confirmation', 'password')
+        ->set('form.password', config('accounts.default_password'))
+        ->set('form.password_confirmation', config('accounts.default_password'))
         ->set('form.role', 'admin')
         ->call('save')
         ->assertHasErrors('form.role');
@@ -40,8 +40,8 @@ it('allows staff to create a teacher from the user manager', function () {
         ->call('openCreate')
         ->set('form.name', 'Ana Professora')
         ->set('form.email', 'ana.professora@example.com')
-        ->set('form.password', 'password')
-        ->set('form.password_confirmation', 'password')
+        ->set('form.password', config('accounts.default_password'))
+        ->set('form.password_confirmation', config('accounts.default_password'))
         ->set('form.role', 'teacher')
         ->call('save')
         ->assertHasNoErrors();
@@ -83,8 +83,8 @@ it('rejects management registration from the professor screen', function () {
         ->call('openCreate')
         ->set('form.name', 'Novo membro da gestão')
         ->set('form.email', 'nova.gestao@example.com')
-        ->set('form.password', 'password')
-        ->set('form.password_confirmation', 'password')
+        ->set('form.password', config('accounts.default_password'))
+        ->set('form.password_confirmation', config('accounts.default_password'))
         ->set('form.role', 'staff')
         ->call('save')
         ->assertHasErrors('form.role');

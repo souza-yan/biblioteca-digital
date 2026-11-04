@@ -21,7 +21,7 @@ class ResetOwnPasswordToDefault
             Gate::forUser($lockedActor)->authorize('resetOwnPasswordToDefault', $lockedActor);
 
             $lockedActor->forceFill([
-                'password' => Hash::make('password'),
+                'password' => Hash::make((string) config('accounts.default_password')),
             ])->save();
 
             $this->logActivity->handle(
