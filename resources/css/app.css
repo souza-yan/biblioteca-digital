@@ -76,6 +76,12 @@
         max-width: calc(100vw - 4rem);
         box-shadow: 12px 0 28px rgb(15 23 42 / 25%);
     }
+
+    [x-data^='tallstackui_toastBase'] {
+        z-index: 80 !important;
+        justify-content: flex-start !important;
+        padding-top: calc(var(--header-h) + 1rem) !important;
+    }
 }
 
 @media (min-width: 64rem) {
