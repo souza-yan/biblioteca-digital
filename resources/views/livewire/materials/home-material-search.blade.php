@@ -44,7 +44,7 @@
                                 {{ $material->title }}
                             </span>
                             <span class="mt-1 block truncate text-sm text-slate-500">
-                                {{ $material->author }} · {{ $material->category->name }}
+                                {{ $material->category->name }}
                             </span>
                         </span>
                     </a>

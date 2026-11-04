@@ -108,6 +108,17 @@
 
                     <div class="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
                         @forelse ($publishedMaterials as $material)
+                            @php
+                                $materialType = strtolower((string) $material->type);
+                                $typeBadgeClass = match (true) {
+                                    $materialType === 'pdf' => 'bg-red-50 text-red-700',
+                                    in_array($materialType, ['png', 'jpg', 'jpeg', 'webp', 'gif'], true) => 'bg-violet-50 text-violet-700',
+                                    in_array($materialType, ['xls', 'xlsx', 'csv'], true) => 'bg-emerald-50 text-emerald-700',
+                                    in_array($materialType, ['ppt', 'pptx'], true) => 'bg-amber-50 text-amber-700',
+                                    in_array($materialType, ['doc', 'docx'], true) => 'bg-blue-50 text-blue-700',
+                                    default => 'bg-slate-100 text-slate-600',
+                                };
+                            @endphp
                             <article class="group relative overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition hover:-translate-y-0.5 hover:border-blue-200 hover:shadow-md">
                                 <a href="{{ route('painel.library.show', $material) }}" class="block p-3" aria-label="Abrir {{ $material->title }}">
                                     <x-materials.pdf-cover :material="$material" :version="$material->currentVersion" :alt="'Capa do material '.$material->title" fit="contain" class="rounded-xl" />
@@ -117,7 +128,7 @@
                                     <a href="{{ route('painel.library.show', $material) }}" class="mt-1 block truncate text-base font-bold text-slate-900 hover:text-blue-800">{{ $material->title }}</a>
                                     <div class="mt-3 flex items-center justify-between gap-3 text-xs text-slate-500">
                                         <span>{{ $material->published_at?->format('d/m/Y') ?? 'Data não informada' }}</span>
-                                        <span class="rounded-full bg-slate-100 px-2 py-1 font-semibold uppercase tracking-wide text-slate-600">{{ $material->type }}</span>
+                                        <span @class(['rounded-full px-2 py-1 font-semibold uppercase tracking-wide', $typeBadgeClass])>{{ $material->type }}</span>
                                     </div>
                                 </div>
                                 <div class="absolute right-5 top-5">
