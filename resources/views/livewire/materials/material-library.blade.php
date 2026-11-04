@@ -4,11 +4,8 @@
             <h1 class="text-3xl font-bold tracking-tight text-blue-800 sm:text-4xl">Materiais publicados</h1>
         </div>
 
-        {{-- Busca por material ou autor; a categoria é definida pela tela anterior. --}}
-        <div @class([
-            'grid grid-cols-1 items-end gap-4 md:grid-cols-2',
-            'xl:grid-cols-3' => $isStaff,
-        ])>
+        {{-- Filtros para localizar materiais publicados. --}}
+        <div class="grid grid-cols-1 items-end gap-4 md:grid-cols-2 xl:grid-cols-3">
             <x-search-field model="search" label="Buscar material" placeholder="Título ou autor"
                 list="material-search-suggestions" />
             <datalist id="material-search-suggestions">
@@ -22,14 +19,12 @@
                     <option value="{{ $author }}">{{ $author }}</option>
                 @endforeach
             </x-form.select>
-            @if ($isStaff)
-                <x-form.select id="material-category-filter" label="Categoria" wire:model.live="categoryFilter">
-                    <option value="">Todas as categorias</option>
-                    @foreach ($categories as $category)
-                        <option value="{{ $category->id }}">{{ $category->name }}</option>
-                    @endforeach
-                </x-form.select>
-            @endif
+            <x-form.select id="material-category-filter" label="Categoria" wire:model.live="categoryFilter">
+                <option value="">Todas as categorias</option>
+                @foreach ($categories as $category)
+                    <option value="{{ $category->id }}">{{ $category->name }}</option>
+                @endforeach
+            </x-form.select>
         </div>
 
         @if ($recentSearches !== [])

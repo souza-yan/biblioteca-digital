@@ -89,7 +89,7 @@ it('persists library filters in the query string', function () {
         ->assertSet('titleSortDirection', 'desc');
 });
 
-it('shows the category selector only for staff', function () {
+it('shows the category selector to library users', function () {
     $category = Category::factory()->create(['name' => 'Robótica educacional']);
     Material::factory()->published()->for($category)->create();
 
@@ -100,7 +100,8 @@ it('shows the category selector only for staff', function () {
 
     Livewire::actingAs(User::factory()->teacher()->create())
         ->test(MaterialLibrary::class)
-        ->assertDontSee('Todas as categorias');
+        ->assertSee('Todas as categorias')
+        ->assertSee($category->name);
 });
 
 it('stores and reapplies recent material searches', function () {

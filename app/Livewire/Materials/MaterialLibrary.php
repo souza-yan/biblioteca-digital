@@ -140,18 +140,15 @@ class MaterialLibrary extends Component
             ->distinct()
             ->orderBy('author')
             ->pluck('author');
-        $categories = $user->isStaff()
-            ? Category::query()
-                ->where('is_active', true)
-                ->whereHas('materials', fn (Builder $query): Builder => $query->published())
-                ->orderBy('name')
-                ->get()
-            : collect();
+        $categories = Category::query()
+            ->where('is_active', true)
+            ->whereHas('materials', fn (Builder $query): Builder => $query->published())
+            ->orderBy('name')
+            ->get();
 
         return view('livewire.materials.material-library', [
             'materials' => $materials,
             'isTeacher' => $user->isTeacher(),
-            'isStaff' => $user->isStaff(),
             'authors' => $authors,
             'categories' => $categories,
             'recentSearches' => session()->get('material_library_recent_searches', []),
