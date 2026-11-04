@@ -51,7 +51,7 @@
                         <p class="rounded-2xl border border-dashed border-slate-300 bg-white px-5 py-8 text-sm text-slate-500">Ainda não há categorias com materiais publicados.</p>
                     @else
                         <div class="relative">
-                            <div x-ref="categoryCarousel" class="flex snap-x snap-mandatory gap-3 overflow-x-auto scroll-smooth pb-2" aria-label="Categorias disponíveis">
+                            <div x-ref="categoryCarousel" class="flex snap-x snap-mandatory gap-3 overflow-x-auto scroll-smooth px-12 pb-2 sm:px-14" aria-label="Categorias disponíveis">
                                 @foreach ($categories as $category)
                                     @php
                                         $categoryName = \Illuminate\Support\Str::lower($category->name);
