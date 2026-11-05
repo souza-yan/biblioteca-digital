@@ -215,6 +215,33 @@
                 <h1 class="mt-1 text-2xl font-bold tracking-tight sm:mt-2 sm:text-4xl">{{ $staffSchool?->name }}</h1>
             </header>
 
+            <section class="rounded-2xl border border-slate-200 bg-white p-4 sm:p-6" aria-labelledby="staff-actions-title">
+                <h2 id="staff-actions-title" class="text-lg font-bold text-slate-900 sm:text-xl">Acesso rápido</h2>
+                <div class="mt-4 grid grid-cols-3 gap-2 sm:mt-5 sm:gap-3">
+                    <a href="{{ route('painel.users') }}"
+                        class="flex min-h-28 flex-col items-center justify-center gap-2 rounded-xl border border-slate-200 p-3 text-center text-xs font-semibold text-slate-800 transition hover:border-blue-200 hover:bg-blue-50 sm:min-h-32 sm:text-sm">
+                        <span class="flex size-10 items-center justify-center rounded-xl bg-blue-50 text-blue-800">
+                            <x-ts-icon icon="users" outline class="size-5" />
+                        </span>
+                        <span>Professores e vínculos</span>
+                    </a>
+                    <a href="{{ route('painel.materials') }}"
+                        class="flex min-h-28 flex-col items-center justify-center gap-2 rounded-xl border border-slate-200 p-3 text-center text-xs font-semibold text-slate-800 transition hover:border-blue-200 hover:bg-blue-50 sm:min-h-32 sm:text-sm">
+                        <span class="flex size-10 items-center justify-center rounded-xl bg-emerald-50 text-emerald-700">
+                            <x-ts-icon icon="book-open" outline class="size-5" />
+                        </span>
+                        <span>Biblioteca de materiais</span>
+                    </a>
+                    <a href="{{ route('profile.show') }}"
+                        class="flex min-h-28 flex-col items-center justify-center gap-2 rounded-xl border border-slate-200 p-3 text-center text-xs font-semibold text-slate-800 transition hover:border-blue-200 hover:bg-blue-50 sm:min-h-32 sm:text-sm">
+                        <span class="flex size-10 items-center justify-center rounded-xl bg-violet-50 text-violet-700">
+                            <x-ts-icon icon="user-circle" outline class="size-5" />
+                        </span>
+                        <span>Dados da conta</span>
+                    </a>
+                </div>
+            </section>
+
             <section aria-label="Resumo da escola" class="grid grid-cols-3 gap-2 sm:gap-4">
                 <article class="min-w-0 rounded-2xl border border-slate-200 bg-white p-3 text-center sm:p-5 sm:text-left">
                     <p class="text-xs font-semibold leading-4 text-slate-500 sm:text-sm sm:leading-5">Professores vinculados</p>
@@ -233,7 +260,7 @@
                 </article>
             </section>
 
-            <div class="grid grid-cols-1 gap-4 sm:gap-6 lg:grid-cols-2">
+            <div>
                 <section class="rounded-2xl border border-slate-200 bg-white p-4 sm:p-6" aria-labelledby="staff-materials-title">
                     <div class="flex items-start justify-between gap-4">
                         <div>
@@ -263,32 +290,6 @@
                     </div>
                 </section>
 
-                <section class="rounded-2xl border border-slate-200 bg-white p-4 sm:p-6" aria-labelledby="staff-actions-title">
-                    <h2 id="staff-actions-title" class="text-lg font-bold text-slate-900 sm:text-xl">Acesso rápido</h2>
-                    <div class="mt-4 grid grid-cols-3 gap-2 sm:mt-5 sm:gap-3">
-                        <a href="{{ route('painel.users') }}"
-                            class="flex min-h-28 flex-col items-center justify-center gap-2 rounded-xl border border-slate-200 p-3 text-center text-xs font-semibold text-slate-800 transition hover:border-blue-200 hover:bg-blue-50 sm:min-h-32 sm:text-sm">
-                            <span class="flex size-10 items-center justify-center rounded-xl bg-blue-50 text-blue-800">
-                                <x-ts-icon icon="users" outline class="size-5" />
-                            </span>
-                            <span>Professores e vínculos</span>
-                        </a>
-                        <a href="{{ route('painel.materials') }}"
-                            class="flex min-h-28 flex-col items-center justify-center gap-2 rounded-xl border border-slate-200 p-3 text-center text-xs font-semibold text-slate-800 transition hover:border-blue-200 hover:bg-blue-50 sm:min-h-32 sm:text-sm">
-                            <span class="flex size-10 items-center justify-center rounded-xl bg-emerald-50 text-emerald-700">
-                                <x-ts-icon icon="book-open" outline class="size-5" />
-                            </span>
-                            <span>Biblioteca de materiais</span>
-                        </a>
-                        <a href="{{ route('profile.show') }}"
-                            class="flex min-h-28 flex-col items-center justify-center gap-2 rounded-xl border border-slate-200 p-3 text-center text-xs font-semibold text-slate-800 transition hover:border-blue-200 hover:bg-blue-50 sm:min-h-32 sm:text-sm">
-                            <span class="flex size-10 items-center justify-center rounded-xl bg-violet-50 text-violet-700">
-                                <x-ts-icon icon="user-circle" outline class="size-5" />
-                            </span>
-                            <span>Dados da conta</span>
-                        </a>
-                    </div>
-                </section>
             </div>
         @else
             {{-- ======================================== --}}
