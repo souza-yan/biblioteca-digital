@@ -84,7 +84,11 @@
     }
 
     [x-data^='tallstackui_toastBase'] [x-ref='toast'] > div > div:first-child {
-        padding: 0.75rem !important;
+        padding: 0.5rem 0.625rem !important;
+    }
+
+    [x-data^='tallstackui_toastBase'] [x-ref='toast'] > div {
+        max-width: calc(100vw - 1rem) !important;
     }
 }
 
