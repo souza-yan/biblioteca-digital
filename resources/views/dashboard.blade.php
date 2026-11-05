@@ -210,26 +210,9 @@
                 </section>
             </div>
         @elseif ($isStaff)
-            <header class="rounded-2xl bg-blue-800 p-5 text-white sm:px-7 sm:py-7">
-                <div class="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
-                    <div class="min-w-0">
-                        <p class="text-sm font-semibold uppercase tracking-[0.14em] text-blue-200">Gestão escolar</p>
-                        <h1 class="mt-1 text-2xl font-bold tracking-tight sm:mt-2 sm:text-4xl">{{ $staffSchool?->name }}</h1>
-                        <p class="mt-2 max-w-2xl text-sm text-blue-100 sm:text-base">
-                            Acompanhe os professores da escola e consulte os conteúdos disponíveis na biblioteca.
-                        </p>
-                    </div>
-                    <div class="grid grid-cols-1 gap-2 sm:flex sm:flex-wrap sm:gap-3">
-                        <a href="{{ route('painel.users') }}"
-                            class="inline-flex min-h-11 items-center justify-center rounded-xl bg-white px-4 py-3 text-sm font-semibold text-blue-800 transition hover:bg-blue-50">
-                            Gerenciar professores
-                        </a>
-                        <a href="{{ route('painel.materials') }}"
-                            class="inline-flex min-h-11 items-center justify-center rounded-xl border border-blue-300 px-4 py-3 text-sm font-semibold text-white transition hover:bg-blue-700">
-                            Consultar materiais
-                        </a>
-                    </div>
-                </div>
+            <header class="rounded-2xl bg-blue-800 px-5 py-4 text-white sm:px-7 sm:py-6">
+                <p class="text-xs font-semibold uppercase tracking-[0.14em] text-blue-200 sm:text-sm">Gestão escolar</p>
+                <h1 class="mt-1 text-2xl font-bold tracking-tight sm:mt-2 sm:text-4xl">{{ $staffSchool?->name }}</h1>
             </header>
 
             <section aria-label="Resumo da escola" class="grid grid-cols-3 gap-2 sm:gap-4">
@@ -258,17 +241,24 @@
                         </div>
                         <a href="{{ route('painel.materials') }}" class="shrink-0 text-sm font-semibold text-blue-800 hover:underline">Ver materiais</a>
                     </div>
-                    <div class="mt-4 divide-y divide-slate-100 sm:mt-5">
+                    <div class="mt-4 space-y-2 sm:mt-5 sm:space-y-3">
                         @forelse ($topDownloadedMaterials as $material)
-                            <a href="{{ route('painel.materials.show', $material) }}" class="flex items-center justify-between gap-3 py-3 first:pt-0 last:pb-0 sm:gap-4 sm:py-4">
-                                <span class="min-w-0">
+                            <a href="{{ route('painel.materials.show', $material) }}"
+                                class="flex min-h-16 items-center gap-3 rounded-xl border border-slate-100 bg-slate-50/70 p-3 transition hover:border-blue-200 hover:bg-blue-50 sm:gap-4 sm:p-4">
+                                <span class="flex size-9 shrink-0 items-center justify-center rounded-full bg-blue-800 text-sm font-bold text-white sm:size-10">
+                                    {{ $loop->iteration }}
+                                </span>
+                                <span class="min-w-0 flex-1">
                                     <span class="block truncate font-semibold text-slate-800">{{ $material->title }}</span>
                                     <span class="mt-1 block truncate text-sm text-slate-500">{{ $material->category->name }}</span>
                                 </span>
-                                <span class="shrink-0 rounded-full bg-blue-50 px-2.5 py-1 text-xs font-bold text-blue-800 sm:text-sm">{{ number_format($material->downloads_count, 0, ',', '.') }}</span>
+                                <span class="flex shrink-0 items-center gap-1 rounded-full bg-blue-100 px-2.5 py-1 text-xs font-bold text-blue-800 sm:px-3 sm:text-sm">
+                                    <x-ts-icon icon="arrow-down-tray" outline class="size-3.5" />
+                                    {{ number_format($material->downloads_count, 0, ',', '.') }}
+                                </span>
                             </a>
                         @empty
-                            <p class="py-6 text-sm text-slate-500">Ainda não há downloads registrados para esta escola.</p>
+                            <div class="rounded-xl bg-slate-50 px-4 py-7 text-center text-sm text-slate-500">Ainda não há downloads registrados para esta escola.</div>
                         @endforelse
                     </div>
                 </section>
