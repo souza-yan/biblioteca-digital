@@ -11,7 +11,7 @@
         'secondary' => 'border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 focus:ring-blue-600',
         'danger' => 'bg-red-600 text-white hover:bg-red-700 focus:ring-red-600',
         'success' => 'bg-emerald-600 text-white hover:bg-emerald-700 focus:ring-emerald-600',
-        'visual' => 'bg-violet-600 text-white hover:bg-violet-700 focus:ring-violet-600',
+        'warning' => 'bg-amber-400 text-amber-950 hover:bg-amber-500 focus:ring-amber-500',
     ][$variant] ?? 'bg-blue-800 text-white hover:bg-blue-900 focus:ring-blue-600';
 
     $baseClasses = 'inline-flex size-11 shrink-0 items-center justify-center rounded-lg shadow-sm transition focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50';

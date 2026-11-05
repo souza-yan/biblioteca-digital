@@ -83,11 +83,11 @@
                                 <x-icon-button icon="arrow-up-tray" variant="success"
                                     :href="route('painel.library.show', ['material' => $material, 'categoryFilter' => $categoryFilter ?: null])"
                                     label="Gerenciar versões de {{ $material->title }}" class="!size-9 [&_svg]:!size-5" />
-                                <x-icon-button icon="pencil-square" wire:click="openEditMaterial({{ $material->id }})"
+                                <x-icon-button icon="pencil-square" variant="warning" wire:click="openEditMaterial({{ $material->id }})"
                                     wire:loading.attr="disabled" wire:target="openEditMaterial({{ $material->id }})"
                                     label="Editar {{ $material->title }}" class="!size-9 [&_svg]:!size-5" />
                             @endcan
-                            <x-icon-button icon="eye" variant="visual" wire:click="openMobileMaterialDetail({{ $material->id }})"
+                            <x-icon-button icon="eye" wire:click="openMobileMaterialDetail({{ $material->id }})"
                                 wire:loading.attr="disabled"
                                 wire:target="openMobileMaterialDetail({{ $material->id }})"
                                 label="Ver detalhes de {{ $material->title }}" class="!size-9 [&_svg]:!size-5" />
