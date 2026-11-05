@@ -82,6 +82,24 @@
         justify-content: flex-start !important;
         padding-top: calc(var(--header-h) + 1rem) !important;
     }
+
+    [x-data^='tallstackui_toastBase'] [x-ref='toast'] > div > div {
+        padding: 0.625rem 0.75rem !important;
+    }
+
+    [x-data^='tallstackui_toastBase'] [x-ref='toast'] p {
+        font-size: 0.8125rem;
+        line-height: 1.125rem;
+    }
+
+    [x-data^='tallstackui_toastBase'] [x-ref='toast'] p.mt-1 {
+        margin-top: 0.125rem;
+    }
+
+    [x-data^='tallstackui_toastBase'] [x-ref='toast'] svg {
+        width: 1.125rem;
+        height: 1.125rem;
+    }
 }
 
 @media (min-width: 64rem) {
