@@ -1,5 +1,5 @@
 @if ($material)
-    <div x-data="{ isPreviewOpen: false }">
+    <div x-data="{ isPreviewOpen: false }" x-on:mobile-material-preview.window="isPreviewOpen = true">
         <h2 class="text-lg font-semibold text-slate-900">{{ $material->title }}</h2>
         <p class="mt-1 text-sm text-slate-600">Por {{ $material->author }}</p>
 
@@ -23,6 +23,7 @@
                 'showPreviewButtonOnMobile' => true,
                 'compact' => true,
                 'iconOnlyPreviewButton' => true,
+                'showPreviewAction' => false,
             ])
         @endif
     </div>

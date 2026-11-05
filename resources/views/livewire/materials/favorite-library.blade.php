@@ -93,11 +93,22 @@
             ])
 
             <x-slot:footer>
-                @if ($mobileMaterial?->currentVersion)
-                    <x-icon-button icon="document-arrow-down" variant="success"
-                        :href="route('downloads.show', $mobileMaterial)"
-                        label="Baixar {{ $mobileMaterial->title }}" />
-                @endif
+                <div class="flex w-full items-center justify-between">
+                    @if ($mobileMaterial?->currentVersion && $mobilePreviewUrl)
+                        <button type="button" x-on:click="$dispatch('mobile-material-preview')"
+                            aria-label="Visualizar conteúdo" title="Visualizar conteúdo"
+                            class="inline-flex size-11 items-center justify-center rounded-lg bg-blue-800 text-white shadow-sm transition hover:bg-blue-900 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2">
+                            <x-ts-icon icon="magnifying-glass" outline class="size-6" />
+                        </button>
+                    @else
+                        <span></span>
+                    @endif
+                    @if ($mobileMaterial?->currentVersion)
+                        <x-icon-button icon="document-arrow-down" variant="success"
+                            :href="route('downloads.show', $mobileMaterial)"
+                            label="Baixar {{ $mobileMaterial->title }}" />
+                    @endif
+                </div>
             </x-slot:footer>
         </x-ts-modal>
 

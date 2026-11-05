@@ -1,5 +1,6 @@
 @php
     $showPreviewButtonOnMobile = $showPreviewButtonOnMobile ?? false;
+    $showPreviewAction = $showPreviewAction ?? true;
     $compact = $compact ?? false;
     $iconOnlyPreviewButton = $iconOnlyPreviewButton ?? false;
     $typeBadge = match (true) {
@@ -48,22 +49,24 @@
             <dt class="font-semibold text-gray-500">Tamanho</dt>
             <dd class="text-gray-700">{{ number_format($version->size / 1024, 1) }} KB</dd>
         </div>
-        <div @class([
-            'items-end sm:justify-end',
-            'hidden sm:flex' => ! $showPreviewButtonOnMobile,
-            'flex' => $showPreviewButtonOnMobile,
-        ])>
-            <button type="button" @class([
-                'inline-flex items-center rounded-md bg-blue-700 text-sm font-semibold text-white transition hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2',
-                'size-10 justify-center' => $iconOnlyPreviewButton,
-                'gap-2 px-4 py-2.5' => ! $iconOnlyPreviewButton,
-            ]) @click="isPreviewOpen = true" aria-label="Visualizar conteúdo" title="Visualizar conteúdo">
-                <x-ts-icon icon="arrows-pointing-out" outline class="size-5" />
-                @if (! $iconOnlyPreviewButton)
-                    Visualizar conteúdo
-                @endif
-            </button>
-        </div>
+        @if ($showPreviewAction)
+            <div @class([
+                'items-end sm:justify-end',
+                'hidden sm:flex' => ! $showPreviewButtonOnMobile,
+                'flex' => $showPreviewButtonOnMobile,
+            ])>
+                <button type="button" @class([
+                    'inline-flex items-center rounded-md bg-blue-700 text-sm font-semibold text-white transition hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2',
+                    'size-10 justify-center' => $iconOnlyPreviewButton,
+                    'gap-2 px-4 py-2.5' => ! $iconOnlyPreviewButton,
+                ]) @click="isPreviewOpen = true" aria-label="Visualizar conteúdo" title="Visualizar conteúdo">
+                    <x-ts-icon icon="arrows-pointing-out" outline class="size-5" />
+                    @if (! $iconOnlyPreviewButton)
+                        Visualizar conteúdo
+                    @endif
+                </button>
+            </div>
+        @endif
     </dl>
 
     <template x-teleport="body">
