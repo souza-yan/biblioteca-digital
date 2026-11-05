@@ -87,7 +87,7 @@
                                     wire:loading.attr="disabled" wire:target="openEditMaterial({{ $material->id }})"
                                     label="Editar {{ $material->title }}" class="!size-9 [&_svg]:!size-5" />
                             @endcan
-                            <x-icon-button icon="eye" variant="secondary" wire:click="openMobileMaterialDetail({{ $material->id }})"
+                            <x-icon-button icon="eye" variant="visual" wire:click="openMobileMaterialDetail({{ $material->id }})"
                                 wire:loading.attr="disabled"
                                 wire:target="openMobileMaterialDetail({{ $material->id }})"
                                 label="Ver detalhes de {{ $material->title }}" class="!size-9 [&_svg]:!size-5" />
