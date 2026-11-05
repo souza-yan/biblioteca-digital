@@ -4,7 +4,9 @@
             <div class="flex flex-col justify-between gap-3 sm:flex-row sm:items-start sm:gap-4">
                 <div>
                     <h1 class="text-2xl font-bold tracking-tight text-gray-900 sm:text-3xl">{{ $material->title }}</h1>
-                    <p class="mt-1 text-sm text-gray-600 sm:text-base">Por {{ $material->author }}</p>
+                    @if ($isTeacher)
+                        <p class="mt-1 text-sm text-gray-600 sm:text-base">Por {{ $material->author }}</p>
+                    @endif
                 </div>
 
                 {{-- Bloco de botões padronizados e alinhados --}}
@@ -49,16 +51,18 @@
                         <x-materials.status-badge :status="$material->status" />
                     </dd>
                 </div>
-                <div class="hidden sm:block">
+                @if ($isTeacher)
+                    <div class="hidden sm:block">
                     <dt class="text-xs font-semibold uppercase text-gray-500">Criado por</dt>
                     <dd class="mt-1 text-sm text-gray-900 sm:text-base">{{ $material->creator->name }}</dd>
-                </div>
+                    </div>
+                @endif
                 <div class="sm:col-span-2">
                     <dt class="text-xs font-semibold uppercase text-gray-500">Descrição</dt>
                     <dd class="mt-1 whitespace-pre-line text-sm text-gray-700 sm:text-base">
                         {{ $material->description ?: 'Sem descrição.' }}</dd>
                 </div>
-                @if ($material->currentVersion)
+                @if ($isTeacher && $material->currentVersion)
                     <div class="hidden sm:block">
                         <dt class="text-xs font-semibold uppercase text-gray-500">Versão atual</dt>
                         <dd class="mt-1 text-sm text-gray-900 sm:text-base">{{ $material->currentVersion->version_number }} ·
@@ -67,7 +71,7 @@
                 @endif
             </dl>
 
-            @if ($material->currentVersion)
+            @if ($isTeacher && $material->currentVersion)
                 @include('livewire.materials.partials.file-preview', [
                     'version' => $material->currentVersion,
                     'previewUrl' => $previewUrl,
