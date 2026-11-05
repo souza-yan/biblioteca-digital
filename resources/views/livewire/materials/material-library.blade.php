@@ -80,19 +80,17 @@
 
                         @if (! $isTeacher)
                             @can('update', $material)
-                                <x-icon-button icon="arrow-up-tray"
+                                <x-icon-button icon="arrow-up-tray" variant="success"
                                     :href="route('painel.library.show', ['material' => $material, 'categoryFilter' => $categoryFilter ?: null])"
                                     label="Gerenciar versões de {{ $material->title }}" class="!size-9 [&_svg]:!size-5" />
                                 <x-icon-button icon="pencil-square" wire:click="openEditMaterial({{ $material->id }})"
                                     wire:loading.attr="disabled" wire:target="openEditMaterial({{ $material->id }})"
                                     label="Editar {{ $material->title }}" class="!size-9 [&_svg]:!size-5" />
                             @endcan
-                            @cannot('update', $material)
-                                <x-icon-button icon="eye" wire:click="openMobileMaterialDetail({{ $material->id }})"
-                                    wire:loading.attr="disabled"
-                                    wire:target="openMobileMaterialDetail({{ $material->id }})"
-                                    label="Ver detalhes de {{ $material->title }}" class="!size-9 [&_svg]:!size-5" />
-                            @endcannot
+                            <x-icon-button icon="eye" variant="secondary" wire:click="openMobileMaterialDetail({{ $material->id }})"
+                                wire:loading.attr="disabled"
+                                wire:target="openMobileMaterialDetail({{ $material->id }})"
+                                label="Ver detalhes de {{ $material->title }}" class="!size-9 [&_svg]:!size-5" />
                         @else
                             <x-icon-button icon="eye" wire:click="openMobileMaterialDetail({{ $material->id }})"
                                 wire:loading.attr="disabled"
