@@ -85,7 +85,7 @@
         </x-slot>
 
         <x-slot name="footer">
-            <x-secondary-button wire:click="$toggle('confirmingLogout')" wire:loading.attr="disabled" aria-label="Cancelar" title="Cancelar" class="!size-12 !p-0 justify-center">
+            <x-secondary-button wire:click="$toggle('confirmingLogout')" wire:loading.attr="disabled" aria-label="Cancelar" title="Cancelar" class="!size-12 !justify-center !bg-red-600 !p-0 !text-white hover:!bg-red-700">
                 <x-ts-icon icon="x-mark" outline class="size-7" />
             </x-secondary-button>
 

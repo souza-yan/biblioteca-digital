@@ -168,7 +168,7 @@
                 </form>
 
                 <x-slot:footer>
-                    <x-ts-button color="slate" type="button" wire:click="closeForm">Cancelar</x-ts-button>
+                    <x-ts-button color="red" type="button" wire:click="closeForm">Cancelar</x-ts-button>
                     <x-ts-button color="blue" type="submit" form="managed-material-form" wire:loading.attr="disabled" wire:target="save">
                         <span wire:loading.remove wire:target="save">Salvar material</span>
                         <span wire:loading wire:target="save">Salvando...</span>

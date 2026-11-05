@@ -79,7 +79,7 @@
             </form>
 
             <x-slot:footer>
-                <x-ts-button color="slate" type="button" wire:click="closeForm">Cancelar</x-ts-button>
+                <x-ts-button color="red" type="button" wire:click="closeForm">Cancelar</x-ts-button>
                 <x-ts-button color="blue" type="submit" form="category-form" wire:loading.attr="disabled" wire:target="save">
                     Salvar categoria
                 </x-ts-button>

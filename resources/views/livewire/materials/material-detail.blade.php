@@ -121,7 +121,7 @@
                 </form>
 
                 <x-slot:footer>
-                    <x-ts-button color="slate" type="button" wire:click="closeEditForm">
+                    <x-ts-button color="red" type="button" wire:click="closeEditForm">
                         Cancelar
                     </x-ts-button>
                     <x-ts-button color="blue" type="submit" form="detail-material-form"

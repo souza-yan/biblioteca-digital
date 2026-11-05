@@ -141,7 +141,7 @@
         </form>
 
         <x-slot:footer>
-            <x-ts-button color="slate" type="button" wire:click="closeSchoolForm">Cancelar</x-ts-button>
+            <x-ts-button color="red" type="button" wire:click="closeSchoolForm">Cancelar</x-ts-button>
             <x-ts-button color="blue" type="submit" form="school-form" wire:loading.attr="disabled"
                 wire:target="saveSchool">
                 <span wire:loading.remove wire:target="saveSchool">Salvar escola</span>
@@ -170,7 +170,7 @@
         </form>
 
         <x-slot:footer>
-            <x-ts-button color="slate" type="button" wire:click="closeManagerForm">Cancelar</x-ts-button>
+            <x-ts-button color="red" type="button" wire:click="closeManagerForm">Cancelar</x-ts-button>
             <x-ts-button color="blue" type="submit" form="manager-form" wire:loading.attr="disabled"
                 wire:target="saveManager">
                 <span wire:loading.remove wire:target="saveManager">Cadastrar gestor</span>

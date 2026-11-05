@@ -233,7 +233,7 @@
             </form>
 
             <x-slot:footer>
-                <x-ts-button color="slate" type="button" wire:click="closeForm">
+                <x-ts-button :color="$actor->isStaff() && $editingUserId !== null ? 'slate' : 'red'" type="button" wire:click="closeForm">
                     {{ $actor->isStaff() && $editingUserId !== null ? 'Fechar' : 'Cancelar' }}
                 </x-ts-button>
                 @unless ($actor->isStaff() && $editingUserId !== null)
@@ -254,7 +254,7 @@
         </p>
 
         <x-slot:footer>
-            <x-ts-button color="slate" type="button" wire:click="closePasswordResetConfirmation">
+            <x-ts-button color="red" type="button" wire:click="closePasswordResetConfirmation">
                 Cancelar
             </x-ts-button>
             <x-ts-button color="red" type="button" wire:click="resetPassword"

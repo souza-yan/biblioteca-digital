@@ -17,7 +17,7 @@
         </div>
 
         <x-slot:footer>
-            <x-ts-button color="slate" type="button" wire:click="closeConfirmation">
+            <x-ts-button color="red" type="button" wire:click="closeConfirmation">
                 Cancelar
             </x-ts-button>
             <x-ts-button color="red" type="button" wire:click="resetPassword"
