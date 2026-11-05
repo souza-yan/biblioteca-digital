@@ -60,6 +60,10 @@
     transition: padding var(--sidebar-speed);
 }
 
+#app-sidebar .sidebar-municipal-logo {
+    transition: padding var(--sidebar-speed), background-color 150ms;
+}
+
 #app-sidebar .sidebar-nav-link,
 #app-sidebar .sidebar-account-link {
     transition: gap var(--sidebar-speed), background-color 150ms, color 150ms;
@@ -106,6 +110,14 @@
     html.sidebar-collapsed #app-sidebar .sidebar-brand {
         padding-right: 1rem;
         padding-left: 1rem;
+    }
+
+    html.sidebar-collapsed #app-sidebar .sidebar-municipal-logo {
+        padding: 0.75rem;
+    }
+
+    html.sidebar-collapsed #app-sidebar .sidebar-municipal-logo img {
+        height: 2rem;
     }
 
     html.sidebar-collapsed #app-sidebar .sidebar-nav-link,

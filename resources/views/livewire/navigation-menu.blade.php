@@ -15,12 +15,6 @@
                     aria-label="Abrir menu principal" title="Abrir menu principal">
                     <x-ts-icon icon="bars-3" outline class="size-7" />
                 </button>
-                <a href="{{ route('dashboard') }}"
-                    class="flex items-center gap-2 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-blue-600"
-                    aria-label="Ir para a página inicial">
-                    <img src="{{ asset('images/logo_caraguatatuba.svg') }}" alt="Logo Prefeitura de Caraguatatuba"
-                        class="h-10 w-auto">
-                </a>
             </div>
             <div class="flex shrink-0 items-center gap-2 sm:gap-4">
                 <a href="{{ route('profile.show') }}"
@@ -109,5 +103,11 @@
                 </form>
             </div>
         </div>
+        <a href="{{ route('dashboard') }}" @click="closeMobileMenu()"
+            class="sidebar-municipal-logo flex shrink-0 items-center justify-center border-t border-blue-700 px-4 py-4 transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white"
+            aria-label="Ir para a página inicial">
+            <img src="{{ asset('images/logo_caraguatatuba.svg') }}" alt="Logo Prefeitura de Caraguatatuba"
+                class="h-10 w-full object-contain">
+        </a>
     </aside>
 </div>
