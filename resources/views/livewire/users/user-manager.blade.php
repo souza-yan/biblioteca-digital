@@ -73,12 +73,23 @@
                 @endphp
                 <article wire:key="user-mobile-{{ $user->id }}" class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
                     <div class="flex items-start justify-between gap-3">
-                        <div class="min-w-0">
-                            <h2 class="truncate text-base font-semibold text-slate-900">{{ $user->name }}</h2>
-                            <p class="mt-1 break-all text-sm text-slate-600">{{ $user->email }}</p>
-                            @if ($actor->isAdmin())
-                                <p class="mt-2 text-sm text-slate-500">{{ $user->schools->pluck('name')->join(' / ') ?: 'Sem escola vinculada' }}</p>
+                        <div class="flex min-w-0 items-center gap-3">
+                            @if ($user->profile_photo_path)
+                                <img src="{{ $user->profile_photo_url }}" alt="Foto de {{ $user->name }}"
+                                    class="size-12 shrink-0 rounded-full object-cover ring-2 ring-blue-100" />
+                            @else
+                                <span class="flex size-12 shrink-0 items-center justify-center rounded-full bg-blue-50 text-base font-bold text-blue-800 ring-2 ring-blue-100"
+                                    aria-label="{{ $user->name }}">
+                                    {{ str($user->name)->trim()->substr(0, 1)->upper() }}
+                                </span>
                             @endif
+                            <div class="min-w-0">
+                                <h2 class="truncate text-base font-semibold text-slate-900">{{ $user->name }}</h2>
+                                <p class="mt-1 break-all text-sm text-slate-600">{{ $user->email }}</p>
+                                @if ($actor->isAdmin())
+                                    <p class="mt-2 text-sm text-slate-500">{{ $user->schools->pluck('name')->join(' / ') ?: 'Sem escola vinculada' }}</p>
+                                @endif
+                            </div>
                         </div>
                         <div class="flex shrink-0 items-center gap-2">
                             @if ($actor->isAdmin())
