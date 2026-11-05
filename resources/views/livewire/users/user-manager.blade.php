@@ -1,19 +1,11 @@
 <div>
     <div class="mx-auto w-full max-w-screen-2xl space-y-6 px-4 py-6 sm:px-6 lg:space-y-8 lg:px-8 lg:py-8">
-        {{-- Cabeçalho contextualizado para administrador ou gestão escolar. --}}
+        {{-- Cabeçalho da listagem de professores. --}}
         <div class="mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
             <div class="min-w-0">
-                @if ($actor->isStaff())
-                    <p class="text-sm font-semibold uppercase tracking-[0.14em] text-blue-700">Gestão escolar</p>
-                @endif
                 <h1 class="text-3xl font-bold tracking-tight text-blue-800 sm:text-4xl">
                     {{ $actor->isStaff() ? 'Professores da escola' : 'Professores' }}
                 </h1>
-                @if ($actor->isStaff())
-                    <p class="mt-2 max-w-2xl text-base text-slate-500">
-                        Gerencie somente o vínculo dos professores com a sua escola. Os dados da conta continuam globais.
-                    </p>
-                @endif
             </div>
         </div>
 
@@ -72,7 +64,59 @@
             </x-ts-button>
         </div>
 
-        {{-- Professores visíveis no escopo do ator e ações autorizadas. --}}
+        {{-- Cartões no celular evitam que a tabela e suas ações comprimam a busca. --}}
+        <div class="space-y-3 md:hidden">
+            @forelse ($users as $user)
+                @php
+                    $schoolMembership = $actor->isStaff() ? $user->schools->first() : null;
+                    $localMembershipIsActive = (bool) ($schoolMembership?->pivot?->is_active ?? false);
+                @endphp
+                <article wire:key="user-mobile-{{ $user->id }}" class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+                    <div class="flex items-start justify-between gap-3">
+                        <div class="min-w-0">
+                            <h2 class="truncate text-base font-semibold text-slate-900">{{ $user->name }}</h2>
+                            <p class="mt-1 break-all text-sm text-slate-600">{{ $user->email }}</p>
+                            @if ($actor->isAdmin())
+                                <p class="mt-2 text-sm text-slate-500">{{ $user->schools->pluck('name')->join(' / ') ?: 'Sem escola vinculada' }}</p>
+                            @endif
+                        </div>
+                        <div class="flex shrink-0 items-center gap-2">
+                            @if ($actor->isAdmin())
+                                <x-ts-button color="blue" wire:click="editUser({{ $user->id }})"
+                                    aria-label="Editar usuário {{ $user->name }}" title="Editar usuário" class="!size-10 !p-0 justify-center">
+                                    <x-ts-icon icon="pencil-square" outline class="size-5 text-white" />
+                                </x-ts-button>
+                            @endif
+                            @can('resetPassword', $user)
+                                <x-ts-button color="yellow" wire:click="openPasswordResetConfirmation({{ $user->id }})"
+                                    wire:loading.attr="disabled" wire:target="openPasswordResetConfirmation"
+                                    aria-label="Redefinir a senha de {{ $user->name }}" title="Redefinir senha para o padrão"
+                                    class="!size-10 !p-0 justify-center">
+                                    <x-ts-icon icon="key" outline class="size-5 text-white" />
+                                </x-ts-button>
+                            @endcan
+                            @if (! $user->is($actor))
+                                @can('toggleActive', $user)
+                                    <x-ts-button :color="($actor->isStaff() ? $localMembershipIsActive : $user->is_active) ? 'red' : 'emerald'" wire:click="toggleActive({{ $user->id }})"
+                                        wire:loading.attr="disabled" wire:target="toggleActive({{ $user->id }})"
+                                        :aria-label="($actor->isStaff() ? $localMembershipIsActive : $user->is_active) ? 'Desativar usuário '.$user->name : 'Ativar usuário '.$user->name"
+                                        :title="($actor->isStaff() ? $localMembershipIsActive : $user->is_active) ? 'Desativar usuário' : 'Ativar usuário'" class="!size-10 !p-0 justify-center">
+                                        <x-ts-icon :icon="($actor->isStaff() ? $localMembershipIsActive : $user->is_active) ? 'no-symbol' : 'check-circle'" outline class="size-5 text-white" />
+                                    </x-ts-button>
+                                @endcan
+                            @endif
+                        </div>
+                    </div>
+                </article>
+            @empty
+                <div class="rounded-2xl border border-slate-200 bg-white px-4 py-10 text-center text-slate-600">
+                    Nenhum usuário encontrado.
+                </div>
+            @endforelse
+        </div>
+
+        {{-- A tabela completa permanece disponível a partir de telas médias. --}}
+        <div class="hidden md:block">
         <x-data-table :columns="$columns">
             @forelse ($users as $user)
                 @php
@@ -121,6 +165,7 @@
                 </x-data-table.empty-state>
             @endforelse
         </x-data-table>
+        </div>
 
         <x-pagination :paginator="$users" class="mt-4" />
 
