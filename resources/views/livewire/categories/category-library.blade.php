@@ -1,49 +1,94 @@
 <div>
+    @php($isStaff = auth()->user()?->isStaff() ?? false)
+
     <div class="mx-auto w-full max-w-screen-2xl space-y-6 px-4 py-6 sm:px-6 lg:space-y-8 lg:px-8 lg:py-8">
-        <section
-            class="relative isolate overflow-hidden rounded-2xl bg-blue-800 px-6 py-8 text-white shadow-sm sm:px-9 sm:py-10 lg:px-12 lg:py-12"
+        <section @class([
+            'relative isolate overflow-hidden rounded-2xl bg-blue-800 text-white shadow-sm sm:px-9 sm:py-10 lg:px-12 lg:py-12',
+            'px-5 py-6' => $isStaff,
+            'px-6 py-8' => ! $isStaff,
+        ])
             aria-labelledby="category-library-title">
-            <p class="text-base font-bold uppercase tracking-[0.18em] text-blue-200">Biblioteca digital</p>
-            <h1 id="category-library-title" class="mt-3 text-4xl font-bold leading-tight tracking-tight sm:text-5xl">
+            <p @class([
+                'font-bold uppercase tracking-[0.18em] text-blue-200',
+                'text-sm' => $isStaff,
+                'text-base' => ! $isStaff,
+            ])>Biblioteca digital</p>
+            <h1 id="category-library-title" @class([
+                'font-bold leading-tight tracking-tight sm:text-5xl',
+                'mt-2 text-3xl' => $isStaff,
+                'mt-3 text-4xl' => ! $isStaff,
+            ])>
                 Materiais
             </h1>
-            <p class="mt-4 max-w-2xl text-lg leading-7 text-blue-100 sm:text-xl">
+            <p @class([
+                'max-w-2xl leading-7 text-blue-100 sm:text-xl',
+                'mt-3 hidden text-base sm:block' => $isStaff,
+                'mt-4 text-lg' => ! $isStaff,
+            ])>
                 Explore os temas e encontre materiais publicados para cada categoria.
             </p>
         </section>
 
         <section class="space-y-5" aria-labelledby="available-categories-title">
             <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-                <div>
+                <div @class(['hidden sm:block' => $isStaff])>
                     <p class="text-base font-semibold uppercase tracking-[0.14em] text-blue-700">Acervo</p>
                     <h2 id="available-categories-title" class="mt-1 text-2xl font-bold text-black">
                         Explore por categoria
                     </h2>
                 </div>
                 <div class="flex w-full flex-col gap-3 sm:max-w-2xl sm:flex-row sm:items-end">
-                    <div class="flex-1">
+                    <div class="w-full sm:flex-1">
                         <x-search-field
                             model="search"
                             label="Pesquisar categorias"
                             placeholder="Nome ou descrição"
                         />
                     </div>
-                    @can('create', \App\Models\Category::class)
-                        <x-ts-button color="blue" wire:click="openCategoryCreate" class="w-full justify-center sm:w-auto">
-                            <x-ts-icon icon="folder-plus" outline class="size-5" />
-                            Nova categoria
-                        </x-ts-button>
-                    @endcan
-                    @can('create', \App\Models\Material::class)
-                        <x-ts-button color="emerald" wire:click="openMaterialCreate" class="w-full justify-center sm:w-auto">
-                            <x-ts-icon icon="document-plus" outline class="size-5" />
-                            Novo material
-                        </x-ts-button>
-                    @endcan
+                    <div class="grid grid-cols-2 gap-3 sm:flex sm:shrink-0">
+                        @can('create', \App\Models\Category::class)
+                            <x-ts-button color="blue" wire:click="openCategoryCreate" class="w-full justify-center sm:w-auto">
+                                <x-ts-icon icon="folder-plus" outline class="size-5" />
+                                Nova categoria
+                            </x-ts-button>
+                        @endcan
+                        @can('create', \App\Models\Material::class)
+                            <x-ts-button color="emerald" wire:click="openMaterialCreate" class="w-full justify-center sm:w-auto">
+                                <x-ts-icon icon="document-plus" outline class="size-5" />
+                                Novo material
+                            </x-ts-button>
+                        @endcan
+                    </div>
                 </div>
             </div>
 
-            <div class="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+            @if ($isStaff)
+                <div class="grid grid-cols-2 gap-3 md:hidden">
+                    @forelse ($categories as $category)
+                        <a wire:key="category-library-mobile-{{ $category->id }}"
+                            href="{{ route('painel.library', ['categoryFilter' => $category->getKey()]) }}"
+                            class="flex min-h-40 min-w-0 flex-col rounded-2xl border border-slate-200 bg-white p-4 shadow-sm transition hover:border-blue-300 hover:shadow-md">
+                            <span class="flex size-10 items-center justify-center rounded-xl bg-blue-50 text-blue-700">
+                                <x-ts-icon icon="folder" outline class="size-5" />
+                            </span>
+                            <span class="mt-3 line-clamp-2 text-sm font-semibold leading-5 text-slate-900">{{ $category->name }}</span>
+                            <span class="mt-auto pt-3 text-xs font-medium text-slate-500">
+                                {{ $category->published_materials_count }}
+                                {{ $category->published_materials_count === 1 ? 'material' : 'materiais' }}
+                            </span>
+                        </a>
+                    @empty
+                        <div class="col-span-2 rounded-2xl border border-dashed border-slate-300 bg-white px-4 py-10 text-center text-sm text-slate-600">
+                            Nenhuma categoria encontrada.
+                        </div>
+                    @endforelse
+                </div>
+            @endif
+
+            <div @class([
+                'grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3',
+                'hidden md:grid' => $isStaff,
+            ])>
                 @forelse ($categories as $category)
                     <a
                         wire:key="category-library-{{ $category->id }}"
