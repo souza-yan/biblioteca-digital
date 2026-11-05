@@ -11,12 +11,12 @@
     <input id="{{ $id }}" type="file" wire:model="{{ $model }}" class="sr-only"
         accept="{{ implode(',', array_map(fn ($mime) => '.'.$mime, config('materials.upload.allowed_mimes'))) }}" required
         x-on:change="selectedFileName = $event.target.files[0]?.name ?? null">
-    <div class="flex min-w-0 items-center gap-3 rounded-md border border-gray-300 bg-white p-2 text-base text-gray-700">
+    <div class="flex min-w-0 flex-col gap-2 rounded-xl border border-gray-300 bg-white p-2 text-base text-gray-700 sm:flex-row sm:items-center sm:gap-3">
         <label for="{{ $id }}"
-            class="shrink-0 cursor-pointer rounded bg-blue-50 px-3 py-2 font-semibold text-blue-700 transition hover:bg-blue-100 focus-within:ring-2 focus-within:ring-blue-600">
+            class="flex min-h-11 shrink-0 cursor-pointer items-center justify-center rounded-lg bg-blue-50 px-3 py-2 font-semibold text-blue-700 transition hover:bg-blue-100 focus-within:ring-2 focus-within:ring-blue-600">
             Selecionar arquivo
         </label>
-        <span id="{{ $id }}-selected-file" class="truncate text-gray-700" aria-live="polite"
+        <span id="{{ $id }}-selected-file" class="min-w-0 truncate px-1 text-gray-700 sm:px-0" aria-live="polite"
             x-text="selectedFileName ?? 'Nenhum arquivo selecionado'"></span>
     </div>
     @error($model)

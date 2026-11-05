@@ -110,42 +110,48 @@
 
         @can('create', \App\Models\Material::class)
             <x-ts-modal wire="showMaterialForm" title="Novo material" size="2xl" center>
-                <form id="material-library-form" wire:submit="saveMaterial" class="space-y-4">
-                    <x-ts-input wire:model="materialForm.title" label="Título *" required />
-                    <x-ts-input wire:model="materialForm.description" label="Descrição" />
-                    <x-ts-select.styled wire:key="material-category-select-{{ $activeCategories->pluck('id')->join('-') }}"
-                        wire:model="materialForm.category_id" label="Categoria *"
-                        placeholder="Selecione uma categoria ativa" :options="$activeCategories
-                            ->map(fn($category) => ['label' => $category->name, 'value' => $category->id])
-                            ->all()"
-                        select="label:label|value:value" required />
-                    <x-ts-input wire:model="materialForm.author" label="Autor *" required />
+                <form id="material-library-form" wire:submit="saveMaterial" class="space-y-5 pb-1">
+                    <fieldset class="space-y-4 rounded-xl border border-slate-200 p-4 sm:p-5">
+                        <legend class="px-1 text-sm font-semibold text-slate-800">Dados do material</legend>
+                        <x-ts-input wire:model="materialForm.title" label="Título *" required />
+                        <x-ts-input wire:model="materialForm.description" label="Descrição" />
+                        <x-ts-select.styled wire:key="material-category-select-{{ $activeCategories->pluck('id')->join('-') }}"
+                            wire:model="materialForm.category_id" label="Categoria *"
+                            placeholder="Selecione uma categoria ativa" :options="$activeCategories
+                                ->map(fn($category) => ['label' => $category->name, 'value' => $category->id])
+                                ->all()"
+                            select="label:label|value:value" required />
+                        <x-ts-input wire:model="materialForm.author" label="Autor *" required />
+                    </fieldset>
 
-                    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                        <x-form.select id="category-library-material-status" label="Status inicial" :required="true"
-                            error="materialForm.initialStatus" wire:model="materialForm.initialStatus">
-                            @foreach ($creationStatuses as $status)
-                                <option value="{{ $status->value }}">{{ $status->label() }}</option>
-                            @endforeach
-                        </x-form.select>
-                        <div class="flex items-end">
-                            <div class="w-full rounded-md border border-blue-100 bg-blue-50 px-4 py-3 text-base text-blue-900">
+                    <fieldset class="space-y-4 rounded-xl border border-slate-200 p-4 sm:p-5">
+                        <legend class="px-1 text-sm font-semibold text-slate-800">Publicação e arquivo</legend>
+                        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                            <x-form.select id="category-library-material-status" label="Status inicial" :required="true"
+                                error="materialForm.initialStatus" wire:model="materialForm.initialStatus">
+                                @foreach ($creationStatuses as $status)
+                                    <option value="{{ $status->value }}">{{ $status->label() }}</option>
+                                @endforeach
+                            </x-form.select>
+                            <div class="rounded-xl border border-blue-100 bg-blue-50 px-4 py-3 text-blue-900">
                                 <span class="font-semibold">Versão 1</span>
-                                <span class="mt-1 block text-sm text-blue-700">Definida automaticamente pelo sistema.</span>
+                                <span class="mt-1 block text-sm text-blue-700">Criada junto com o material.</span>
                             </div>
                         </div>
-                    </div>
 
-                    <x-ts-input wire:model="materialForm.change_note" label="Nota da versão (opcional)" />
-                    <x-materials.file-upload id="category-library-material-file" model="materialForm.file" :file="$materialForm->file" />
+                        <x-ts-input wire:model="materialForm.change_note" label="Nota da versão (opcional)" />
+                        <x-materials.file-upload id="category-library-material-file" model="materialForm.file" :file="$materialForm->file" />
+                    </fieldset>
                 </form>
 
                 <x-slot:footer>
-                    <x-ts-button color="slate" type="button" wire:click="closeMaterialForm">Cancelar</x-ts-button>
-                    <x-ts-button color="emerald" type="submit" form="material-library-form" wire:loading.attr="disabled" wire:target="saveMaterial">
-                        <span wire:loading.remove wire:target="saveMaterial">Salvar material</span>
-                        <span wire:loading wire:target="saveMaterial">Salvando...</span>
-                    </x-ts-button>
+                    <div class="grid w-full grid-cols-2 gap-3 sm:flex sm:justify-end">
+                        <x-ts-button color="slate" type="button" wire:click="closeMaterialForm" class="w-full justify-center sm:w-auto">Cancelar</x-ts-button>
+                        <x-ts-button color="emerald" type="submit" form="material-library-form" wire:loading.attr="disabled" wire:target="saveMaterial" class="w-full justify-center sm:w-auto">
+                            <span wire:loading.remove wire:target="saveMaterial">Salvar material</span>
+                            <span wire:loading wire:target="saveMaterial">Salvando...</span>
+                        </x-ts-button>
+                    </div>
                 </x-slot:footer>
             </x-ts-modal>
         @endcan
