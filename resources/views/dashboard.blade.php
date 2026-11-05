@@ -210,63 +210,63 @@
                 </section>
             </div>
         @elseif ($isStaff)
-            <header class="rounded-2xl bg-blue-800 px-5 py-6 text-white sm:px-7 sm:py-7">
+            <header class="rounded-2xl bg-blue-800 p-5 text-white sm:px-7 sm:py-7">
                 <div class="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
                     <div class="min-w-0">
                         <p class="text-sm font-semibold uppercase tracking-[0.14em] text-blue-200">Gestão escolar</p>
-                        <h1 class="mt-2 text-3xl font-bold tracking-tight sm:text-4xl">{{ $staffSchool?->name }}</h1>
-                        <p class="mt-2 max-w-2xl text-base text-blue-100">
+                        <h1 class="mt-1 text-2xl font-bold tracking-tight sm:mt-2 sm:text-4xl">{{ $staffSchool?->name }}</h1>
+                        <p class="mt-2 max-w-2xl text-sm text-blue-100 sm:text-base">
                             Acompanhe os professores da escola e consulte os conteúdos disponíveis na biblioteca.
                         </p>
                     </div>
-                    <div class="flex flex-wrap gap-3">
+                    <div class="grid grid-cols-1 gap-2 sm:flex sm:flex-wrap sm:gap-3">
                         <a href="{{ route('painel.users') }}"
-                            class="inline-flex items-center justify-center rounded-xl bg-white px-4 py-3 text-sm font-semibold text-blue-800 transition hover:bg-blue-50">
+                            class="inline-flex min-h-11 items-center justify-center rounded-xl bg-white px-4 py-3 text-sm font-semibold text-blue-800 transition hover:bg-blue-50">
                             Gerenciar professores
                         </a>
                         <a href="{{ route('painel.materials') }}"
-                            class="inline-flex items-center justify-center rounded-xl border border-blue-300 px-4 py-3 text-sm font-semibold text-white transition hover:bg-blue-700">
+                            class="inline-flex min-h-11 items-center justify-center rounded-xl border border-blue-300 px-4 py-3 text-sm font-semibold text-white transition hover:bg-blue-700">
                             Consultar materiais
                         </a>
                     </div>
                 </div>
             </header>
 
-            <section aria-label="Resumo da escola" class="grid grid-cols-1 gap-4 sm:grid-cols-3">
-                <article class="rounded-2xl border border-slate-200 bg-white p-5">
-                    <p class="text-sm font-semibold text-slate-500">Professores vinculados</p>
-                    <p class="mt-2 text-3xl font-bold tracking-tight text-slate-900">{{ number_format($activeUsersCount, 0, ',', '.') }}</p>
-                    <p class="mt-1 text-sm text-slate-500">vínculos ativos na escola</p>
+            <section aria-label="Resumo da escola" class="grid grid-cols-3 gap-2 sm:gap-4">
+                <article class="min-w-0 rounded-2xl border border-slate-200 bg-white p-3 text-center sm:p-5 sm:text-left">
+                    <p class="text-xs font-semibold leading-4 text-slate-500 sm:text-sm sm:leading-5">Professores vinculados</p>
+                    <p class="mt-2 text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">{{ number_format($activeUsersCount, 0, ',', '.') }}</p>
+                    <p class="mt-1 hidden text-sm text-slate-500 sm:block">vínculos ativos na escola</p>
                 </article>
-                <article class="rounded-2xl border border-slate-200 bg-white p-5">
-                    <p class="text-sm font-semibold text-slate-500">Materiais publicados</p>
-                    <p class="mt-2 text-3xl font-bold tracking-tight text-slate-900">{{ number_format($publishedMaterialsCount, 0, ',', '.') }}</p>
-                    <p class="mt-1 text-sm text-slate-500">disponíveis para consulta</p>
+                <article class="min-w-0 rounded-2xl border border-slate-200 bg-white p-3 text-center sm:p-5 sm:text-left">
+                    <p class="text-xs font-semibold leading-4 text-slate-500 sm:text-sm sm:leading-5">Materiais publicados</p>
+                    <p class="mt-2 text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">{{ number_format($publishedMaterialsCount, 0, ',', '.') }}</p>
+                    <p class="mt-1 hidden text-sm text-slate-500 sm:block">disponíveis para consulta</p>
                 </article>
-                <article class="rounded-2xl border border-slate-200 bg-white p-5">
-                    <p class="text-sm font-semibold text-slate-500">Downloads da escola</p>
-                    <p class="mt-2 text-3xl font-bold tracking-tight text-slate-900">{{ number_format($recentDownloadsCount, 0, ',', '.') }}</p>
-                    <p class="mt-1 text-sm text-slate-500">nos últimos 30 dias</p>
+                <article class="min-w-0 rounded-2xl border border-slate-200 bg-white p-3 text-center sm:p-5 sm:text-left">
+                    <p class="text-xs font-semibold leading-4 text-slate-500 sm:text-sm sm:leading-5">Downloads da escola</p>
+                    <p class="mt-2 text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">{{ number_format($recentDownloadsCount, 0, ',', '.') }}</p>
+                    <p class="mt-1 hidden text-sm text-slate-500 sm:block">nos últimos 30 dias</p>
                 </article>
             </section>
 
-            <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
-                <section class="rounded-2xl border border-slate-200 bg-white p-5 sm:p-6" aria-labelledby="staff-materials-title">
+            <div class="grid grid-cols-1 gap-4 sm:gap-6 lg:grid-cols-2">
+                <section class="rounded-2xl border border-slate-200 bg-white p-4 sm:p-6" aria-labelledby="staff-materials-title">
                     <div class="flex items-start justify-between gap-4">
                         <div>
-                            <h2 id="staff-materials-title" class="text-xl font-bold text-slate-900">Materiais mais acessados</h2>
+                            <h2 id="staff-materials-title" class="text-lg font-bold text-slate-900 sm:text-xl">Materiais mais acessados</h2>
                             <p class="mt-1 text-sm text-slate-500">Downloads feitos por pessoas atualmente vinculadas à escola.</p>
                         </div>
                         <a href="{{ route('painel.materials') }}" class="shrink-0 text-sm font-semibold text-blue-800 hover:underline">Ver materiais</a>
                     </div>
-                    <div class="mt-5 divide-y divide-slate-100">
+                    <div class="mt-4 divide-y divide-slate-100 sm:mt-5">
                         @forelse ($topDownloadedMaterials as $material)
-                            <a href="{{ route('painel.materials.show', $material) }}" class="flex items-center justify-between gap-4 py-4 first:pt-0 last:pb-0">
+                            <a href="{{ route('painel.materials.show', $material) }}" class="flex items-center justify-between gap-3 py-3 first:pt-0 last:pb-0 sm:gap-4 sm:py-4">
                                 <span class="min-w-0">
                                     <span class="block truncate font-semibold text-slate-800">{{ $material->title }}</span>
                                     <span class="mt-1 block truncate text-sm text-slate-500">{{ $material->category->name }}</span>
                                 </span>
-                                <span class="shrink-0 text-sm font-semibold text-slate-600">{{ number_format($material->downloads_count, 0, ',', '.') }}</span>
+                                <span class="shrink-0 rounded-full bg-blue-50 px-2.5 py-1 text-xs font-bold text-blue-800 sm:text-sm">{{ number_format($material->downloads_count, 0, ',', '.') }}</span>
                             </a>
                         @empty
                             <p class="py-6 text-sm text-slate-500">Ainda não há downloads registrados para esta escola.</p>
@@ -274,17 +274,17 @@
                     </div>
                 </section>
 
-                <section class="rounded-2xl border border-slate-200 bg-white p-5 sm:p-6" aria-labelledby="staff-actions-title">
-                    <h2 id="staff-actions-title" class="text-xl font-bold text-slate-900">Acesso rápido</h2>
+                <section class="rounded-2xl border border-slate-200 bg-white p-4 sm:p-6" aria-labelledby="staff-actions-title">
+                    <h2 id="staff-actions-title" class="text-lg font-bold text-slate-900 sm:text-xl">Acesso rápido</h2>
                     <p class="mt-1 text-sm text-slate-500">Tarefas disponíveis para a gestão de {{ $staffSchool?->name }}.</p>
-                    <div class="mt-5 grid gap-3">
-                        <a href="{{ route('painel.users') }}" class="flex items-center justify-between rounded-xl border border-slate-200 px-4 py-4 font-semibold text-slate-800 transition hover:border-blue-200 hover:bg-blue-50">
+                    <div class="mt-4 grid gap-2 sm:mt-5 sm:gap-3">
+                        <a href="{{ route('painel.users') }}" class="flex min-h-12 items-center justify-between rounded-xl border border-slate-200 px-4 py-3 font-semibold text-slate-800 transition hover:border-blue-200 hover:bg-blue-50 sm:py-4">
                             Professores e vínculos <span class="text-blue-800" aria-hidden="true">›</span>
                         </a>
-                        <a href="{{ route('painel.materials') }}" class="flex items-center justify-between rounded-xl border border-slate-200 px-4 py-4 font-semibold text-slate-800 transition hover:border-blue-200 hover:bg-blue-50">
+                        <a href="{{ route('painel.materials') }}" class="flex min-h-12 items-center justify-between rounded-xl border border-slate-200 px-4 py-3 font-semibold text-slate-800 transition hover:border-blue-200 hover:bg-blue-50 sm:py-4">
                             Biblioteca de materiais <span class="text-blue-800" aria-hidden="true">›</span>
                         </a>
-                        <a href="{{ route('profile.show') }}" class="flex items-center justify-between rounded-xl border border-slate-200 px-4 py-4 font-semibold text-slate-800 transition hover:border-blue-200 hover:bg-blue-50">
+                        <a href="{{ route('profile.show') }}" class="flex min-h-12 items-center justify-between rounded-xl border border-slate-200 px-4 py-3 font-semibold text-slate-800 transition hover:border-blue-200 hover:bg-blue-50 sm:py-4">
                             Dados da conta <span class="text-blue-800" aria-hidden="true">›</span>
                         </a>
                     </div>
