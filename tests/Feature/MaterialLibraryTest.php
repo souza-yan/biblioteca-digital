@@ -245,27 +245,19 @@ it('opens the selected category from the teacher category library as a filtered 
         ->assertDontSee($other->title);
 });
 
-it('preserves the category filter when opening material details from the library', function () {
+it('keeps the category filter when opening material details in the library modal', function () {
     $teacher = User::factory()->teacher()->create();
     $category = Category::factory()->create();
     $material = Material::factory()->published()->for($category)->create();
     $this->actingAs($teacher);
 
-    $filteredLibraryUrl = route('painel.library', ['categoryFilter' => $category->getKey()]);
-
-    $this->get($filteredLibraryUrl)
-        ->assertOk()
-        ->assertSee(route('painel.library.show', [
-            'material' => $material,
-            'categoryFilter' => $category->getKey(),
-        ]), false);
-
-    $this->get(route('painel.library.show', [
-        'material' => $material,
-        'categoryFilter' => $category->getKey(),
-    ]))
-        ->assertOk()
-        ->assertDontSee('Categorias');
+    Livewire::withQueryParams(['categoryFilter' => $category->getKey()])
+        ->actingAs($teacher)
+        ->test(MaterialLibrary::class)
+        ->call('openMobileMaterialDetail', $material->getKey())
+        ->assertSet('categoryFilter', (string) $category->getKey())
+        ->assertSet('showMobileMaterialDetail', true)
+        ->assertSet('mobileMaterialId', $material->getKey());
 });
 
 it('shows published material details and an enabled download link to teachers', function () {

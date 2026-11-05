@@ -1,7 +1,14 @@
 <div>
     <div class="mx-auto w-full max-w-screen-2xl space-y-6 px-4 py-6 sm:px-6 lg:space-y-8 lg:px-8 lg:py-8">
-        <div class="mb-8">
+        <div class="mb-8 flex items-center justify-between gap-4">
             <h1 class="text-3xl font-bold tracking-tight text-blue-800 sm:text-4xl">Materiais publicados</h1>
+            <button type="button" wire:click="toggleTitleSort" wire:loading.attr="disabled" wire:target="toggleTitleSort"
+                class="inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2"
+                aria-label="Ordenar materiais por título" title="Ordenar por título">
+                <x-ts-icon icon="arrows-up-down" outline class="size-4" />
+                <span class="hidden sm:inline">Título</span>
+                <span aria-hidden="true">{{ $titleSortDirection === 'asc' ? '↑' : '↓' }}</span>
+            </button>
         </div>
 
         {{-- Filtros para localizar materiais publicados. --}}
@@ -40,8 +47,7 @@
             </div>
         @endif
 
-        {{-- Cartões no celular evitam que a tabela exija rolagem horizontal. --}}
-        <div class="grid grid-cols-2 gap-3 md:hidden">
+        <div class="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
             @forelse ($materials as $material)
                 <article wire:key="published-material-mobile-{{ $material->id }}"
                     class="flex min-w-0 flex-col rounded-2xl border border-slate-200 bg-white p-3 shadow-sm">
@@ -100,76 +106,10 @@
                     </div>
                 </article>
             @empty
-                <div class="col-span-2 rounded-2xl border border-slate-200 bg-white px-4 py-10 text-center text-slate-600">
+                <div class="col-span-full rounded-2xl border border-slate-200 bg-white px-4 py-10 text-center text-slate-600">
                     <span class="text-base">Nenhum material publicado encontrado.</span>
                 </div>
             @endforelse
-        </div>
-
-        {{-- A tabela completa permanece disponível a partir de telas médias. --}}
-        <div class="hidden md:block">
-            <x-data-table :columns="[
-                ['label' => 'Prévia', 'nowrap' => true],
-                ['label' => 'Título', 'sortAction' => 'toggleTitleSort', 'sortDirection' => $titleSortDirection],
-                ['label' => 'Categoria'],
-                ['label' => 'Autor'],
-                ['label' => 'Ação', 'align' => 'right'],
-            ]">
-            @forelse ($materials as $material)
-                <tr wire:key="published-material-{{ $material->id }}">
-                    <td class="w-24 px-5 py-3">
-                        @if ($material->currentVersion)
-                            <x-materials.pdf-cover :material="$material" :version="$material->currentVersion"
-                                :alt="'Prévia de ' . $material->title" fit="contain"
-                                class="h-20 w-14 !aspect-auto rounded-lg" />
-                        @else
-                            <div class="flex h-20 w-14 items-center justify-center rounded-lg border border-slate-200 bg-slate-100 text-slate-400"
-                                aria-label="Prévia indisponível">
-                                <x-ts-icon icon="document" outline class="size-6" />
-                            </div>
-                        @endif
-                    </td>
-                    <td class="px-8 py-4 text-lg font-medium text-black">{{ $material->title }}</td>
-                    <td class="px-5 py-4 text-lg text-black">{{ $material->category->name }}</td>
-                    <td class="px-5 py-4 text-lg text-black">{{ $material->author }}</td>
-                    <td class="px-5 py-4 text-right">
-                        <div class="flex flex-row flex-nowrap items-center justify-end gap-2">
-                            @if ($isTeacher)
-                                <x-ts-button :color="$material->is_favorited ? 'yellow' : 'blue'"
-                                    wire:click.stop="toggleFavorite({{ $material->id }})"
-                                    :aria-label="$material->is_favorited ? 'Remover dos favoritos' : 'Adicionar aos favoritos'"
-                                    :title="$material->is_favorited ? 'Remover dos favoritos' : 'Adicionar aos favoritos'"
-                                    wire:loading.attr="disabled" wire:target="toggleFavorite"
-                                    class="!size-12 !p-0 shrink-0 justify-center">
-                                    @if ($material->is_favorited)
-                                        <x-ts-icon icon="bookmark" solid class="size-7 text-amber-950" />
-                                    @else
-                                        <x-ts-icon icon="bookmark" outline class="size-7 text-white" />
-                                    @endif
-                                </x-ts-button>
-                            @endif
-
-                            @if ($material->currentVersion)
-                                <x-icon-button icon="document-arrow-down" variant="success"
-                                    :href="route('downloads.show', $material)"
-                                    label="Baixar {{ $material->title }}" />
-                            @endif
-
-                            <x-icon-button icon="eye"
-                                :href="route('painel.library.show', [
-                                    'material' => $material,
-                                    'categoryFilter' => $categoryFilter ?: null,
-                                ])"
-                                label="Ver detalhes de {{ $material->title }}" />
-                        </div>
-                    </td>
-                </tr>
-            @empty
-                <x-data-table.empty-state :colspan="5">
-                    <span class="text-lg">Nenhum material publicado encontrado.</span>
-                </x-data-table.empty-state>
-            @endforelse
-            </x-data-table>
         </div>
 
         <x-ts-modal wire="showMobileMaterialDetail" size="lg" center
