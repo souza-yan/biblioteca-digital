@@ -3,6 +3,14 @@
         <article x-data="{ isPreviewOpen: false }" class="rounded-md border border-gray-200 bg-white p-4 shadow-sm sm:p-6">
             <div class="flex flex-col justify-between gap-3 sm:flex-row sm:items-start sm:gap-4">
                 <div>
+                    @if (! $isTeacher)
+                        <button type="button"
+                            class="mb-3 inline-flex items-center gap-1.5 text-sm font-semibold text-blue-700 transition hover:text-blue-900 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 sm:hidden"
+                            @click="if (window.history.length > 1) { window.history.back() } else { window.location.assign(@js(route('painel.library'))) }">
+                            <x-ts-icon icon="chevron-left" outline class="size-4" />
+                            Voltar
+                        </button>
+                    @endif
                     <h1 class="text-2xl font-bold tracking-tight text-gray-900 sm:text-3xl">{{ $material->title }}</h1>
                     @if ($isTeacher)
                         <p class="mt-1 text-sm text-gray-600 sm:text-base">Por {{ $material->author }}</p>
