@@ -86,7 +86,8 @@
             </x-data-table>
         </div>
 
-        <x-ts-modal wire="showMobileMaterialDetail" size="lg" center>
+        <x-ts-modal wire="showMobileMaterialDetail" size="lg" center
+            x-on:mobile-material-preview-closed.window="show = true">
             @include('livewire.materials.partials.mobile-material-detail', [
                 'material' => $mobileMaterial,
                 'previewUrl' => $mobilePreviewUrl,

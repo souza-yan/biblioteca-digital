@@ -78,7 +78,7 @@
             role="dialog"
             aria-modal="true"
             aria-labelledby="file-preview-title-{{ $version->getKey() }}"
-            @keydown.escape.window="isPreviewOpen = false"
+            @keydown.escape.window.capture="if (isPreviewOpen) { $event.stopImmediatePropagation(); isPreviewOpen = false; $dispatch('mobile-material-preview-closed') }"
         >
             <div class="flex h-full w-full flex-col overflow-hidden rounded-lg bg-white shadow-2xl">
                 <div class="flex shrink-0 items-center justify-between gap-4 border-b border-slate-200 px-4 py-3 sm:px-6">
@@ -88,7 +88,7 @@
                     <button
                         type="button"
                         class="inline-flex size-10 shrink-0 items-center justify-center rounded-md text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        @click="isPreviewOpen = false"
+                        @click="isPreviewOpen = false; $dispatch('mobile-material-preview-closed')"
                         aria-label="Fechar visualização"
                     >
                         <x-ts-icon icon="x-mark" outline class="size-6" />
