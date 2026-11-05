@@ -65,6 +65,34 @@ it('allows staff to browse published materials and forbids administrators from t
     Livewire::test(MaterialLibrary::class)->assertForbidden();
 });
 
+it('allows staff to edit its own published material from the library card', function () {
+    $staff = User::factory()->staffInSchool()->create();
+    $category = Category::factory()->create(['is_active' => true]);
+    $material = Material::factory()->published()->for($category)->create([
+        'created_by' => $staff->getKey(),
+        'title' => 'Material original',
+        'author' => 'Autoria original',
+    ]);
+
+    Livewire::actingAs($staff)
+        ->test(MaterialLibrary::class)
+        ->call('openEditMaterial', $material->getKey())
+        ->assertSet('showEditForm', true)
+        ->assertSee('Editar material')
+        ->set('editForm.title', 'Material atualizado')
+        ->set('editForm.author', 'Autoria atualizada')
+        ->set('editForm.category_id', (string) $category->getKey())
+        ->call('saveEditMaterial')
+        ->assertHasNoErrors()
+        ->assertSet('showEditForm', false);
+
+    $this->assertDatabaseHas('materials', [
+        'id' => $material->getKey(),
+        'title' => 'Material atualizado',
+        'author' => 'Autoria atualizada',
+    ]);
+});
+
 it('filters the teacher library by search and category', function () {
     $teacher = User::factory()->teacher()->create();
     $category = Category::factory()->create();

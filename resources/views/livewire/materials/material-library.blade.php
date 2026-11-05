@@ -80,16 +80,25 @@
 
                         @if (! $isTeacher)
                             @can('update', $material)
-                                <x-icon-button icon="pencil-square"
+                                <x-icon-button icon="arrow-up-tray"
                                     :href="route('painel.library.show', ['material' => $material, 'categoryFilter' => $categoryFilter ?: null])"
+                                    label="Gerenciar versões de {{ $material->title }}" class="!size-9 [&_svg]:!size-5" />
+                                <x-icon-button icon="pencil-square" wire:click="openEditMaterial({{ $material->id }})"
+                                    wire:loading.attr="disabled" wire:target="openEditMaterial({{ $material->id }})"
                                     label="Editar {{ $material->title }}" class="!size-9 [&_svg]:!size-5" />
                             @endcan
+                            @cannot('update', $material)
+                                <x-icon-button icon="eye" wire:click="openMobileMaterialDetail({{ $material->id }})"
+                                    wire:loading.attr="disabled"
+                                    wire:target="openMobileMaterialDetail({{ $material->id }})"
+                                    label="Ver detalhes de {{ $material->title }}" class="!size-9 [&_svg]:!size-5" />
+                            @endcannot
+                        @else
+                            <x-icon-button icon="eye" wire:click="openMobileMaterialDetail({{ $material->id }})"
+                                wire:loading.attr="disabled"
+                                wire:target="openMobileMaterialDetail({{ $material->id }})"
+                                label="Ver detalhes de {{ $material->title }}" class="!size-9 [&_svg]:!size-5" />
                         @endif
-
-                        <x-icon-button icon="eye" wire:click="openMobileMaterialDetail({{ $material->id }})"
-                            wire:loading.attr="disabled"
-                            wire:target="openMobileMaterialDetail({{ $material->id }})"
-                            label="Ver detalhes de {{ $material->title }}" class="!size-9 [&_svg]:!size-5" />
                     </div>
                 </article>
             @empty
@@ -188,6 +197,33 @@
                             :href="route('downloads.show', $mobileMaterial)"
                             label="Baixar {{ $mobileMaterial->title }}" />
                     @endif
+                </div>
+            </x-slot:footer>
+        </x-ts-modal>
+
+        <x-ts-modal wire="showEditForm" title="Editar material" size="xl" center>
+            <form id="library-material-edit-form" wire:submit="saveEditMaterial" class="space-y-4 pb-1">
+                <x-ts-input wire:model="editForm.title" label="Título *" required />
+                <x-ts-input wire:model="editForm.author" label="Autor *" required />
+                <x-ts-select.styled wire:key="library-material-category-select-{{ $activeCategories->pluck('id')->join('-') }}"
+                    wire:model="editForm.category_id" label="Categoria *"
+                    placeholder="Busque e selecione uma categoria" searchable :options="$activeCategories
+                        ->map(fn($category) => ['label' => $category->name, 'value' => $category->id])
+                        ->all()"
+                    select="label:label|value:value" required />
+                <x-ts-input wire:model="editForm.description" label="Descrição" />
+            </form>
+
+            <x-slot:footer>
+                <div class="grid w-full grid-cols-2 gap-3 sm:flex sm:justify-end">
+                    <x-ts-button color="red" type="button" wire:click="closeEditMaterial" class="w-full justify-center sm:w-auto">
+                        Cancelar
+                    </x-ts-button>
+                    <x-ts-button color="blue" type="submit" form="library-material-edit-form"
+                        wire:loading.attr="disabled" wire:target="saveEditMaterial" class="w-full justify-center sm:w-auto">
+                        <span wire:loading.remove wire:target="saveEditMaterial">Salvar alterações</span>
+                        <span wire:loading wire:target="saveEditMaterial">Salvando...</span>
+                    </x-ts-button>
                 </div>
             </x-slot:footer>
         </x-ts-modal>
