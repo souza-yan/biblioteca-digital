@@ -250,18 +250,43 @@
                     <form wire:submit="saveVersion"
                     class="mt-6 space-y-5 rounded-2xl border border-slate-200 bg-slate-50/60 p-4 sm:mt-8 sm:p-6">
 
-                    <div class="flex items-center gap-3">
-                        <span class="flex size-10 shrink-0 items-center justify-center rounded-xl bg-blue-100 text-blue-700">
-                            <x-ts-icon icon="arrow-up-tray" outline class="size-5" />
-                        </span>
-                        <div>
-                            <h3 class="text-base font-semibold text-slate-900">Enviar nova versão</h3>
-                            <p class="mt-0.5 text-sm text-slate-600">O arquivo atual será substituído sem apagar o histórico.</p>
-                        </div>
+                    <div class="sm:hidden"
+                        x-data="{ selectedFileName: @js($versionForm->file instanceof \Livewire\Features\SupportFileUploads\TemporaryUploadedFile ? $versionForm->file->getClientOriginalName() : null) }">
+                        <input id="version-file-mobile" type="file" wire:model="versionForm.file" class="sr-only"
+                            accept="{{ implode(',', array_map(fn ($mime) => '.'.$mime, config('materials.upload.allowed_mimes'))) }}"
+                            required x-on:change="selectedFileName = $event.target.files[0]?.name ?? null">
+                        <label for="version-file-mobile"
+                            class="flex cursor-pointer items-center gap-3 rounded-xl border border-blue-200 bg-blue-50 p-4 text-left transition hover:border-blue-400 hover:bg-blue-100 focus-within:ring-2 focus-within:ring-blue-600">
+                            <span class="flex size-11 shrink-0 items-center justify-center rounded-xl bg-white text-blue-700 shadow-sm">
+                                <x-ts-icon icon="arrow-up-tray" outline class="size-5" />
+                            </span>
+                            <span class="min-w-0">
+                                <span class="block text-base font-semibold text-slate-900">Enviar nova versão</span>
+                                <span x-show="! selectedFileName" class="mt-0.5 block text-sm text-slate-600">
+                                    Toque para selecionar o arquivo
+                                </span>
+                                <span x-show="selectedFileName" x-cloak class="mt-0.5 block truncate text-sm font-medium text-blue-800"
+                                    x-text="selectedFileName"></span>
+                            </span>
+                        </label>
+                        @error('versionForm.file')
+                            <p class="mt-1.5 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
                     </div>
 
-                    <div>
-                        <x-materials.file-upload id="version-file" model="versionForm.file" :file="$versionForm->file" />
+                    <div class="hidden sm:block">
+                        <div class="flex items-center gap-3">
+                            <span class="flex size-10 shrink-0 items-center justify-center rounded-xl bg-blue-100 text-blue-700">
+                                <x-ts-icon icon="arrow-up-tray" outline class="size-5" />
+                            </span>
+                            <div>
+                                <h3 class="text-base font-semibold text-slate-900">Enviar nova versão</h3>
+                                <p class="mt-0.5 text-sm text-slate-600">O arquivo atual será substituído sem apagar o histórico.</p>
+                            </div>
+                        </div>
+                        <div class="mt-5">
+                            <x-materials.file-upload id="version-file" model="versionForm.file" :file="$versionForm->file" />
+                        </div>
                     </div>
 
                     <div>
