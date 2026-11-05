@@ -11,13 +11,13 @@
     <input id="{{ $id }}" type="file" wire:model="{{ $model }}" class="sr-only"
         accept="{{ implode(',', array_map(fn ($mime) => '.'.$mime, config('materials.upload.allowed_mimes'))) }}" required
         x-on:change="selectedFileName = $event.target.files[0]?.name ?? null">
-    <div class="flex min-w-0 flex-col gap-2 rounded-xl border border-gray-300 bg-white p-2 text-base text-gray-700 sm:flex-row sm:items-center sm:gap-3">
+    <div class="rounded-xl border border-gray-300 bg-white p-2 text-base text-gray-700">
         <label for="{{ $id }}"
-            class="flex min-h-11 shrink-0 cursor-pointer items-center justify-center rounded-lg bg-blue-50 px-3 py-2 font-semibold text-blue-700 transition hover:bg-blue-100 focus-within:ring-2 focus-within:ring-blue-600">
-            Selecionar arquivo
+            class="flex min-h-11 cursor-pointer items-center justify-center rounded-lg px-3 py-2 font-semibold transition focus-within:ring-2 focus-within:ring-blue-600"
+            x-bind:class="selectedFileName ? 'bg-slate-100 text-slate-700 hover:bg-slate-200' : 'bg-blue-50 text-blue-700 hover:bg-blue-100'">
+            <span x-text="selectedFileName ? 'Trocar arquivo' : 'Selecionar arquivo'"></span>
         </label>
-        <span id="{{ $id }}-selected-file" class="min-w-0 truncate px-1 text-gray-700 sm:px-0" aria-live="polite"
-            x-text="selectedFileName ?? 'Nenhum arquivo selecionado'"></span>
+        <p x-show="! selectedFileName" class="px-1 pt-2 text-sm text-gray-500">Nenhum arquivo selecionado</p>
     </div>
     @error($model)
         <p class="mt-1 text-base text-red-600">{{ $message }}</p>
