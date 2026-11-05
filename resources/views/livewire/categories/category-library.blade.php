@@ -115,7 +115,7 @@
                     <x-ts-input wire:model="materialForm.description" label="Descrição" />
                     <x-ts-select.styled wire:key="material-category-select-{{ $activeCategories->pluck('id')->join('-') }}"
                         wire:model="materialForm.category_id" label="Categoria *"
-                        placeholder="Selecione uma categoria ativa" :options="$activeCategories
+                        placeholder="Busque e selecione uma categoria" searchable :options="$activeCategories
                             ->map(fn($category) => ['label' => $category->name, 'value' => $category->id])
                             ->all()"
                         select="label:label|value:value" required />
