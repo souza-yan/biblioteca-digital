@@ -1,4 +1,10 @@
 <div>
+    @php
+        $displayName = $currentUser->isTeacher()
+            ? \Illuminate\Support\Str::before($currentUser->name, ' - ')
+            : $currentUser->name;
+    @endphp
+
     {{-- Cabeçalho global: abre o drawer no mobile e mantém os atalhos da conta visíveis. --}}
     <header id="app-header" class="border-b border-slate-200 bg-white">
         <div class="flex h-full items-center justify-between gap-3 px-4 sm:px-6">
@@ -19,7 +25,7 @@
             <div class="flex shrink-0 items-center gap-2 sm:gap-4">
                 <a href="{{ route('profile.show') }}"
                     class="flex items-center gap-2 rounded-xl p-1.5 text-left transition hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-blue-600"
-                    aria-label="Abrir perfil de {{ $currentUser->name }}">
+                    aria-label="Abrir perfil de {{ $displayName }}">
                     @if ($currentUser->profile_photo_path)
                         <img src="{{ $currentUser->profile_photo_url }}" alt="{{ $currentUser->name }}"
                             class="size-10 shrink-0 rounded-full object-cover">
@@ -29,7 +35,7 @@
                         </span>
                     @endif
                     <span class="hidden min-w-0 max-w-72 sm:block">
-                        <span class="block truncate text-base font-semibold text-slate-800">{{ $currentUser->name }}</span>
+                        <span class="block truncate text-base font-semibold text-slate-800">{{ $displayName }}</span>
                         <span class="block truncate text-sm text-slate-500"
                             @if ($staffSchool) title="{{ $roleLabel }} · {{ $staffSchool->name }}" @endif>
                             {{ $roleLabel }}@if ($staffSchool)<span class="px-1" aria-hidden="true">·</span><span class="font-medium text-blue-800">{{ $staffSchool->name }}</span>@endif
