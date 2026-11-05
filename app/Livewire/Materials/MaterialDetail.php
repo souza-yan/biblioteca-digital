@@ -4,15 +4,10 @@ namespace App\Livewire\Materials;
 
 use App\Actions\Activity\LogActivity;
 use App\Actions\Favorite\ToggleFavorite;
-use App\Actions\Material\ArchiveMaterial;
-use App\Actions\Material\PublishMaterial;
-use App\Actions\Material\UpdateMaterial;
 use App\Actions\MaterialVersion\CreateMaterialVersion;
 use App\Enums\ActivityAction;
 use App\Livewire\Concerns\InteractsWithCurrentUser;
-use App\Livewire\Forms\MaterialForm;
 use App\Livewire\Forms\MaterialVersionForm;
-use App\Models\Category;
 use App\Models\Material;
 use App\Models\MaterialVersion;
 use Illuminate\Contracts\View\View;
@@ -31,11 +26,7 @@ class MaterialDetail extends Component
     use InteractsWithCurrentUser;
     use WithFileUploads;
 
-    public MaterialForm $materialForm;
-
     public MaterialVersionForm $versionForm;
-
-    public bool $showEditForm = false;
 
     #[Locked]
     public int $materialId;
@@ -54,87 +45,6 @@ class MaterialDetail extends Component
                 $viewableMaterial,
             );
         }
-    }
-
-    public function publish(PublishMaterial $publishMaterial): void
-    {
-        $actor = $this->currentUser();
-
-        $material = $this->findViewableMaterial();
-        Gate::authorize('publish', $material);
-
-        if (! $material->currentVersion()->exists()) {
-            $this->addError('publish', 'O material precisa ter uma versão atual para ser publicado.');
-
-            return;
-        }
-
-        $publishMaterial->handle($actor, $material);
-
-        $this->toast()
-            ->success('Material publicado!', 'O material já está disponível na biblioteca.')
-            ->send();
-    }
-
-    public function archive(ArchiveMaterial $archiveMaterial): void
-    {
-        $actor = $this->currentUser();
-
-        $material = $this->findViewableMaterial();
-        Gate::authorize('archive', $material);
-
-        $archiveMaterial->handle($actor, $material);
-
-        $this->toast()
-            ->success('Material arquivado!', 'O material foi arquivado com sucesso.')
-            ->send();
-    }
-
-    public function openEditForm(): void
-    {
-        $material = $this->findViewableMaterial();
-        Gate::authorize('update', $material);
-
-        $this->materialForm->reset();
-        $this->materialForm->materialId = $material->getKey();
-        $this->materialForm->title = $material->title;
-        $this->materialForm->description = $material->description ?? '';
-        $this->materialForm->category_id = (string) $material->category_id;
-        $this->materialForm->type = $material->type;
-        $this->materialForm->author = $material->author;
-        $this->resetValidation();
-        $this->showEditForm = true;
-    }
-
-    public function closeEditForm(): void
-    {
-        $material = $this->findViewableMaterial();
-        Gate::authorize('update', $material);
-
-        $this->materialForm->reset();
-        $this->resetValidation();
-        $this->showEditForm = false;
-    }
-
-    public function saveMaterial(UpdateMaterial $updateMaterial): void
-    {
-        $actor = $this->currentUser();
-        $material = $this->findViewableMaterial();
-        Gate::authorize('update', $material);
-
-        $this->materialForm->materialId = $material->getKey();
-        $this->materialForm->type = $material->type;
-        $attributes = $this->materialForm->validate();
-
-        $updateMaterial->handle($actor, $material, $attributes);
-
-        $this->materialForm->reset();
-        $this->resetValidation();
-        $this->showEditForm = false;
-
-        $this->toast()
-            ->success('Material atualizado!', 'As alterações foram salvas corretamente.')
-            ->send();
     }
 
     public function toggleFavorite(ToggleFavorite $toggleFavorite): void
@@ -205,7 +115,6 @@ class MaterialDetail extends Component
         $material = $this->findViewableMaterial();
         $actor = $this->currentUser();
         $canManageVersions = Gate::allows('create', [MaterialVersion::class, $material]);
-        $canEditMaterial = Gate::allows('update', $material);
         $canViewVersionHistory = $actor->isAdmin() || $actor->isStaff();
         $isFavorited = $actor->isTeacher()
             && $actor->favorites()->whereKey($material->getKey())->exists();
@@ -227,11 +136,7 @@ class MaterialDetail extends Component
                 : route('previews.show', $material),
             'isFavorited' => $isFavorited,
             'canManageVersions' => $canManageVersions,
-            'canEditMaterial' => $canEditMaterial,
             'canViewVersionHistory' => $canViewVersionHistory,
-            'activeCategories' => $canEditMaterial
-                ? Category::query()->where('is_active', true)->orderBy('name')->get(['id', 'name'])
-                : collect(),
             'versions' => $versions,
         ]);
     }

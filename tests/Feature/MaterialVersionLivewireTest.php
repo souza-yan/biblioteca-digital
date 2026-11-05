@@ -1,7 +1,6 @@
 <?php
 
 use App\Livewire\Materials\MaterialDetail;
-use App\Models\Category;
 use App\Models\Material;
 use App\Models\MaterialVersion;
 use App\Models\User;
@@ -103,33 +102,17 @@ it('uses the material upload mimes and maximum on temporary Livewire uploads', f
         ->toContain('max:'.config('materials.upload.max_size_kilobytes'));
 });
 
-it('allows an admin to edit material data from its detail page', function () {
+it('keeps material detail focused on version management for administrators', function () {
     $admin = User::factory()->admin()->create();
-    $material = Material::factory()->create(['title' => 'Título anterior']);
-    $category = Category::factory()->create();
+    $material = Material::factory()->create();
 
     Livewire::actingAs($admin)
         ->test(MaterialDetail::class, ['material' => $material])
-        ->call('openEditForm')
-        ->assertSet('showEditForm', true)
-        ->assertSee('Editar material')
-        ->assertSee('id="detail-material-form"', false)
-        ->set('materialForm.title', 'Título atualizado nos detalhes')
-        ->set('materialForm.author', 'Equipe atualizada')
-        ->set('materialForm.category_id', (string) $category->getKey())
-        ->call('saveMaterial')
-        ->assertHasNoErrors()
-        ->assertSet('showEditForm', false);
-
-    $this->assertDatabaseHas('materials', [
-        'id' => $material->getKey(),
-        'title' => 'Título atualizado nos detalhes',
-        'author' => 'Equipe atualizada',
-        'category_id' => $category->getKey(),
-    ]);
+        ->assertSee('Enviar nova versão')
+        ->assertDontSee('Editar material');
 });
 
-it('allows staff to edit material details it created', function () {
+it('keeps version upload available to the material creator in management', function () {
     $staff = User::factory()->staffInSchool()->create();
     $material = Material::factory()->published()->create([
         'created_by' => $staff->getKey(),
@@ -137,9 +120,8 @@ it('allows staff to edit material details it created', function () {
 
     Livewire::actingAs($staff)
         ->test(MaterialDetail::class, ['material' => $material])
-        ->assertSee('Editar material')
-        ->call('openEditForm')
-        ->assertSet('showEditForm', true);
+        ->assertSee('Enviar nova versão')
+        ->assertDontSee('Editar material');
 });
 
 it('shows management links only to admins and staff and library to teachers', function () {

@@ -303,13 +303,7 @@ it('allows staff to view global material details without managing materials from
     Livewire::test(MaterialDetail::class, ['material' => $material])
         ->assertSee($material->title)
         ->assertDontSee('Editar material')
-        ->assertDontSee('Arquivar material');
-
-    Livewire::test(MaterialDetail::class, ['material' => $material])
-        ->call('archive')
-        ->assertForbidden();
-
-    expect($material->fresh()->status)->toBe(MaterialStatus::PUBLISHED);
+        ->assertDontSee('Enviar nova versão');
 });
 
 it('forbids teachers from viewing unpublished material details', function (MaterialStatus $status) {

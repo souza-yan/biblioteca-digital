@@ -39,25 +39,8 @@
                         </button>
                     @endif
 
-                    @if ($canManageVersions)
-                        <x-ts-button color="blue" wire:click="openEditForm" aria-label="Editar material"
-                            title="Editar material" class="!size-10 sm:!size-12 !p-0 shrink-0 justify-center">
-                            <x-ts-icon icon="pencil-square" outline class="size-6 sm:size-7 text-white" />
-                        </x-ts-button>
-
-                        @if ($material->status !== \App\Enums\MaterialStatus::PUBLISHED)
-                            <x-ts-button color="emerald" wire:click="publish" aria-label="Publicar material"
-                                title="Publicar material" class="!size-10 sm:!size-12 !p-0 shrink-0 justify-center">
-                                <x-ts-icon icon="cloud-arrow-up" outline class="size-6 sm:size-7 text-white" />
-                            </x-ts-button>
-                        @endif
-                    @endif
                 </div>
             </div>
-
-            @error('publish')
-                <p class="mt-4 rounded border border-red-200 bg-red-50 p-3 text-base text-red-700">{{ $message }}</p>
-            @enderror
 
             <dl class="mt-4 grid grid-cols-1 gap-2 border-t border-gray-100 pt-4 sm:mt-6 sm:gap-4 sm:pt-5 sm:grid-cols-2">
                 <div>
@@ -91,48 +74,6 @@
                 ])
             @endif
         </article>
-
-        {{-- Edição dos metadados sem deslocar a leitura da ficha do material. --}}
-        @if ($canEditMaterial)
-            <x-ts-modal wire="showEditForm" title="Editar material" size="2xl" center>
-                <form id="detail-material-form" wire:submit="saveMaterial" class="space-y-5 pb-1">
-                    <div class="rounded-2xl border border-slate-200 bg-slate-50/70 p-4 sm:bg-transparent sm:p-0">
-                        <p class="mb-4 text-sm font-semibold text-slate-700 sm:hidden">Dados do material</p>
-                        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                            <x-form.input id="detail-material-title" label="Título" :required="true"
-                                error="materialForm.title" wire:model="materialForm.title" />
-                            <x-form.input id="detail-material-author" label="Autor" :required="true"
-                                error="materialForm.author" wire:model="materialForm.author" />
-                            <div class="sm:col-span-2">
-                                <x-ts-select.styled wire:key="detail-material-category-select-{{ $activeCategories->pluck('id')->join('-') }}"
-                                    wire:model="materialForm.category_id" label="Categoria *"
-                                    placeholder="Busque e selecione uma categoria" searchable :options="$activeCategories
-                                        ->map(fn($category) => ['label' => $category->name, 'value' => $category->id])
-                                        ->all()"
-                                    select="label:label|value:value" required />
-                            </div>
-                            <div class="sm:col-span-2">
-                                <x-form.input id="detail-material-description" label="Descrição"
-                                    error="materialForm.description" wire:model="materialForm.description" />
-                            </div>
-                        </div>
-                    </div>
-                </form>
-
-                <x-slot:footer>
-                    <x-ts-button color="red" type="button" wire:click="closeEditForm" class="w-full justify-center sm:w-auto">
-                        Cancelar
-                    </x-ts-button>
-                    <x-ts-button color="blue" type="submit" form="detail-material-form"
-                        wire:loading.attr="disabled" wire:target="saveMaterial" class="w-full justify-center sm:w-auto">
-                        <span wire:loading.remove wire:target="saveMaterial">Salvar alterações</span>
-                        <span wire:loading wire:target="saveMaterial">Salvando...</span>
-                    </x-ts-button>
-                </x-slot:footer>
-            </x-ts-modal>
-        @endif
-
-        {{-- O restante do arquivo continua igual abaixo... --}}
 
         @if ($canViewVersionHistory)
             <section class="mt-6 flex flex-col rounded-md border border-gray-200 bg-white p-4 shadow-sm sm:p-6">
