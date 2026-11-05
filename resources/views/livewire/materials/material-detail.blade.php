@@ -102,30 +102,36 @@
         {{-- Edição dos metadados sem deslocar a leitura da ficha do material. --}}
         @if ($canEditMaterial)
             <x-ts-modal wire="showEditForm" title="Editar material" size="2xl" center>
-                <form id="detail-material-form" wire:submit="saveMaterial" class="space-y-4">
-                    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                        <x-form.input id="detail-material-title" label="Título" :required="true"
-                            error="materialForm.title" wire:model="materialForm.title" />
-                        <x-form.input id="detail-material-author" label="Autor" :required="true"
-                            error="materialForm.author" wire:model="materialForm.author" />
-                        <x-form.select id="detail-material-category" label="Categoria" :required="true"
-                            error="materialForm.category_id" wire:model="materialForm.category_id">
-                            <option value="">Selecione uma categoria ativa</option>
-                            @foreach ($activeCategories as $category)
-                                <option value="{{ $category->id }}">{{ $category->name }}</option>
-                            @endforeach
-                        </x-form.select>
-                        <x-form.input id="detail-material-description" label="Descrição"
-                            error="materialForm.description" wire:model="materialForm.description" />
+                <form id="detail-material-form" wire:submit="saveMaterial" class="space-y-5 pb-1">
+                    <div class="rounded-2xl border border-slate-200 bg-slate-50/70 p-4 sm:bg-transparent sm:p-0">
+                        <p class="mb-4 text-sm font-semibold text-slate-700 sm:hidden">Dados do material</p>
+                        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                            <x-form.input id="detail-material-title" label="Título" :required="true"
+                                error="materialForm.title" wire:model="materialForm.title" />
+                            <x-form.input id="detail-material-author" label="Autor" :required="true"
+                                error="materialForm.author" wire:model="materialForm.author" />
+                            <div class="sm:col-span-2">
+                                <x-ts-select.styled wire:key="detail-material-category-select-{{ $activeCategories->pluck('id')->join('-') }}"
+                                    wire:model="materialForm.category_id" label="Categoria *"
+                                    placeholder="Busque e selecione uma categoria" searchable :options="$activeCategories
+                                        ->map(fn($category) => ['label' => $category->name, 'value' => $category->id])
+                                        ->all()"
+                                    select="label:label|value:value" required />
+                            </div>
+                            <div class="sm:col-span-2">
+                                <x-form.input id="detail-material-description" label="Descrição"
+                                    error="materialForm.description" wire:model="materialForm.description" />
+                            </div>
+                        </div>
                     </div>
                 </form>
 
                 <x-slot:footer>
-                    <x-ts-button color="red" type="button" wire:click="closeEditForm">
+                    <x-ts-button color="red" type="button" wire:click="closeEditForm" class="w-full justify-center sm:w-auto">
                         Cancelar
                     </x-ts-button>
                     <x-ts-button color="blue" type="submit" form="detail-material-form"
-                        wire:loading.attr="disabled" wire:target="saveMaterial">
+                        wire:loading.attr="disabled" wire:target="saveMaterial" class="w-full justify-center sm:w-auto">
                         <span wire:loading.remove wire:target="saveMaterial">Salvar alterações</span>
                         <span wire:loading wire:target="saveMaterial">Salvando...</span>
                     </x-ts-button>
@@ -139,7 +145,7 @@
             <section class="mt-6 rounded-md border border-gray-200 bg-white p-6 shadow-sm">
                 <h2 class="text-lg font-semibold text-gray-900">Versões</h2>
 
-                <div class="mt-4 overflow-x-auto">
+                <div class="mt-4 hidden overflow-x-auto sm:block">
                     <table class="min-w-full divide-y divide-gray-200">
                         <thead class="bg-gray-50">
                             <tr>
@@ -200,12 +206,58 @@
                     </table>
                 </div>
 
+                <div class="mt-4 space-y-3 sm:hidden">
+                    @forelse ($versions as $version)
+                        <article wire:key="material-version-mobile-{{ $version->id }}"
+                            class="rounded-xl border border-slate-200 bg-slate-50/70 p-4">
+                            <div class="flex items-start justify-between gap-3">
+                                <div class="min-w-0">
+                                    <p class="text-sm font-semibold text-slate-900">Versão {{ $version->version_number }}</p>
+                                    <p class="mt-1 truncate text-sm text-slate-600" title="{{ $version->original_name }}">
+                                        {{ $version->original_name }}
+                                    </p>
+                                </div>
+                                @if ($version->isNot($material->currentVersion)
+                                    && in_array($version->mime_type, ['application/pdf', 'image/png', 'image/jpeg', 'image/webp', 'image/gif', 'text/plain', 'video/mp4', 'video/webm', 'audio/mpeg'], true))
+                                    <x-ts-button color="blue" href="{{ route('previews.version', [$material, $version]) }}"
+                                        aria-label="Ver prévia da versão {{ $version->version_number }}" title="Ver prévia"
+                                        class="!size-10 !p-0 shrink-0 justify-center">
+                                        <x-ts-icon icon="eye" outline class="size-5 text-white" />
+                                    </x-ts-button>
+                                @endif
+                            </div>
+                            <div class="mt-3 flex flex-wrap items-center gap-2 text-xs text-slate-600">
+                                <span class="rounded-full bg-slate-200 px-2.5 py-1 font-semibold text-slate-700">
+                                    {{ strtoupper(pathinfo($version->original_name, PATHINFO_EXTENSION) ?: 'ARQ') }}
+                                </span>
+                                <span>{{ number_format($version->size / 1024, 1, ',', '.') }} KB</span>
+                                <span>{{ $version->created_at?->format('d/m/Y') }}</span>
+                            </div>
+                            @if ($version->change_note)
+                                <p class="mt-3 border-t border-slate-200 pt-3 text-sm leading-5 text-slate-600">
+                                    {{ $version->change_note }}
+                                </p>
+                            @endif
+                        </article>
+                    @empty
+                        <p class="rounded-xl border border-dashed border-slate-300 px-4 py-6 text-center text-sm text-slate-500">
+                            Nenhuma versão enviada.
+                        </p>
+                    @endforelse
+                </div>
+
                 @if ($canManageVersions)
                     <form wire:submit="saveVersion"
-                    class="mt-8 space-y-5 rounded-2xl border border-slate-200 bg-slate-50/60 p-5 sm:p-6">
+                    class="mt-6 space-y-5 rounded-2xl border border-slate-200 bg-slate-50/60 p-4 sm:mt-8 sm:p-6">
 
-                    <div>
-                        <h3 class="text-base font-semibold text-slate-900">Enviar nova versão</h3>
+                    <div class="flex items-center gap-3">
+                        <span class="flex size-10 shrink-0 items-center justify-center rounded-xl bg-blue-100 text-blue-700">
+                            <x-ts-icon icon="arrow-up-tray" outline class="size-5" />
+                        </span>
+                        <div>
+                            <h3 class="text-base font-semibold text-slate-900">Enviar nova versão</h3>
+                            <p class="mt-0.5 text-sm text-slate-600">O arquivo atual será substituído sem apagar o histórico.</p>
+                        </div>
                     </div>
 
                     <div>
@@ -230,7 +282,8 @@
                     </div>
 
                     <div class="flex justify-end border-t border-slate-200 pt-4">
-                        <x-ts-button color="blue" type="submit" class="w-full sm:w-auto">
+                        <x-ts-button color="blue" type="submit" class="w-full justify-center sm:w-auto"
+                            wire:loading.attr="disabled" wire:target="saveVersion">
                             Salvar versão
                         </x-ts-button>
                     </div>
