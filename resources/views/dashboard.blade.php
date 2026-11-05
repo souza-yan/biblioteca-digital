@@ -255,7 +255,6 @@
                     <div class="flex items-start justify-between gap-4">
                         <div>
                             <h2 id="staff-materials-title" class="text-lg font-bold text-slate-900 sm:text-xl">Materiais mais acessados</h2>
-                            <p class="mt-1 text-sm text-slate-500">Downloads feitos por pessoas atualmente vinculadas à escola.</p>
                         </div>
                         <a href="{{ route('painel.materials') }}" class="shrink-0 text-sm font-semibold text-blue-800 hover:underline">Ver materiais</a>
                     </div>
@@ -276,16 +275,27 @@
 
                 <section class="rounded-2xl border border-slate-200 bg-white p-4 sm:p-6" aria-labelledby="staff-actions-title">
                     <h2 id="staff-actions-title" class="text-lg font-bold text-slate-900 sm:text-xl">Acesso rápido</h2>
-                    <p class="mt-1 text-sm text-slate-500">Tarefas disponíveis para a gestão de {{ $staffSchool?->name }}.</p>
-                    <div class="mt-4 grid gap-2 sm:mt-5 sm:gap-3">
-                        <a href="{{ route('painel.users') }}" class="flex min-h-12 items-center justify-between rounded-xl border border-slate-200 px-4 py-3 font-semibold text-slate-800 transition hover:border-blue-200 hover:bg-blue-50 sm:py-4">
-                            Professores e vínculos <span class="text-blue-800" aria-hidden="true">›</span>
+                    <div class="mt-4 grid grid-cols-3 gap-2 sm:mt-5 sm:gap-3">
+                        <a href="{{ route('painel.users') }}"
+                            class="flex min-h-28 flex-col items-center justify-center gap-2 rounded-xl border border-slate-200 p-3 text-center text-xs font-semibold text-slate-800 transition hover:border-blue-200 hover:bg-blue-50 sm:min-h-32 sm:text-sm">
+                            <span class="flex size-10 items-center justify-center rounded-xl bg-blue-50 text-blue-800">
+                                <x-ts-icon icon="users" outline class="size-5" />
+                            </span>
+                            <span>Professores e vínculos</span>
                         </a>
-                        <a href="{{ route('painel.materials') }}" class="flex min-h-12 items-center justify-between rounded-xl border border-slate-200 px-4 py-3 font-semibold text-slate-800 transition hover:border-blue-200 hover:bg-blue-50 sm:py-4">
-                            Biblioteca de materiais <span class="text-blue-800" aria-hidden="true">›</span>
+                        <a href="{{ route('painel.materials') }}"
+                            class="flex min-h-28 flex-col items-center justify-center gap-2 rounded-xl border border-slate-200 p-3 text-center text-xs font-semibold text-slate-800 transition hover:border-blue-200 hover:bg-blue-50 sm:min-h-32 sm:text-sm">
+                            <span class="flex size-10 items-center justify-center rounded-xl bg-emerald-50 text-emerald-700">
+                                <x-ts-icon icon="book-open" outline class="size-5" />
+                            </span>
+                            <span>Biblioteca de materiais</span>
                         </a>
-                        <a href="{{ route('profile.show') }}" class="flex min-h-12 items-center justify-between rounded-xl border border-slate-200 px-4 py-3 font-semibold text-slate-800 transition hover:border-blue-200 hover:bg-blue-50 sm:py-4">
-                            Dados da conta <span class="text-blue-800" aria-hidden="true">›</span>
+                        <a href="{{ route('profile.show') }}"
+                            class="flex min-h-28 flex-col items-center justify-center gap-2 rounded-xl border border-slate-200 p-3 text-center text-xs font-semibold text-slate-800 transition hover:border-blue-200 hover:bg-blue-50 sm:min-h-32 sm:text-sm">
+                            <span class="flex size-10 items-center justify-center rounded-xl bg-violet-50 text-violet-700">
+                                <x-ts-icon icon="user-circle" outline class="size-5" />
+                            </span>
+                            <span>Dados da conta</span>
                         </a>
                     </div>
                 </section>
