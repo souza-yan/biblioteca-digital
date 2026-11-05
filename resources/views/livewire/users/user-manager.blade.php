@@ -237,7 +237,8 @@
                     {{ $actor->isStaff() && $editingUserId !== null ? 'Fechar' : 'Cancelar' }}
                 </x-ts-button>
                 @unless ($actor->isStaff() && $editingUserId !== null)
-                    <x-ts-button color="blue" type="submit" form="user-form" wire:loading.attr="disabled" wire:target="save">
+                    <x-ts-button color="yellow" type="submit" form="user-form" wire:loading.attr="disabled" wire:target="save" class="!text-slate-950">
+                        <x-ts-icon icon="check" outline class="size-5 !text-slate-950" />
                         Salvar professor
                     </x-ts-button>
                 @endunless

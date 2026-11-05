@@ -168,7 +168,8 @@
 
                 <x-slot:footer>
                     <x-ts-button color="red" type="button" wire:click="closeCategoryForm">Cancelar</x-ts-button>
-                    <x-ts-button color="blue" type="submit" form="category-library-form" wire:loading.attr="disabled" wire:target="saveCategory">
+                    <x-ts-button color="yellow" type="submit" form="category-library-form" wire:loading.attr="disabled" wire:target="saveCategory" class="!text-slate-950">
+                        <x-ts-icon icon="check" outline class="size-5 !text-slate-950" />
                         Salvar categoria
                     </x-ts-button>
                 </x-slot:footer>
@@ -200,7 +201,8 @@
                 <x-slot:footer>
                     <div class="grid w-full grid-cols-2 gap-3 sm:flex sm:justify-end">
                         <x-ts-button color="red" type="button" wire:click="closeMaterialForm" class="w-full justify-center sm:w-auto">Cancelar</x-ts-button>
-                        <x-ts-button color="emerald" type="submit" form="material-library-form" wire:loading.attr="disabled" wire:target="saveMaterial" class="w-full justify-center sm:w-auto">
+                        <x-ts-button color="yellow" type="submit" form="material-library-form" wire:loading.attr="disabled" wire:target="saveMaterial" class="w-full justify-center !text-slate-950 sm:w-auto">
+                            <x-ts-icon icon="check" outline class="size-5 !text-slate-950" />
                             <span wire:loading.remove wire:target="saveMaterial">Salvar material</span>
                             <span wire:loading wire:target="saveMaterial">Salvando...</span>
                         </x-ts-button>
