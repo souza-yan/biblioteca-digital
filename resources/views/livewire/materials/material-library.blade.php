@@ -158,35 +158,10 @@
         </div>
 
         <x-ts-modal wire="showMobileMaterialDetail" size="lg" center>
-            @if ($mobileMaterial)
-                <div x-data="{ isPreviewOpen: false }">
-                    <h2 class="text-lg font-semibold text-slate-900">{{ $mobileMaterial->title }}</h2>
-                    <p class="mt-1 text-sm text-slate-600">Por {{ $mobileMaterial->author }}</p>
-
-                    <dl class="mt-3 grid grid-cols-1 gap-2 border-t border-slate-100 pt-3 text-sm">
-                        <div>
-                            <dt class="font-semibold text-slate-500">Categoria</dt>
-                            <dd class="mt-1 text-slate-900">{{ $mobileMaterial->category->name }}</dd>
-                        </div>
-                        @if ($mobileMaterial->description)
-                            <div>
-                                <dt class="font-semibold text-slate-500">Descrição</dt>
-                                <dd class="mt-1 whitespace-pre-line text-slate-700">{{ $mobileMaterial->description }}</dd>
-                            </div>
-                        @endif
-                    </dl>
-
-                    @if ($mobileMaterial->currentVersion && $mobilePreviewUrl)
-                        @include('livewire.materials.partials.file-preview', [
-                            'version' => $mobileMaterial->currentVersion,
-                            'previewUrl' => $mobilePreviewUrl,
-                            'showPreviewButtonOnMobile' => true,
-                            'compact' => true,
-                            'iconOnlyPreviewButton' => true,
-                        ])
-                    @endif
-                </div>
-            @endif
+            @include('livewire.materials.partials.mobile-material-detail', [
+                'material' => $mobileMaterial,
+                'previewUrl' => $mobilePreviewUrl,
+            ])
 
             <x-slot:footer>
                 @if ($mobileMaterial?->currentVersion)

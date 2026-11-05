@@ -1,9 +1,11 @@
 <?php
 
+use App\Enums\ActivityAction;
 use App\Livewire\Materials\FavoriteLibrary;
 use App\Livewire\Materials\MaterialDetail;
 use App\Livewire\Materials\MaterialLibrary;
 use App\Models\Material;
+use App\Models\MaterialVersion;
 use App\Models\User;
 use Livewire\Livewire;
 
@@ -78,6 +80,33 @@ it('allows a teacher to remove a material from the favorites list', function () 
     $this->assertDatabaseMissing('favorites', [
         'user_id' => $teacher->getKey(),
         'material_id' => $material->getKey(),
+    ]);
+});
+
+it('opens a favorite in the mobile detail modal and records the access', function () {
+    $teacher = User::factory()->teacher()->create();
+    $material = Material::factory()->published()->create([
+        'title' => 'Favorito para consulta rápida',
+        'description' => 'Descrição exibida no modal.',
+    ]);
+    $version = MaterialVersion::factory()->for($material)->create();
+    $material->update(['current_version_id' => $version->getKey()]);
+    $teacher->favorites()->attach($material->getKey());
+    $this->actingAs($teacher);
+
+    Livewire::test(FavoriteLibrary::class)
+        ->call('openMobileMaterialDetail', $material->getKey())
+        ->assertSet('showMobileMaterialDetail', true)
+        ->assertSet('mobileMaterialId', $material->getKey())
+        ->assertSee($material->description)
+        ->assertSee('aria-label="Visualizar conteúdo"', false)
+        ->assertSee(route('downloads.show', $material), false);
+
+    $this->assertDatabaseHas('activity_logs', [
+        'user_id' => $teacher->getKey(),
+        'material_id' => $material->getKey(),
+        'action' => ActivityAction::MATERIAL_PREVIEWED->value,
+        'description' => 'Material consultado.',
     ]);
 });
 
