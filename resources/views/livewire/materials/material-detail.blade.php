@@ -24,7 +24,7 @@
                         </x-ts-button>
                     @endif
 
-                    @if ($material->currentVersion)
+                    @if ($isTeacher && $material->currentVersion)
                         <x-ts-button color="emerald" href="{{ route('downloads.show', $material) }}"
                             aria-label="Baixar {{ $material->title }}" title="Baixar material"
                             class="!size-10 sm:!size-12 !p-0 shrink-0 justify-center">
@@ -49,13 +49,6 @@
                             <x-ts-button color="emerald" wire:click="publish" aria-label="Publicar material"
                                 title="Publicar material" class="!size-10 sm:!size-12 !p-0 shrink-0 justify-center">
                                 <x-ts-icon icon="cloud-arrow-up" outline class="size-6 sm:size-7 text-white" />
-                            </x-ts-button>
-                        @endif
-
-                        @if ($material->status !== \App\Enums\MaterialStatus::ARCHIVED)
-                            <x-ts-button color="yellow" wire:click="archive" aria-label="Arquivar material"
-                                title="Arquivar material" class="!size-10 sm:!size-12 !p-0 shrink-0 justify-center">
-                                <x-ts-icon icon="archive-box" outline class="size-6 sm:size-7 text-white" />
                             </x-ts-button>
                         @endif
                     @endif
