@@ -20,17 +20,19 @@ class CategoryPolicy
 
     public function update(User $user, Category $category): bool
     {
-        return $this->isGlobalManager($user);
+        return $this->canManage($user, $category);
     }
 
     public function toggleActive(User $user, Category $category): bool
     {
-        return $this->isGlobalManager($user);
+        return $this->canManage($user, $category);
     }
 
-    private function isGlobalManager(User $user): bool
+    private function canManage(User $user, Category $category): bool
     {
         return $user->is_active && ($user->isAdmin()
-            || ($user->isStaff() && $user->hasExactlyOneActiveSchool()));
+            || ($user->isStaff()
+                && $user->hasExactlyOneActiveSchool()
+                && $category->created_by === $user->getKey()));
     }
 }

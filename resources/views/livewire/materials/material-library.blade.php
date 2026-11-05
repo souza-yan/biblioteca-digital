@@ -78,6 +78,14 @@
                             </x-ts-button>
                         @endif
 
+                        @if (! $isTeacher)
+                            @can('update', $material)
+                                <x-icon-button icon="pencil-square"
+                                    :href="route('painel.library.show', ['material' => $material, 'categoryFilter' => $categoryFilter ?: null])"
+                                    label="Editar {{ $material->title }}" class="!size-9 [&_svg]:!size-5" />
+                            @endcan
+                        @endif
+
                         <x-icon-button icon="eye" wire:click="openMobileMaterialDetail({{ $material->id }})"
                             wire:loading.attr="disabled"
                             wire:target="openMobileMaterialDetail({{ $material->id }})"

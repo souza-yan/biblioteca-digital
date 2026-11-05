@@ -65,18 +65,40 @@
             @if ($isStaff)
                 <div class="grid grid-cols-2 gap-3 md:hidden">
                     @forelse ($categories as $category)
-                        <a wire:key="category-library-mobile-{{ $category->id }}"
-                            href="{{ route('painel.library', ['categoryFilter' => $category->getKey()]) }}"
-                            class="flex min-h-40 min-w-0 flex-col rounded-2xl border border-slate-200 bg-white p-4 shadow-sm transition hover:border-blue-300 hover:shadow-md">
-                            <span class="flex size-10 items-center justify-center rounded-xl bg-blue-50 text-blue-700">
-                                <x-ts-icon icon="folder" outline class="size-5" />
-                            </span>
-                            <span class="mt-3 line-clamp-2 text-sm font-semibold leading-5 text-slate-900">{{ $category->name }}</span>
-                            <span class="mt-auto pt-3 text-xs font-medium text-slate-500">
-                                {{ $category->published_materials_count }}
-                                {{ $category->published_materials_count === 1 ? 'material' : 'materiais' }}
-                            </span>
-                        </a>
+                        <article wire:key="category-library-mobile-{{ $category->id }}"
+                            class="flex min-h-40 min-w-0 flex-col rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+                            <a href="{{ route('painel.library', ['categoryFilter' => $category->getKey()]) }}"
+                                class="flex min-h-0 flex-1 flex-col rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-600">
+                                <span class="flex size-10 items-center justify-center rounded-xl bg-blue-50 text-blue-700">
+                                    <x-ts-icon icon="folder" outline class="size-5" />
+                                </span>
+                                <span class="mt-3 line-clamp-2 text-sm font-semibold leading-5 text-slate-900">{{ $category->name }}</span>
+                                <span class="mt-auto pt-3 text-xs font-medium text-slate-500">
+                                    {{ $category->published_materials_count }}
+                                    {{ $category->published_materials_count === 1 ? 'material' : 'materiais' }}
+                                </span>
+                            </a>
+                            @can('update', $category)
+                                <div class="mt-3 flex items-center justify-between border-t border-slate-100 pt-3">
+                                    <x-categories.status-badge :active="$category->is_active" />
+                                    <div class="flex gap-2">
+                                        <x-ts-button color="blue" wire:click="editCategory({{ $category->id }})"
+                                            aria-label="Editar categoria {{ $category->name }}" title="Editar categoria"
+                                            class="!size-9 !p-0 justify-center">
+                                            <x-ts-icon icon="pencil-square" outline class="size-5 text-white" />
+                                        </x-ts-button>
+                                        <x-ts-button :color="$category->is_active ? 'red' : 'emerald'"
+                                            wire:click="toggleCategoryActive({{ $category->id }})"
+                                            wire:loading.attr="disabled" wire:target="toggleCategoryActive({{ $category->id }})"
+                                            :aria-label="$category->is_active ? 'Desativar categoria '.$category->name : 'Ativar categoria '.$category->name"
+                                            :title="$category->is_active ? 'Desativar categoria' : 'Ativar categoria'"
+                                            class="!size-9 !p-0 justify-center">
+                                            <x-ts-icon :icon="$category->is_active ? 'no-symbol' : 'check-circle'" outline class="size-5 text-white" />
+                                        </x-ts-button>
+                                    </div>
+                                </div>
+                            @endcan
+                        </article>
                     @empty
                         <div class="col-span-2 rounded-2xl border border-dashed border-slate-300 bg-white px-4 py-10 text-center text-sm text-slate-600">
                             Nenhuma categoria encontrada.
@@ -134,7 +156,7 @@
         </section>
 
         @can('create', \App\Models\Category::class)
-            <x-ts-modal wire="showCategoryForm" title="Nova categoria" size="xl" center>
+            <x-ts-modal wire="showCategoryForm" :title="$editingCategoryId === null ? 'Nova categoria' : 'Editar categoria'" size="xl" center>
                 <form id="category-library-form" wire:submit="saveCategory" class="space-y-4">
                     <x-ts-input wire:model="categoryForm.name" label="Nome *" required />
                     <x-ts-input wire:model="categoryForm.description" label="Descrição" />

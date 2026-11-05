@@ -139,12 +139,46 @@ it('allows staff to create a category and material from the category library', f
     $this->assertDatabaseHas('categories', [
         'name' => 'Categoria criada na biblioteca',
         'is_active' => true,
+        'created_by' => $staff->getKey(),
     ]);
     $this->assertDatabaseHas('materials', [
         'title' => 'Material criado na biblioteca',
         'category_id' => $category->getKey(),
         'created_by' => $staff->getKey(),
     ]);
+});
+
+it('allows staff to edit a category they created from the category library', function () {
+    $staff = User::factory()->staffInSchool()->create();
+    $category = Category::factory()->create([
+        'name' => 'Categoria da própria gestão',
+        'created_by' => $staff->getKey(),
+    ]);
+
+    Livewire::actingAs($staff)
+        ->test(CategoryLibrary::class)
+        ->call('editCategory', $category->getKey())
+        ->assertSet('showCategoryForm', true)
+        ->set('categoryForm.name', 'Categoria atualizada pela gestão')
+        ->call('saveCategory')
+        ->assertHasNoErrors();
+
+    $this->assertDatabaseHas('categories', [
+        'id' => $category->getKey(),
+        'name' => 'Categoria atualizada pela gestão',
+        'created_by' => $staff->getKey(),
+    ]);
+});
+
+it('forbids staff from editing a category created by another manager', function () {
+    $staff = User::factory()->staffInSchool()->create();
+    $otherStaff = User::factory()->staffInSchool()->create();
+    $category = Category::factory()->create(['created_by' => $otherStaff->getKey()]);
+
+    Livewire::actingAs($staff)
+        ->test(CategoryLibrary::class)
+        ->call('editCategory', $category->getKey())
+        ->assertForbidden();
 });
 
 it('allows admins to create a category with a generated slug', function () {
@@ -244,19 +278,33 @@ it('rebuilds category options when the cached payload is incompatible', function
         ->toBeArray();
 });
 
-it('allows management to manage global categories', function (string $role, bool $canCreate, bool $canManage) {
-    $user = match ($role) {
-        'admin' => User::factory()->admin()->create(),
-        'staff' => User::factory()->staffInSchool()->create(),
-        default => User::factory()->teacher()->create(),
-    };
-    $category = Category::factory()->make();
+it('allows staff to manage only categories they created', function () {
+    $staff = User::factory()->staffInSchool()->create();
+    $otherStaff = User::factory()->staffInSchool()->create();
+    $ownCategory = Category::factory()->create(['created_by' => $staff->getKey()]);
+    $otherCategory = Category::factory()->create(['created_by' => $otherStaff->getKey()]);
 
-    expect(Gate::forUser($user)->allows('create', Category::class))->toBe($canCreate)
-        ->and(Gate::forUser($user)->allows('update', $category))->toBe($canManage)
-        ->and(Gate::forUser($user)->allows('toggleActive', $category))->toBe($canManage);
-})->with([
-    'admin' => ['admin', true, true],
-    'staff' => ['staff', true, true],
-    'teacher' => ['teacher', false, false],
-]);
+    expect(Gate::forUser($staff)->allows('create', Category::class))->toBeTrue()
+        ->and(Gate::forUser($staff)->allows('update', $ownCategory))->toBeTrue()
+        ->and(Gate::forUser($staff)->allows('toggleActive', $ownCategory))->toBeTrue()
+        ->and(Gate::forUser($staff)->allows('update', $otherCategory))->toBeFalse()
+        ->and(Gate::forUser($staff)->allows('toggleActive', $otherCategory))->toBeFalse();
+});
+
+it('allows administrators to manage categories from any creator', function () {
+    $administrator = User::factory()->admin()->create();
+    $category = Category::factory()->create(['created_by' => User::factory()->staffInSchool()->create()->getKey()]);
+
+    expect(Gate::forUser($administrator)->allows('create', Category::class))->toBeTrue()
+        ->and(Gate::forUser($administrator)->allows('update', $category))->toBeTrue()
+        ->and(Gate::forUser($administrator)->allows('toggleActive', $category))->toBeTrue();
+});
+
+it('does not allow teachers to manage categories', function () {
+    $teacher = User::factory()->teacher()->create();
+    $category = Category::factory()->create();
+
+    expect(Gate::forUser($teacher)->allows('create', Category::class))->toBeFalse()
+        ->and(Gate::forUser($teacher)->allows('update', $category))->toBeFalse()
+        ->and(Gate::forUser($teacher)->allows('toggleActive', $category))->toBeFalse();
+});

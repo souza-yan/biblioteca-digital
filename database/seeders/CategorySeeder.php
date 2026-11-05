@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\Category;
+use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Str;
 
@@ -10,6 +11,10 @@ class CategorySeeder extends Seeder
 {
     public function run(): void
     {
+        $administratorId = User::query()
+            ->where('email', 'admin@example.com')
+            ->value('id');
+
         foreach ([
             'Arduino' => 'Projetos e práticas com placas Arduino.',
             'Robótica' => 'Fundamentos e desafios de robótica educacional.',
@@ -21,7 +26,12 @@ class CategorySeeder extends Seeder
         ] as $name => $description) {
             Category::query()->updateOrCreate(
                 ['slug' => Str::slug($name)],
-                ['name' => $name, 'description' => $description, 'is_active' => true],
+                [
+                    'name' => $name,
+                    'description' => $description,
+                    'is_active' => true,
+                    'created_by' => $administratorId,
+                ],
             );
         }
     }

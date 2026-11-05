@@ -27,6 +27,7 @@ class CreateCategory
             $category = Category::create([
                 ...$attributes,
                 'is_active' => true,
+                'created_by' => $lockedActor->getKey(),
             ]);
 
             $this->logActivity->handle($lockedActor, ActivityAction::CATEGORY_CREATED, 'Categoria criada.');

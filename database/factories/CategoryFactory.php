@@ -25,6 +25,7 @@ class CategoryFactory extends Factory
             'slug' => Str::slug($name),
             'description' => fake()->optional()->sentence(),
             'is_active' => true,
+            'created_by' => null,
         ];
     }
 
