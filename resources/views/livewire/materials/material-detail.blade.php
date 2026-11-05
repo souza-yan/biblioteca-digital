@@ -5,10 +5,10 @@
                 <div>
                     @if (! $isTeacher)
                         <button type="button"
-                            class="mb-3 inline-flex items-center gap-1.5 text-sm font-semibold text-blue-700 transition hover:text-blue-900 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 sm:hidden"
+                            class="mb-3 inline-flex size-9 items-center justify-center rounded-lg text-blue-700 transition hover:bg-blue-50 hover:text-blue-900 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 sm:hidden"
+                            aria-label="Voltar" title="Voltar"
                             @click="if (window.history.length > 1) { window.history.back() } else { window.location.assign(@js(route('painel.library'))) }">
-                            <x-ts-icon icon="chevron-left" outline class="size-4" />
-                            Voltar
+                            <x-ts-icon icon="chevron-left" outline class="size-5" />
                         </button>
                     @endif
                     <h1 class="text-2xl font-bold tracking-tight text-gray-900 sm:text-3xl">{{ $material->title }}</h1>
