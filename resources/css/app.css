@@ -116,6 +116,10 @@
         padding: 0.75rem;
     }
 
+    html.sidebar-collapsed #app-sidebar .sidebar-municipal-logo span {
+        padding: 0.25rem;
+    }
+
     html.sidebar-collapsed #app-sidebar .sidebar-municipal-logo img {
         height: 2rem;
     }
