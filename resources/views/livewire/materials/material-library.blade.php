@@ -70,7 +70,7 @@
 
                     <div class="mt-3 flex items-center justify-end gap-1.5 border-t border-slate-100 pt-3">
                         @if ($isTeacher)
-                            <x-ts-button :color="$material->is_favorited ? 'yellow' : 'blue'"
+                            <x-ts-button color="yellow"
                                 wire:click.stop="toggleFavorite({{ $material->id }})"
                                 :aria-label="$material->is_favorited ? 'Remover dos favoritos' : 'Adicionar aos favoritos'"
                                 :title="$material->is_favorited ? 'Remover dos favoritos' : 'Adicionar aos favoritos'"
@@ -79,7 +79,7 @@
                                 @if ($material->is_favorited)
                                     <x-ts-icon icon="bookmark" solid class="size-5 text-amber-950" />
                                 @else
-                                    <x-ts-icon icon="bookmark" outline class="size-5 text-white" />
+                                    <x-ts-icon icon="bookmark" outline class="size-5 text-amber-950" />
                                 @endif
                             </x-ts-button>
                         @endif

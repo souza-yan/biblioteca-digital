@@ -20,7 +20,7 @@
                 {{-- Bloco de botões padronizados e alinhados --}}
                 <div class="flex shrink-0 flex-wrap items-center gap-2 sm:flex-nowrap">
                     @if ($isTeacher)
-                        <x-ts-button :color="$isFavorited ? 'yellow' : 'blue'"
+                        <x-ts-button color="yellow"
                             wire:click.stop="toggleFavorite"
                             :aria-label="$isFavorited ? 'Remover dos favoritos' : 'Adicionar aos favoritos'"
                             :title="$isFavorited ? 'Remover dos favoritos' : 'Adicionar aos favoritos'"
@@ -29,7 +29,7 @@
                             @if ($isFavorited)
                                 <x-ts-icon icon="bookmark" solid class="size-6 sm:size-7 text-amber-950" />
                             @else
-                                <x-ts-icon icon="bookmark" outline class="size-6 sm:size-7 text-white" />
+                                <x-ts-icon icon="bookmark" outline class="size-6 sm:size-7 text-amber-950" />
                             @endif
                         </x-ts-button>
                     @endif
