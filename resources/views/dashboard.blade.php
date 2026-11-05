@@ -139,35 +139,13 @@
 
                             <div x-ref="publishedCarousel" class="flex snap-x snap-mandatory gap-3 overflow-x-auto scroll-smooth pb-2 sm:grid sm:grid-cols-2 sm:gap-5 sm:overflow-visible sm:pb-0 lg:grid-cols-3" aria-label="Materiais publicados recentemente">
                                 @forelse ($publishedMaterials as $material)
-                                    @php
-                                        $materialType = strtolower((string) $material->type);
-                                        $typeBadgeClass = match (true) {
-                                            $materialType === 'pdf' => 'bg-red-50 text-red-700',
-                                            in_array($materialType, ['png', 'jpg', 'jpeg', 'webp', 'gif'], true) => 'bg-violet-50 text-violet-700',
-                                            in_array($materialType, ['xls', 'xlsx', 'csv'], true) => 'bg-emerald-50 text-emerald-700',
-                                            in_array($materialType, ['ppt', 'pptx'], true) => 'bg-amber-50 text-amber-700',
-                                            in_array($materialType, ['doc', 'docx'], true) => 'bg-blue-50 text-blue-700',
-                                            default => 'bg-slate-100 text-slate-600',
-                                        };
-                                    @endphp
-                                    <article class="group relative w-full shrink-0 snap-start overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition hover:-translate-y-0.5 hover:border-blue-200 hover:shadow-md sm:w-auto">
-                                        <a href="{{ route('painel.library.show', $material) }}" class="block p-3" aria-label="Abrir {{ $material->title }}">
-                                            <x-materials.pdf-cover :material="$material" :version="$material->currentVersion" :alt="'Capa do material '.$material->title" fit="contain" class="mx-auto w-48 rounded-xl sm:w-full" />
-                                        </a>
-                                        <div class="p-4 pt-1">
-                                            <p class="truncate text-sm font-medium text-blue-700">{{ $material->category->name }}</p>
-                                            <div class="mt-1 flex items-center gap-3">
-                                                <a href="{{ route('painel.library.show', $material) }}" class="min-w-0 flex-1 truncate text-base font-bold text-slate-900 hover:text-blue-800">{{ $material->title }}</a>
-                                                <div class="shrink-0 sm:absolute sm:right-5 sm:top-5">
-                                                    @livewire('materials.favorite-button', ['material' => $material, 'isFavorited' => $material->is_favorited], key('dashboard-favorite-'.$material->getKey()))
-                                                </div>
-                                            </div>
-                                            <div class="mt-3 flex items-center justify-between gap-3 text-xs text-slate-500">
-                                                <span>{{ $material->published_at?->format('d/m/Y') ?? 'Data não informada' }}</span>
-                                                <span @class(['rounded-full px-2 py-1 font-semibold uppercase tracking-wide', $typeBadgeClass])>{{ $material->type }}</span>
-                                            </div>
-                                        </div>
-                                    </article>
+                                    <x-materials.card variant="featured" :material="$material" :version="$material->currentVersion"
+                                        :href="route('painel.library.show', $material)"
+                                        :date="$material->published_at?->format('d/m/Y') ?? 'Data não informada'" :type="$material->type">
+                                        <x-slot:titleAction>
+                                            @livewire('materials.favorite-button', ['material' => $material, 'isFavorited' => $material->is_favorited], key('dashboard-favorite-'.$material->getKey()))
+                                        </x-slot:titleAction>
+                                    </x-materials.card>
                                 @empty
                                     <div class="w-full rounded-2xl border border-dashed border-slate-300 bg-white px-6 py-12 text-center sm:col-span-2 lg:col-span-3">
                                         <x-ts-icon icon="document-text" outline class="mx-auto size-10 text-slate-400" />
