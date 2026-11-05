@@ -140,7 +140,7 @@ it('does not show historical download links in the material version history', fu
 
     Livewire::test(MaterialDetail::class, ['material' => $material])
         ->assertDontSee(route('downloads.version', [$material, $version]), false)
-        ->assertSee(route('downloads.show', $material), false);
+        ->assertDontSee(route('downloads.show', $material), false);
 });
 
 it('does not allow inactive or unauthenticated users to download materials', function () {

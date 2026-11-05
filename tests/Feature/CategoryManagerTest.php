@@ -178,8 +178,9 @@ it('does not render category slugs in the category table', function () {
         ->assertDontSee($category->slug);
 });
 
-it('renders global category management actions for staff', function () {
+it('renders category management actions for categories created by staff', function () {
     $staff = User::factory()->staffInSchool()->create();
+    Category::factory()->create(['created_by' => $staff->getKey()]);
     Category::factory()->create();
 
     $this->actingAs($staff)

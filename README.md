@@ -227,14 +227,19 @@ A aplicação estará disponível no endereço configurado pelo servidor Laravel
 ## 12. Funcionalidades
 
 * Biblioteca de materiais publicados com busca full-text e fallback compatível.
-* Filtros por categoria, formato, autor e período, preservados na URL.
+* Filtros por categoria e autor, ordenação por título e pesquisas recentes preservadas na URL.
 * Sugestões e histórico recente de pesquisas por sessão.
 * Pré-visualização, download, favoritos e últimos materiais acessados no painel do professor.
 * Versionamento imutável dos arquivos, com nota de alteração e responsável.
+* Capas JPEG otimizadas da primeira página de PDFs, geradas em fila e armazenadas de forma privada.
 * Fluxos distintos para administrador, gestão escolar e professor.
 * Escolas e vínculos de gestores e professores.
 * Painéis de indicadores, materiais mais baixados e atividades de auditoria.
-* Navegação responsiva, feedback offline, aviso de sessão expirada e carregamento progressivo.
+* Navegação responsiva, feedback offline, aviso de sessão expirada, toasts e feedback pontual de carregamento.
+
+### Feedback de interface
+
+Não há skeletons animados ativos no projeto. As ações assíncronas usam indicadores pontuais: botões bloqueados durante o envio, textos de progresso em salvamentos e uploads, indicador na busca e notificações toast. Essa escolha evita deslocamentos visuais em listas e modais Livewire; qualquer futura animação global deve ser aplicada apenas após validação visual em desktop e mobile.
 
 ## 13. Organização do Código
 

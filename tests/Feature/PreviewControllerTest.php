@@ -233,7 +233,7 @@ it('shows a preview control only for historical versions to admins', function ()
         ->assertSee(route('previews.version', [$material, $version]), false)
         ->assertDontSee(route('previews.version', [$material, $currentVersion]), false)
         ->assertDontSee(route('downloads.version', [$material, $version]), false)
-        ->assertSee(route('downloads.show', $material), false);
+        ->assertDontSee(route('downloads.show', $material), false);
 });
 
 it('shows the correct preview element for supported image and media types', function (string $mimeType, string $element) {

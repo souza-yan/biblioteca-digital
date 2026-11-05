@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Livewire;
 
-it('does not expose management category filters to teachers', function () {
+it('exposes only active categories with published materials to teachers', function () {
     $activeCategory = Category::factory()->create(['name' => 'Categoria ativa']);
     $inactiveCategory = Category::factory()->inactive()->create(['name' => 'Categoria inativa']);
     Material::factory()->published()->for($activeCategory)->create();
@@ -25,7 +25,7 @@ it('does not expose management category filters to teachers', function () {
     Livewire::test(MaterialLibrary::class)
         ->assertViewHas(
             'categories',
-            fn ($categories): bool => $categories->isEmpty(),
+            fn ($categories): bool => $categories->pluck('id')->all() === [$activeCategory->getKey()],
         );
 });
 
