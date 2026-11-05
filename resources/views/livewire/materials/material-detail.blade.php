@@ -66,14 +66,14 @@
                 <p class="mt-4 rounded border border-red-200 bg-red-50 p-3 text-base text-red-700">{{ $message }}</p>
             @enderror
 
-            <dl class="mt-4 grid grid-cols-1 gap-3 border-t border-gray-100 pt-4 sm:mt-6 sm:gap-4 sm:pt-5 sm:grid-cols-2">
+            <dl class="mt-4 grid grid-cols-1 gap-2 border-t border-gray-100 pt-4 sm:mt-6 sm:gap-4 sm:pt-5 sm:grid-cols-2">
                 <div>
                     <dt class="text-xs font-semibold uppercase text-gray-500">Status</dt>
                     <dd class="mt-1">
                         <x-materials.status-badge :status="$material->status" />
                     </dd>
                 </div>
-                <div>
+                <div class="hidden sm:block">
                     <dt class="text-xs font-semibold uppercase text-gray-500">Criado por</dt>
                     <dd class="mt-1 text-sm text-gray-900 sm:text-base">{{ $material->creator->name }}</dd>
                 </div>
@@ -83,7 +83,7 @@
                         {{ $material->description ?: 'Sem descrição.' }}</dd>
                 </div>
                 @if ($material->currentVersion)
-                    <div>
+                    <div class="hidden sm:block">
                         <dt class="text-xs font-semibold uppercase text-gray-500">Versão atual</dt>
                         <dd class="mt-1 text-sm text-gray-900 sm:text-base">{{ $material->currentVersion->version_number }} ·
                             {{ $material->currentVersion->original_name }}</dd>
@@ -142,10 +142,10 @@
         {{-- O restante do arquivo continua igual abaixo... --}}
 
         @if ($canViewVersionHistory)
-            <section class="mt-6 rounded-md border border-gray-200 bg-white p-6 shadow-sm">
-                <h2 class="text-lg font-semibold text-gray-900">Versões</h2>
+            <section class="mt-6 flex flex-col rounded-md border border-gray-200 bg-white p-4 shadow-sm sm:p-6">
+                <h2 class="order-1 text-lg font-semibold text-gray-900">Versões</h2>
 
-                <div class="mt-4 hidden overflow-x-auto sm:block">
+                <div class="order-3 mt-4 hidden overflow-x-auto sm:order-2 sm:block">
                     <table class="min-w-full divide-y divide-gray-200">
                         <thead class="bg-gray-50">
                             <tr>
@@ -206,7 +206,7 @@
                     </table>
                 </div>
 
-                <div class="mt-4 space-y-3 sm:hidden">
+                <div class="order-3 mt-4 space-y-3 sm:hidden">
                     @forelse ($versions as $version)
                         <article wire:key="material-version-mobile-{{ $version->id }}"
                             class="rounded-xl border border-slate-200 bg-slate-50/70 p-4">
@@ -248,7 +248,7 @@
 
                 @if ($canManageVersions)
                     <form wire:submit="saveVersion"
-                    class="mt-6 space-y-5 rounded-2xl border border-slate-200 bg-slate-50/60 p-4 sm:mt-8 sm:p-6">
+                    class="order-2 mt-4 space-y-4 rounded-2xl border border-slate-200 bg-slate-50/60 p-4 sm:order-4 sm:mt-8 sm:space-y-5 sm:p-6">
 
                     <div class="sm:hidden"
                         x-data="{ selectedFileName: @js($versionForm->file instanceof \Livewire\Features\SupportFileUploads\TemporaryUploadedFile ? $versionForm->file->getClientOriginalName() : null) }">
