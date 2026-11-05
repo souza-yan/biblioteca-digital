@@ -142,9 +142,8 @@
 
         <x-slot:footer>
             <x-ts-button color="red" type="button" wire:click="closeSchoolForm">Cancelar</x-ts-button>
-            <x-ts-button color="yellow" type="submit" form="school-form" wire:loading.attr="disabled"
-                wire:target="saveSchool" class="!text-slate-950">
-                <x-ts-icon icon="check" outline class="size-5 !text-slate-950" />
+            <x-ts-button color="blue" type="submit" form="school-form" wire:loading.attr="disabled"
+                wire:target="saveSchool">
                 <span wire:loading.remove wire:target="saveSchool">Salvar escola</span>
                 <span wire:loading wire:target="saveSchool">Salvando...</span>
             </x-ts-button>

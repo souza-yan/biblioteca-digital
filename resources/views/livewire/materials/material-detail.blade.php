@@ -253,9 +253,8 @@
                     </div>
 
                     <div class="flex justify-end border-t border-slate-200 pt-4">
-                        <x-ts-button color="yellow" type="submit" class="w-full justify-center !text-slate-950 sm:w-auto"
+                        <x-ts-button color="blue" type="submit" class="w-full justify-center sm:w-auto"
                             wire:loading.attr="disabled" wire:target="saveVersion">
-                            <x-ts-icon icon="check" outline class="size-5 !text-slate-950" />
                             Salvar versão
                         </x-ts-button>
                     </div>

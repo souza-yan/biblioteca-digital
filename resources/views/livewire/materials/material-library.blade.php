@@ -157,9 +157,8 @@
                     <x-ts-button color="red" type="button" wire:click="closeEditMaterial" class="w-full justify-center sm:w-auto">
                         Cancelar
                     </x-ts-button>
-                    <x-ts-button color="yellow" type="submit" form="library-material-edit-form"
-                        wire:loading.attr="disabled" wire:target="saveEditMaterial" class="w-full justify-center !text-slate-950 sm:w-auto">
-                        <x-ts-icon icon="check" outline class="size-5 !text-slate-950" />
+                    <x-ts-button color="blue" type="submit" form="library-material-edit-form"
+                        wire:loading.attr="disabled" wire:target="saveEditMaterial" class="w-full justify-center sm:w-auto">
                         <span wire:loading.remove wire:target="saveEditMaterial">Salvar alterações</span>
                         <span wire:loading wire:target="saveEditMaterial">Salvando...</span>
                     </x-ts-button>
