@@ -4,7 +4,7 @@
             <h1 class="text-3xl font-bold tracking-tight text-blue-800 sm:text-4xl">Meus favoritos</h1>
             <p class="mt-2 text-base text-slate-500">Seus materiais publicados salvos para consultar depois.</p>
         </div>
-        <div class="grid grid-cols-2 gap-3 md:hidden">
+        <div class="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
             @forelse ($materials as $material)
                 <article wire:key="favorite-material-mobile-{{ $material->id }}"
                     class="flex min-w-0 flex-col rounded-2xl border border-slate-200 bg-white p-3 shadow-sm">
@@ -37,53 +37,10 @@
                     </div>
                 </article>
             @empty
-                <div class="col-span-2 rounded-2xl border border-slate-200 bg-white px-4 py-10 text-center text-slate-600">
+                <div class="col-span-full rounded-2xl border border-slate-200 bg-white px-4 py-10 text-center text-slate-600">
                     <span class="text-base">Você ainda não tem materiais favoritos publicados.</span>
                 </div>
             @endforelse
-        </div>
-
-        <div class="hidden md:block">
-            <x-data-table :columns="[
-                ['label' => 'Título'],
-                ['label' => 'Categoria'],
-                ['label' => 'Autor'],
-                ['label' => 'Ação', 'align' => 'right'],
-            ]">
-            @forelse ($materials as $material)
-                <tr wire:key="favorite-material-{{ $material->id }}">
-                    <td class="px-5 py-4 text-lg font-medium text-black">{{ $material->title }}</td>
-                    <td class="px-5 py-4 text-lg text-black">{{ $material->category->name }}</td>
-                    <td class="px-5 py-4 text-lg text-black">{{ $material->author }}</td>
-                    <td class="px-5 py-4 text-right text-lg">
-                        <div class="flex justify-end gap-2">
-                            @if ($material->currentVersion)
-                                <x-ts-button color="emerald" href="{{ route('downloads.show', $material) }}"
-                                    aria-label="Baixar {{ $material->title }}" title="Baixar material"
-                                    class="!size-12 !p-0 justify-center">
-                                    <x-ts-icon icon="document-arrow-down" outline class="size-7 text-white" />
-                                </x-ts-button>
-                            @endif
-                            <x-ts-button color="blue" href="{{ route('painel.library.show', $material) }}"
-                                aria-label="Ver detalhes de {{ $material->title }}" title="Ver detalhes"
-                                class="!size-12 !p-0 justify-center">
-                                <x-ts-icon icon="eye" outline class="size-7 text-white" />
-                            </x-ts-button>
-                            <x-ts-button color="yellow" wire:click="removeFavorite({{ $material->id }})"
-                                wire:loading.attr="disabled" wire:target="removeFavorite({{ $material->id }})"
-                                aria-label="Remover {{ $material->title }} dos favoritos" title="Remover dos favoritos"
-                                class="!size-12 !p-0 justify-center">
-                                <x-ts-icon icon="bookmark" solid class="size-7 text-amber-950" />
-                            </x-ts-button>
-                        </div>
-                    </td>
-                </tr>
-            @empty
-                <x-data-table.empty-state :colspan="4">
-                    <span class="text-lg">Você ainda não tem materiais favoritos publicados.</span>
-                </x-data-table.empty-state>
-            @endforelse
-            </x-data-table>
         </div>
 
         <x-ts-modal wire="showMobileMaterialDetail" size="lg" center
