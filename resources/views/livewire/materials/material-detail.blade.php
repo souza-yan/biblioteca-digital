@@ -1,6 +1,5 @@
 <div>
     <div class="mx-auto w-full max-w-screen-2xl space-y-6 px-4 py-6 sm:px-6 lg:space-y-8 lg:px-8 lg:py-8">
-        {{-- Manter em sincronia com components/materials/detail-summary-skeleton.blade.php. --}}
         <article x-data="{ isPreviewOpen: false }" class="rounded-md border border-gray-200 bg-white p-4 shadow-sm sm:p-6">
             <div class="flex flex-col justify-between gap-3 sm:flex-row sm:items-start sm:gap-4">
                 <div>
@@ -81,7 +80,6 @@
             </dl>
 
             @if ($isTeacher && $material->currentVersion)
-                {{-- Manter em sincronia com components/materials/file-preview-skeleton.blade.php. --}}
                 @include('livewire.materials.partials.file-preview', [
                     'version' => $material->currentVersion,
                     'previewUrl' => $previewUrl,
@@ -90,18 +88,10 @@
         </article>
 
         @if ($canViewVersionHistory)
-            {{-- Manter em sincronia com os gêmeos version-history-skeleton e version-form-skeleton. --}}
             <section class="mt-6 flex flex-col rounded-md border border-gray-200 bg-white p-4 shadow-sm sm:p-6">
                 <h2 class="order-1 text-lg font-semibold text-gray-900">Versões</h2>
 
-                <div wire:loading.block wire:target="saveVersion" role="status" aria-busy="true"
-                    class="order-3 mt-4 hidden sm:order-2">
-                    <x-materials.version-history-skeleton />
-                    <span class="sr-only">Atualizando histórico de versões…</span>
-                </div>
-
-                <div wire:loading.remove wire:target="saveVersion"
-                    class="order-3 mt-4 hidden overflow-x-auto sm:order-2 sm:block">
+                <div class="order-3 mt-4 hidden overflow-x-auto sm:order-2 sm:block">
                     <table class="min-w-full divide-y divide-gray-200">
                         <thead class="bg-gray-50">
                             <tr>
@@ -162,7 +152,7 @@
                     </table>
                 </div>
 
-                <div wire:loading.remove wire:target="saveVersion" class="order-3 mt-4 space-y-3 sm:hidden">
+                <div class="order-3 mt-4 space-y-3 sm:hidden">
                     @forelse ($versions as $version)
                         <article wire:key="material-version-mobile-{{ $version->id }}"
                             class="rounded-xl border border-slate-200 bg-slate-50/70 p-4">
