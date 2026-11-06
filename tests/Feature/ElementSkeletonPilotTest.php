@@ -20,6 +20,8 @@ it('serves accessible element placeholders before loading the teacher home conte
         ->assertSee('aria-label="Carregando materiais publicados recentemente"', false)
         ->assertSee('aria-label="Carregando materiais acessados recentemente"', false)
         ->assertSee('aria-busy="true"', false)
+        ->assertSee('x-bind:aria-busy="(!skeletonFailed).toString()"', false)
+        ->assertSee('Não foi possível carregar esta área.')
         ->assertDontSee('data-app-loading-skeleton', false);
 });
 
@@ -62,6 +64,7 @@ it('serves the library placeholder and targets only its result grid while filter
         ->assertOk()
         ->assertSee('aria-label="Carregando biblioteca de materiais"', false)
         ->assertSee('aria-busy="true"', false)
+        ->assertSee('Não foi possível carregar os materiais.')
         ->assertDontSee('data-app-loading-skeleton', false);
 
     Livewire::actingAs($teacher)

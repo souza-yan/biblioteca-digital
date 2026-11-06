@@ -1,5 +1,9 @@
-<div class="space-y-6 lg:space-y-8" aria-busy="true">
-    <section role="status" aria-label="Carregando categorias">
+<div class="space-y-6 lg:space-y-8" role="status" aria-busy="true"
+    x-data="{ skeletonFailed: !navigator.onLine }"
+    x-init="if (!skeletonFailed) setTimeout(() => skeletonFailed = true, 15000)"
+    x-on:offline.window="skeletonFailed = true"
+    x-bind:aria-busy="(!skeletonFailed).toString()">
+    <section x-show="!skeletonFailed" aria-label="Carregando categorias">
         <x-skeleton.line size="xl" class="w-56" />
         <div class="mt-5 grid grid-cols-[2.25rem_minmax(0,1fr)_2.25rem] items-center gap-2 sm:grid-cols-[2.5rem_minmax(0,1fr)_2.5rem] sm:gap-3">
             <x-skeleton.circle class="!size-9 sm:!size-10" />
@@ -13,7 +17,8 @@
         <span class="sr-only">Carregando…</span>
     </section>
 
-    <div class="grid min-w-0 grid-cols-1 gap-8 xl:grid-cols-[minmax(0,3fr)_minmax(19rem,2fr)]">
+    <div x-show="!skeletonFailed"
+        class="grid min-w-0 grid-cols-1 gap-8 xl:grid-cols-[minmax(0,3fr)_minmax(19rem,2fr)]">
         <section role="status" aria-label="Carregando materiais publicados recentemente">
             <div class="flex items-end justify-between gap-4">
                 <x-skeleton.line size="xl" class="w-80 max-w-[75%]" />
@@ -36,5 +41,12 @@
             </div>
             <span class="sr-only">Carregando…</span>
         </section>
+    </div>
+
+    <div x-cloak x-show="skeletonFailed" role="alert"
+        class="rounded-2xl border border-amber-200 bg-amber-50 px-5 py-6 text-sm text-amber-950">
+        <p class="font-semibold">Não foi possível carregar esta área.</p>
+        <button type="button" x-on:click="window.location.reload()"
+            class="mt-3 font-semibold text-blue-800 underline">Tentar novamente</button>
     </div>
 </div>
