@@ -1,0 +1,4 @@
+<div data-skeleton-layout="profile" class="mx-auto w-full max-w-screen-2xl space-y-6 px-4 py-6 sm:px-6 lg:space-y-8 lg:px-8 lg:py-8">
+    <div class="app-skeleton-block h-10 w-48 rounded-xl"></div>
+    <div class="grid grid-cols-1 gap-6 xl:grid-cols-2">@foreach (range(1, 4) as $card)<section class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6"><div class="flex items-center gap-3"><div class="app-skeleton-block size-11 rounded-xl"></div><div class="space-y-2"><div class="app-skeleton-block h-5 w-48 rounded-full"></div><div class="app-skeleton-block h-3 w-64 max-w-[55vw] rounded-full"></div></div></div><div class="mt-6 space-y-4"><div class="app-skeleton-block h-11 rounded-xl"></div><div class="app-skeleton-block h-11 rounded-xl"></div><div class="flex justify-end"><div class="app-skeleton-block h-11 w-36 rounded-xl"></div></div></div></section>@endforeach</div>
+</div>
