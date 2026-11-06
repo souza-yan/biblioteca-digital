@@ -104,3 +104,20 @@ it('serves role-specific material detail twins and targets only version history 
         ->assertSee('wire:target="saveVersion"', false)
         ->assertSee('aria-busy="true"', false);
 });
+
+it('serves accessible element twins for each dynamic profile card', function () {
+    $teacher = User::factory()->teacher()->create();
+
+    $this->actingAs($teacher)
+        ->get(route('profile.show'))
+        ->assertOk()
+        ->assertSee('aria-label="Carregando dados do perfil"', false)
+        ->assertSee('aria-label="Carregando segurança da conta"', false)
+        ->assertSee('aria-label="Carregando sessões do navegador"', false)
+        ->assertSee('Não foi possível carregar os dados do perfil.')
+        ->assertSee('Não foi possível carregar a segurança da conta.')
+        ->assertSee('Não foi possível carregar as sessões do navegador.')
+        ->assertSee('Tentar novamente')
+        ->assertSee('aria-busy="true"', false)
+        ->assertDontSee('data-app-loading-skeleton', false);
+});

@@ -19,7 +19,7 @@ it('allows every active role to restore its own password to the default', functi
     $this->actingAs($user)
         ->get(route('profile.show'))
         ->assertOk()
-        ->assertSee('Redefinir senha para o padrão');
+        ->assertSee('aria-label="Carregando segurança da conta"', false);
 
     Livewire::actingAs($user)
         ->test(ResetDefaultPassword::class)
