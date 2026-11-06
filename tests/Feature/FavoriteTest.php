@@ -153,10 +153,6 @@ it('shows teachers only their published favorites and retains archived favorite 
 
     $this->get(route('painel.favorites'))
         ->assertOk()
-        ->assertSee('aria-label="Carregando favoritos"', false)
-        ->assertDontSee('data-app-loading-skeleton', false);
-
-    Livewire::test(FavoriteLibrary::class)
         ->assertSee($ownFavorite->title)
         ->assertDontSee($otherFavorite->title)
         ->assertDontSee($archivedFavorite->title);

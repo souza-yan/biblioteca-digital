@@ -74,9 +74,7 @@ Route::middleware([
     });
 
     Route::middleware('role:teacher')->group(function () {
-        Route::get('/painel/favoritos', FavoriteLibrary::class)
-            ->lazy('on-load')
-            ->name('painel.favorites');
+        Route::get('/painel/favoritos', FavoriteLibrary::class)->name('painel.favorites');
     });
 
 });

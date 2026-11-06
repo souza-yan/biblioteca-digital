@@ -30,11 +30,6 @@ class FavoriteLibrary extends Component
         Gate::authorize('browseLibrary', Material::class);
     }
 
-    public function placeholder(): View
-    {
-        return view('livewire.materials.favorite-library-placeholder');
-    }
-
     public function removeFavorite(int $materialId, ToggleFavorite $toggleFavorite): void
     {
         $material = Material::query()->findOrFail($materialId);
@@ -73,7 +68,7 @@ class FavoriteLibrary extends Component
         $this->showMobileMaterialDetail = true;
     }
 
-    #[Layout('layouts.app', ['usesElementSkeletons' => true])]
+    #[Layout('layouts.app')]
     public function render(): View
     {
         Gate::authorize('browseLibrary', Material::class);
