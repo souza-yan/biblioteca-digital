@@ -42,8 +42,6 @@
     },
     sessionExpired: false,
 }" @keydown.escape.window="closeMobileMenu()" x-on:session-expired.window="sessionExpired = true">
-    <x-app-loading-skeleton />
-
     <x-banner />
 
     {{-- Avisos globais para falhas que impedem novas interações Livewire. --}}

@@ -20,32 +20,6 @@
     --sidebar-speed: 400ms;
 }
 
-@keyframes app-skeleton-bounce {
-    from {
-        transform: translateY(0);
-    }
-
-    to {
-        transform: translateY(-2px);
-    }
-}
-
-@keyframes app-skeleton-shimmer {
-    from {
-        background-position: 200% 0;
-    }
-
-    to {
-        background-position: -200% 0;
-    }
-}
-
-.app-skeleton-block {
-    background: linear-gradient(90deg, #eef2f7 25%, #e2e8f0 50%, #eef2f7 75%);
-    background-size: 200% 100%;
-    animation: app-skeleton-bounce 300ms ease-in-out infinite alternate, app-skeleton-shimmer 1.2s linear infinite;
-}
-
 #app-sidebar {
     position: fixed;
     inset: 0 auto 0 0;
@@ -180,9 +154,5 @@
     #app-main,
     .sidebar-label {
         transition-duration: 1ms;
-    }
-
-    .app-skeleton-block {
-        animation: none;
     }
 }
