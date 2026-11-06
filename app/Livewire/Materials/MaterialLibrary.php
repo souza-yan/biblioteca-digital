@@ -56,6 +56,11 @@ class MaterialLibrary extends Component
         $this->authorizeLibrary();
     }
 
+    public function placeholder(): View
+    {
+        return view('livewire.materials.material-library-placeholder');
+    }
+
     public function updatedSearch(): void
     {
         $this->authorizeLibrary();
@@ -189,7 +194,7 @@ class MaterialLibrary extends Component
             ->send();
     }
 
-    #[Layout('layouts.app')]
+    #[Layout('layouts.app', ['usesElementSkeletons' => true])]
     public function render(): View
     {
         $this->authorizeLibrary();

@@ -5,25 +5,28 @@ use App\Models\User;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Route;
 
-it('renders the dashboard skeleton with accessible loading state', function () {
+it('renders element skeletons on the teacher dashboard without the legacy overlay', function () {
     $teacher = User::factory()->teacher()->create();
 
     $this->actingAs($teacher)
         ->get(route('dashboard'))
-        ->assertSee('data-skeleton-variant="dashboard"', false)
-        ->assertSee('data-skeleton-layout="dashboard"', false)
-        ->assertSee('data-minimum-duration="450"', false)
+        ->assertSee('aria-label="Carregando busca de materiais"', false)
+        ->assertSee('aria-label="Carregando categorias"', false)
+        ->assertSee('aria-label="Carregando materiais publicados recentemente"', false)
         ->assertSee('role="status"', false)
-        ->assertSee('x-bind:aria-busy="visible.toString()"', false);
+        ->assertSee('aria-busy="true"', false)
+        ->assertDontSee('data-app-loading-skeleton', false);
 });
 
-it('renders the material grid skeleton in the teacher library', function () {
+it('renders the element skeleton in the teacher library without the legacy overlay', function () {
     $teacher = User::factory()->teacher()->create();
 
     $this->actingAs($teacher)
         ->get(route('painel.library'))
-        ->assertSee('data-skeleton-variant="material-grid"', false)
-        ->assertSee('data-skeleton-layout="material-grid"', false);
+        ->assertSee('aria-label="Carregando biblioteca de materiais"', false)
+        ->assertSee('role="status"', false)
+        ->assertSee('aria-busy="true"', false)
+        ->assertDontSee('data-app-loading-skeleton', false);
 });
 
 it('renders the category grid skeleton in the category library', function () {

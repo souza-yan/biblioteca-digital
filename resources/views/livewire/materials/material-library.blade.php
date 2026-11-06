@@ -1,4 +1,6 @@
 <div>
+    @php($listLoadingTargets = 'search,authorFilter,categoryFilter,titleSortDirection,toggleTitleSort,applyRecentSearch,setPage,previousPage,nextPage,gotoPage')
+
     <div class="mx-auto w-full max-w-screen-2xl space-y-6 px-4 py-6 sm:px-6 lg:space-y-8 lg:px-8 lg:py-8">
         <div class="mb-8 flex items-center justify-between gap-4">
             <h1 class="text-3xl font-bold tracking-tight text-blue-800 sm:text-4xl">Materiais publicados</h1>
@@ -47,7 +49,16 @@
             </div>
         @endif
 
-        <div class="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+        <div wire:loading.grid wire:target="{{ $listLoadingTargets }}" role="status" aria-busy="true"
+            class="hidden grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+            @foreach (range(1, 8) as $card)
+                <x-materials.card-skeleton />
+            @endforeach
+            <span class="sr-only">Carregando…</span>
+        </div>
+
+        <div wire:loading.remove wire:target="{{ $listLoadingTargets }}" aria-busy="false"
+            class="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
             @forelse ($materials as $material)
                 <x-materials.card :material="$material" :version="$material->currentVersion"
                     wire:key="published-material-{{ $material->id }}">

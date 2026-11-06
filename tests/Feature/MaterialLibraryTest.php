@@ -54,6 +54,7 @@ it('allows staff to browse published materials and forbids administrators from t
 
     $this->actingAs(User::factory()->staffInSchool()->create());
 
+    Livewire::withoutLazyLoading();
     $this->get('/painel/biblioteca')
         ->assertOk()
         ->assertSee($published->title);
@@ -239,6 +240,7 @@ it('opens the selected category from the teacher category library as a filtered 
     $other = Material::factory()->published()->create(['title' => 'Material de outra categoria']);
     $this->actingAs($teacher);
 
+    Livewire::withoutLazyLoading();
     $this->get(route('painel.library', ['categoryFilter' => $category->getKey()]))
         ->assertOk()
         ->assertSee($matching->title)
@@ -313,5 +315,6 @@ it('renders the published library route for teachers', function () {
     $this->actingAs(User::factory()->teacher()->create())
         ->get('/painel/biblioteca')
         ->assertOk()
-        ->assertSee('Materiais publicados');
+        ->assertSee('aria-label="Carregando biblioteca de materiais"', false)
+        ->assertDontSee('data-app-loading-skeleton', false);
 });
