@@ -2,7 +2,7 @@
 
 use App\Actions\Dashboard\BuildDashboard;
 use App\Enums\ActivityAction;
-use App\Livewire\Dashboard\TeacherDashboardContent;
+use App\Livewire\Materials\FavoriteButton;
 use App\Livewire\Materials\HomeMaterialSearch;
 use App\Models\ActivityLog;
 use App\Models\Category;
@@ -10,7 +10,6 @@ use App\Models\Download;
 use App\Models\Material;
 use App\Models\MaterialVersion;
 use App\Models\User;
-use Livewire\Livewire;
 
 it('shows teachers recent published materials in the educational library home', function () {
     $teacher = User::factory()->teacher()->create();
@@ -28,12 +27,6 @@ it('shows teachers recent published materials in the educational library home', 
         ->get(route('dashboard'))
         ->assertOk()
         ->assertSee('Encontre recursos para suas aulas')
-        ->assertSee('aria-label="Carregando categorias"', false)
-        ->assertSeeLivewire(HomeMaterialSearch::class);
-
-    Livewire::withoutLazyLoading()
-        ->actingAs($teacher)
-        ->test(TeacherDashboardContent::class)
         ->assertSee('Explore por categoria')
         ->assertSee('Materiais publicados recentemente')
         ->assertSee('Publicado recentemente')
@@ -42,7 +35,9 @@ it('shows teachers recent published materials in the educational library home', 
         ->assertViewHas(
             'publishedMaterials',
             fn ($materials): bool => $materials->every->relationLoaded('currentVersion'),
-        );
+        )
+        ->assertSeeLivewire(HomeMaterialSearch::class)
+        ->assertSeeLivewire(FavoriteButton::class);
 });
 
 it('shows active categories with their real published material counts to teachers', function () {
@@ -57,11 +52,11 @@ it('shows active categories with their real published material counts to teacher
         fn (Category $additionalCategory) => Material::factory()->published()->for($additionalCategory)->create(),
     );
 
-    Livewire::withoutLazyLoading()
-        ->actingAs($teacher)
-        ->test(TeacherDashboardContent::class)
+    $this->actingAs($teacher)
+        ->get(route('dashboard'))
+        ->assertOk()
         ->assertSee('Arduino')
-        ->assertSee('materiais publicados')
+        ->assertSee('2 materiais publicados')
         ->assertSee(route('painel.library', ['categoryFilter' => $category->getKey()]), false)
         ->assertViewHas('categories', function ($categories) use ($category): bool {
             $arduino = $categories->firstWhere('id', $category->getKey());
@@ -124,9 +119,9 @@ it('shows teachers only their four latest unique published downloads and preview
         $olderAccess->getKey(),
     ]);
 
-    Livewire::withoutLazyLoading()
-        ->actingAs($teacher)
-        ->test(TeacherDashboardContent::class)
+    $this->actingAs($teacher)
+        ->get(route('dashboard'))
+        ->assertOk()
         ->assertSee('Continue de onde parou')
         ->assertSee('Baixado por mim')
         ->assertSee('Prévia por mim')
@@ -332,15 +327,11 @@ it('shows teacher navigation without management links or administrative metrics'
     $this->actingAs($teacher)
         ->get(route('dashboard'))
         ->assertOk()
+        ->assertSee('Explore por categoria')
         ->assertSee(route('painel.library.categories'), false)
         ->assertSee('Favoritos')
+        ->assertSee('Continue de onde parou')
         ->assertDontSee('Usuários ativos')
         ->assertDontSee('Atividades recentes')
         ->assertDontSee('Gerenciar materiais');
-
-    Livewire::withoutLazyLoading()
-        ->actingAs($teacher)
-        ->test(TeacherDashboardContent::class)
-        ->assertSee('Explore por categoria')
-        ->assertSee('Continue de onde parou');
 });

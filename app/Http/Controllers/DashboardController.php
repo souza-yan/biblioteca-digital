@@ -17,10 +17,6 @@ class DashboardController extends Controller
         $actor = $request->user();
         abort_unless($actor instanceof User, 403);
 
-        if ($actor->isTeacher()) {
-            return view('dashboard', ['isTeacher' => true]);
-        }
-
         return view('dashboard', $buildDashboard->handle(
             $actor,
             $request->string('downloadPeriod', '30')->toString(),

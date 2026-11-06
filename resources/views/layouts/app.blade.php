@@ -42,9 +42,7 @@
     },
     sessionExpired: false,
 }" @keydown.escape.window="closeMobileMenu()" x-on:session-expired.window="sessionExpired = true">
-    @unless ($usesElementSkeletons ?? false)
-        <x-app-loading-skeleton />
-    @endunless
+    <x-app-loading-skeleton />
 
     <x-banner />
 
