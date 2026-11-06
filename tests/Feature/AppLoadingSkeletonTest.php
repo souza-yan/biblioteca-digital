@@ -38,13 +38,15 @@ it('renders the category grid skeleton in the category library', function () {
         ->assertSee('data-skeleton-layout="category-library"', false);
 });
 
-it('renders a dedicated skeleton in the favorites library', function () {
+it('renders element skeletons in the favorites library without the legacy overlay', function () {
     $teacher = User::factory()->teacher()->create();
 
     $this->actingAs($teacher)
         ->get(route('painel.favorites'))
-        ->assertSee('data-skeleton-variant="favorite-grid"', false)
-        ->assertSee('data-skeleton-layout="favorite-grid"', false);
+        ->assertSee('aria-label="Carregando favoritos"', false)
+        ->assertSee('aria-busy="true"', false)
+        ->assertSee('Não foi possível carregar os favoritos.')
+        ->assertDontSee('data-app-loading-skeleton', false);
 });
 
 it('renders the material detail skeleton on material pages', function () {
