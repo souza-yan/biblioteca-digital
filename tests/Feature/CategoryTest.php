@@ -45,10 +45,10 @@ it('opens a read-only category library for teachers with links to published mate
 
     $this->get(route('painel.library.categories'))
         ->assertOk()
-        ->assertSee('aria-label="Carregando categorias"', false)
-        ->assertDontSee('data-app-loading-skeleton', false)
-        ->assertDontSee('Robótica Criativa')
+        ->assertSee('Robótica Criativa')
         ->assertDontSee('robotica-criativa')
+        ->assertSee('material publicado')
+        ->assertSee(route('painel.library', ['categoryFilter' => $activeCategory->getKey()]), false)
         ->assertDontSee('Categoria sem materiais')
         ->assertDontSee('Categoria inativa')
         ->assertDontSee('Nova categoria')
@@ -91,10 +91,10 @@ it('shows creation controls in the category library for staff', function () {
     $this->actingAs($staff)
         ->get(route('painel.library.categories'))
         ->assertOk()
-        ->assertSee('aria-label="Carregando categorias"', false)
-        ->assertDontSee('data-app-loading-skeleton', false)
-        ->assertDontSee($category->name)
-        ->assertDontSee($emptyCategory->name);
+        ->assertSee($category->name)
+        ->assertSee($emptyCategory->name)
+        ->assertSee('Nova categoria')
+        ->assertSee('Novo material');
 
     Livewire::actingAs($staff)
         ->test(CategoryLibrary::class)

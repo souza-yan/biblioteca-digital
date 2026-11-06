@@ -52,11 +52,6 @@ class CategoryLibrary extends Component
         Gate::authorize('viewAny', Category::class);
     }
 
-    public function placeholder(): View
-    {
-        return view('livewire.categories.category-library-placeholder');
-    }
-
     public function updatedSearch(): void
     {
         Gate::authorize('viewAny', Category::class);
@@ -210,7 +205,7 @@ class CategoryLibrary extends Component
         }
     }
 
-    #[Layout('layouts.app', ['usesElementSkeletons' => true])]
+    #[Layout('layouts.app')]
     public function render(ListCategoryOptions $listCategoryOptions): View
     {
         Gate::authorize('viewAny', Category::class);

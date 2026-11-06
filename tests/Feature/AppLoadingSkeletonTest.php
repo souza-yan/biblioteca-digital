@@ -29,15 +29,13 @@ it('renders the element skeleton in the teacher library without the legacy overl
         ->assertDontSee('data-app-loading-skeleton', false);
 });
 
-it('renders element skeletons in the category library without the legacy overlay', function () {
+it('renders the category grid skeleton in the category library', function () {
     $teacher = User::factory()->teacher()->create();
 
     $this->actingAs($teacher)
         ->get(route('painel.library.categories'))
-        ->assertSee('aria-label="Carregando categorias"', false)
-        ->assertSee('aria-busy="true"', false)
-        ->assertSee('Não foi possível carregar as categorias.')
-        ->assertDontSee('data-app-loading-skeleton', false);
+        ->assertSee('data-skeleton-variant="category-library"', false)
+        ->assertSee('data-skeleton-layout="category-library"', false);
 });
 
 it('renders element skeletons in the favorites library without the legacy overlay', function () {

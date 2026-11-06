@@ -1,6 +1,5 @@
 <div>
     @php($isStaff = auth()->user()?->isStaff() ?? false)
-    @php($listLoadingTargets = 'search,setPage,previousPage,nextPage,gotoPage')
 
     <div class="mx-auto w-full max-w-screen-2xl space-y-6 px-4 py-6 sm:px-6 lg:space-y-8 lg:px-8 lg:py-8">
         <section @class([
@@ -63,81 +62,97 @@
                 </div>
             </div>
 
-            <div wire:loading.block wire:target="{{ $listLoadingTargets }}" role="status" aria-busy="true"
-                class="hidden">
-                @if ($isStaff)
-                    <div class="grid grid-cols-2 gap-3 md:hidden">
-                        @foreach (range(1, 6) as $card)
-                            <x-categories.library-mobile-card-skeleton />
-                        @endforeach
-                    </div>
-                @endif
-
-                <div @class([
-                    'grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3',
-                    'hidden md:grid' => $isStaff,
-                ])>
-                    @foreach (range(1, 6) as $card)
-                        <x-categories.library-card-skeleton />
-                    @endforeach
-                </div>
-                <span class="sr-only">Carregando…</span>
-            </div>
-
-            <div wire:loading.remove wire:target="{{ $listLoadingTargets }}" aria-busy="false">
-                @if ($isStaff)
-                    <div class="grid grid-cols-2 gap-3 md:hidden">
-                        @forelse ($categories as $category)
-                            <x-categories.library-mobile-card wire:key="category-library-mobile-{{ $category->id }}" :category="$category">
-                                @can('update', $category)
-                                    <x-slot:actions>
-                                        <x-categories.status-badge :active="$category->is_active" />
-                                        <div class="flex gap-2">
-                                            <x-ts-button color="blue" wire:click="editCategory({{ $category->id }})"
-                                                aria-label="Editar categoria {{ $category->name }}" title="Editar categoria"
-                                                class="!size-9 !p-0 justify-center">
-                                                <x-ts-icon icon="pencil-square" outline class="size-5 text-white" />
-                                            </x-ts-button>
-                                            <x-ts-button :color="$category->is_active ? 'red' : 'emerald'"
-                                                wire:click="toggleCategoryActive({{ $category->id }})"
-                                                wire:loading.attr="disabled" wire:target="toggleCategoryActive({{ $category->id }})"
-                                                :aria-label="$category->is_active ? 'Desativar categoria '.$category->name : 'Ativar categoria '.$category->name"
-                                                :title="$category->is_active ? 'Desativar categoria' : 'Ativar categoria'"
-                                                class="!size-9 !p-0 justify-center">
-                                                <x-ts-icon :icon="$category->is_active ? 'no-symbol' : 'check-circle'" outline class="size-5 text-white" />
-                                            </x-ts-button>
-                                        </div>
-                                    </x-slot:actions>
-                                @endcan
-                            </x-categories.library-mobile-card>
-                        @empty
-                            <div class="col-span-2 rounded-2xl border border-dashed border-slate-300 bg-white px-4 py-10 text-center text-sm text-slate-600">
-                                Nenhuma categoria encontrada.
-                            </div>
-                        @endforelse
-                    </div>
-                @endif
-
-                <div @class([
-                    'grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3',
-                    'hidden md:grid' => $isStaff,
-                ])>
+            @if ($isStaff)
+                <div class="grid grid-cols-2 gap-3 md:hidden">
                     @forelse ($categories as $category)
-                        <x-categories.library-card wire:key="category-library-{{ $category->id }}" :category="$category" />
+                        <article wire:key="category-library-mobile-{{ $category->id }}"
+                            class="flex min-h-40 min-w-0 flex-col rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+                            <a href="{{ route('painel.library', ['categoryFilter' => $category->getKey()]) }}"
+                                class="flex min-h-0 flex-1 flex-col rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-600">
+                                <span class="flex size-10 items-center justify-center rounded-xl bg-blue-50 text-blue-700">
+                                    <x-ts-icon icon="folder" outline class="size-5" />
+                                </span>
+                                <span class="mt-3 line-clamp-2 text-sm font-semibold leading-5 text-slate-900">{{ $category->name }}</span>
+                                <span class="mt-auto pt-3 text-xs font-medium text-slate-500">
+                                    {{ $category->published_materials_count }}
+                                    {{ $category->published_materials_count === 1 ? 'material' : 'materiais' }}
+                                </span>
+                            </a>
+                            @can('update', $category)
+                                <div class="mt-3 flex items-center justify-between border-t border-slate-100 pt-3">
+                                    <x-categories.status-badge :active="$category->is_active" />
+                                    <div class="flex gap-2">
+                                        <x-ts-button color="blue" wire:click="editCategory({{ $category->id }})"
+                                            aria-label="Editar categoria {{ $category->name }}" title="Editar categoria"
+                                            class="!size-9 !p-0 justify-center">
+                                            <x-ts-icon icon="pencil-square" outline class="size-5 text-white" />
+                                        </x-ts-button>
+                                        <x-ts-button :color="$category->is_active ? 'red' : 'emerald'"
+                                            wire:click="toggleCategoryActive({{ $category->id }})"
+                                            wire:loading.attr="disabled" wire:target="toggleCategoryActive({{ $category->id }})"
+                                            :aria-label="$category->is_active ? 'Desativar categoria '.$category->name : 'Ativar categoria '.$category->name"
+                                            :title="$category->is_active ? 'Desativar categoria' : 'Ativar categoria'"
+                                            class="!size-9 !p-0 justify-center">
+                                            <x-ts-icon :icon="$category->is_active ? 'no-symbol' : 'check-circle'" outline class="size-5 text-white" />
+                                        </x-ts-button>
+                                    </div>
+                                </div>
+                            @endcan
+                        </article>
                     @empty
-                        <div class="rounded-2xl border border-dashed border-slate-300 bg-white px-6 py-12 text-center md:col-span-2 xl:col-span-3">
-                            <p class="text-lg font-semibold text-black">Nenhuma categoria encontrada.</p>
-                            <p class="mt-2 text-base text-black">
-                                Tente outro termo de pesquisa ou volte mais tarde para consultar novas categorias.
-                            </p>
+                        <div class="col-span-2 rounded-2xl border border-dashed border-slate-300 bg-white px-4 py-10 text-center text-sm text-slate-600">
+                            Nenhuma categoria encontrada.
                         </div>
                     @endforelse
                 </div>
+            @endif
 
-                @if ($categories->hasPages())
-                    <x-pagination :paginator="$categories" />
-                @endif
+            <div @class([
+                'grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3',
+                'hidden md:grid' => $isStaff,
+            ])>
+                @forelse ($categories as $category)
+                    <a
+                        wire:key="category-library-{{ $category->id }}"
+                        href="{{ route('painel.library', ['categoryFilter' => $category->getKey()]) }}"
+                        class="group flex min-h-48 flex-col rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-blue-300 hover:shadow-md sm:p-6"
+                    >
+                        <span class="flex size-12 items-center justify-center rounded-2xl bg-blue-50 text-blue-700">
+                            <svg class="size-6" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="1.7" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M3 7.5A1.5 1.5 0 0 1 4.5 6H10l2 2h7.5A1.5 1.5 0 0 1 21 9.5v8a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 17.5v-10Z" />
+                            </svg>
+                        </span>
+                        <span class="mt-4 block text-xl font-semibold text-black group-hover:text-blue-900">
+                            {{ $category->name }}
+                        </span>
+                        <span class="mt-2 flex-1 text-base leading-6 text-black">
+                            {{ $category->description ?: 'Consulte os materiais publicados nesta categoria.' }}
+                        </span>
+                        <span class="mt-5 flex items-center justify-between gap-3 border-t border-slate-100 pt-4">
+                            <span class="text-base font-medium text-black">
+                                {{ $category->published_materials_count }}
+                                {{ $category->published_materials_count === 1 ? 'material publicado' : 'materiais publicados' }}
+                            </span>
+                            <span class="text-base font-semibold text-blue-700 group-hover:text-blue-900">
+                                Ver materiais <span aria-hidden="true">→</span>
+                            </span>
+                        </span>
+                    </a>
+                @empty
+                    <div class="rounded-2xl border border-dashed border-slate-300 bg-white px-6 py-12 text-center md:col-span-2 xl:col-span-3">
+                        <p class="text-lg font-semibold text-black">Nenhuma categoria encontrada.</p>
+                        <p class="mt-2 text-base text-black">
+                            Tente outro termo de pesquisa ou volte mais tarde para consultar novas categorias.
+                        </p>
+                    </div>
+                @endforelse
             </div>
+
+            @if ($categories->hasPages())
+                <x-pagination :paginator="$categories" />
+            @endif
         </section>
 
         @can('create', \App\Models\Category::class)
