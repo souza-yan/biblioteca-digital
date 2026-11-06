@@ -66,7 +66,9 @@ Route::middleware([
     });
 
     Route::middleware('role:staff,teacher')->group(function () {
-        Route::get('/painel/biblioteca/categorias', CategoryLibrary::class)->name('painel.library.categories');
+        Route::get('/painel/biblioteca/categorias', CategoryLibrary::class)
+            ->lazy('on-load')
+            ->name('painel.library.categories');
         Route::get('/painel/biblioteca', MaterialLibrary::class)
             ->lazy('on-load')
             ->name('painel.library');
