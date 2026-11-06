@@ -271,6 +271,11 @@ it('shows published material details and an enabled download link to teachers', 
 
     $this->get(route('painel.library.show', $material))
         ->assertOk()
+        ->assertSee('aria-label="Carregando detalhes do material"', false)
+        ->assertDontSee($material->title)
+        ->assertDontSee('data-app-loading-skeleton', false);
+
+    Livewire::test(MaterialDetail::class, ['material' => $material])
         ->assertSee($material->title)
         ->assertSee('aria-label="Baixar '.$material->title.'"', false)
         ->assertSee(route('downloads.show', $material), false);
@@ -282,8 +287,6 @@ it('shows published material details and an enabled download link to teachers', 
         'description' => 'Material consultado.',
     ]);
 
-    Livewire::test(MaterialDetail::class, ['material' => $material])
-        ->assertSee($material->title);
 });
 
 it('allows staff to view global material details without managing materials from others', function () {

@@ -3,6 +3,7 @@
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DownloadController;
 use App\Http\Controllers\MaterialCoverController;
+use App\Http\Controllers\MaterialDetailPageController;
 use App\Http\Controllers\MaterialThumbnailController;
 use App\Http\Controllers\MostDownloadedMaterialsController;
 use App\Http\Controllers\PreviewController;
@@ -10,7 +11,6 @@ use App\Livewire\Activity\ActivityLogIndex;
 use App\Livewire\Categories\CategoryLibrary;
 use App\Livewire\Categories\CategoryManager;
 use App\Livewire\Materials\FavoriteLibrary;
-use App\Livewire\Materials\MaterialDetail;
 use App\Livewire\Materials\MaterialLibrary;
 use App\Livewire\Materials\MaterialManager;
 use App\Livewire\Schools\SchoolManager;
@@ -62,7 +62,9 @@ Route::middleware([
         Route::get('/painel/materiais-mais-baixados', MostDownloadedMaterialsController::class)
             ->name('painel.materials.most-downloaded');
         Route::get('/painel/materiais', MaterialManager::class)->name('painel.materials');
-        Route::get('/painel/materiais/{material}', MaterialDetail::class)->name('painel.materials.show');
+        Route::get('/painel/materiais/{material}', MaterialDetailPageController::class)
+            ->middleware('can:view,material')
+            ->name('painel.materials.show');
     });
 
     Route::middleware('role:staff,teacher')->group(function () {
@@ -72,7 +74,9 @@ Route::middleware([
         Route::get('/painel/biblioteca', MaterialLibrary::class)
             ->lazy('on-load')
             ->name('painel.library');
-        Route::get('/painel/biblioteca/{material}', MaterialDetail::class)->name('painel.library.show');
+        Route::get('/painel/biblioteca/{material}', MaterialDetailPageController::class)
+            ->middleware('can:view,material')
+            ->name('painel.library.show');
     });
 
     Route::middleware('role:teacher')->group(function () {

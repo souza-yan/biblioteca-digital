@@ -31,9 +31,14 @@ class MaterialDetail extends Component
     #[Locked]
     public int $materialId;
 
-    public function mount(Material $material, LogActivity $logActivity): void
+    public function mount(LogActivity $logActivity, ?Material $material = null): void
     {
-        $this->materialId = $material->getKey();
+        if ($material instanceof Material) {
+            $this->materialId = $material->getKey();
+        }
+
+        abort_unless(isset($this->materialId), 404);
+
         $viewableMaterial = $this->findViewableMaterial();
         $actor = $this->currentUser();
 
@@ -45,6 +50,24 @@ class MaterialDetail extends Component
                 $viewableMaterial,
             );
         }
+    }
+
+    /**
+     * @param  array{materialId: int}  $params
+     */
+    public function placeholder(array $params): View
+    {
+        $actor = $this->currentUser();
+        $material = Material::query()
+            ->select(['id', 'current_version_id', 'created_by'])
+            ->findOrFail($params['materialId']);
+
+        return view('livewire.materials.material-detail-placeholder', [
+            'isTeacher' => $actor->isTeacher(),
+            'hasCurrentVersion' => $material->current_version_id !== null,
+            'canViewVersionHistory' => $actor->isAdmin() || $actor->isStaff(),
+            'canManageVersions' => Gate::allows('create', [MaterialVersion::class, $material]),
+        ]);
     }
 
     public function toggleFavorite(ToggleFavorite $toggleFavorite): void
@@ -109,7 +132,7 @@ class MaterialDetail extends Component
         }
     }
 
-    #[Layout('layouts.app')]
+    #[Layout('layouts.app', ['usesElementSkeletons' => true])]
     public function render(): View
     {
         $material = $this->findViewableMaterial();

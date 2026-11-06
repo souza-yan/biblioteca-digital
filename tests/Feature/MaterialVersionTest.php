@@ -69,6 +69,10 @@ it('shows version history to administrators but not teachers', function (string 
 
     $this->get(route('painel.materials.show', $material))
         ->assertOk()
+        ->assertSee('aria-label="Carregando detalhes do material"', false)
+        ->assertDontSee($version->original_name);
+
+    Livewire::test(MaterialDetail::class, ['material' => $material])
         ->assertSee('Versões')
         ->assertSee($version->original_name)
         ->assertDontSee(route('downloads.version', [$material, $version]), false)
@@ -85,10 +89,13 @@ it('does not expose version history or permit uploads to teachers', function () 
     $this->get(route('painel.materials.show', $material))->assertForbidden();
     $this->get(route('painel.library.show', $material))
         ->assertOk()
+        ->assertSee('aria-label="Carregando detalhes do material"', false)
         ->assertDontSee('Versões')
         ->assertDontSee($version->original_name);
 
     Livewire::test(MaterialDetail::class, ['material' => $material])
+        ->assertDontSee('Versões')
+        ->assertDontSee($version->original_name)
         ->call('saveVersion')
         ->assertForbidden();
 });

@@ -2,9 +2,11 @@
 
 use App\Livewire\Dashboard\TeacherDashboardContent;
 use App\Livewire\Materials\HomeMaterialSearch;
+use App\Livewire\Materials\MaterialDetail;
 use App\Livewire\Materials\MaterialLibrary;
 use App\Models\Category;
 use App\Models\Material;
+use App\Models\MaterialVersion;
 use App\Models\User;
 use Livewire\Livewire;
 
@@ -74,4 +76,31 @@ it('serves the library placeholder and targets only its result grid while filter
         ->assertSee('wire:loading.remove', false)
         ->assertSee('wire:target="search,authorFilter,categoryFilter,titleSortDirection,toggleTitleSort,applyRecentSearch,setPage,previousPage,nextPage,gotoPage"', false)
         ->assertSee('aria-busy="false"', false);
+});
+
+it('serves role-specific material detail twins and targets only version history while saving', function () {
+    $teacher = User::factory()->teacher()->create();
+    $publishedMaterial = Material::factory()->published()->create();
+
+    $this->actingAs($teacher)
+        ->get(route('painel.library.show', $publishedMaterial))
+        ->assertSee('aria-label="Carregando detalhes do material"', false)
+        ->assertDontSee('Atualizando histórico de versões…')
+        ->assertDontSee('data-app-loading-skeleton', false);
+
+    $admin = User::factory()->admin()->create();
+    $managedMaterial = Material::factory()->create(['created_by' => $admin->getKey()]);
+    MaterialVersion::factory()->for($managedMaterial)->create();
+
+    $this->actingAs($admin)
+        ->get(route('painel.materials.show', $managedMaterial))
+        ->assertSee('aria-label="Carregando detalhes do material"', false)
+        ->assertSee('Não foi possível carregar os detalhes do material.');
+
+    Livewire::actingAs($admin)
+        ->test(MaterialDetail::class, ['material' => $managedMaterial])
+        ->assertSee('wire:loading.block', false)
+        ->assertSee('wire:loading.remove', false)
+        ->assertSee('wire:target="saveVersion"', false)
+        ->assertSee('aria-busy="true"', false);
 });

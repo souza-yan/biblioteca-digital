@@ -51,15 +51,24 @@ it('renders element skeletons in the favorites library without the legacy overla
         ->assertDontSee('data-app-loading-skeleton', false);
 });
 
-it('renders the material detail skeleton on material pages', function () {
-    $teacher = User::factory()->teacher()->create();
-    $material = Material::factory()->published()->create();
+it('renders element skeletons on material detail pages without the legacy overlay', function (string $role, string $routeName) {
+    $user = $role === 'teacher'
+        ? User::factory()->teacher()->create()
+        : User::factory()->admin()->create();
+    $material = $role === 'teacher'
+        ? Material::factory()->published()->create()
+        : Material::factory()->create();
 
-    $this->actingAs($teacher)
-        ->get(route('painel.library.show', $material))
-        ->assertSee('data-skeleton-variant="material-detail"', false)
-        ->assertSee('data-skeleton-layout="material-detail"', false);
-});
+    $this->actingAs($user)
+        ->get(route($routeName, $material))
+        ->assertSee('aria-label="Carregando detalhes do material"', false)
+        ->assertSee('aria-busy="true"', false)
+        ->assertSee('Não foi possível carregar os detalhes do material.')
+        ->assertDontSee('data-app-loading-skeleton', false);
+})->with([
+    'teacher detail' => ['teacher', 'painel.library.show'],
+    'management detail' => ['admin', 'painel.materials.show'],
+]);
 
 it('renders the management list skeleton on administrative listings', function () {
     $admin = User::factory()->admin()->create();
