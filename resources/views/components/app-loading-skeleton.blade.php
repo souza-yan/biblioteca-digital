@@ -1,25 +1,18 @@
 @php
     $variant = match (true) {
         request()->routeIs('dashboard') => 'dashboard',
-        request()->routeIs('painel.library') => 'material-grid',
-        request()->routeIs('painel.favorites') => 'favorite-grid',
-        request()->routeIs('painel.library.categories') => 'category-library',
-        request()->routeIs('painel.categories') => 'category-management',
+        request()->routeIs('painel.library', 'painel.favorites') => 'material-grid',
+        request()->routeIs('painel.library.categories', 'painel.categories') => 'category-grid',
         request()->routeIs('painel.library.show', 'painel.materials.show') => 'material-detail',
         request()->routeIs('profile.show') => 'profile',
-        request()->routeIs('painel.materials') => 'material-management',
-        request()->routeIs('painel.materials.most-downloaded') => 'most-downloaded',
-        request()->routeIs('painel.users') => 'user-management',
-        request()->routeIs('painel.schools') => 'school-management',
-        request()->routeIs('painel.activities') => 'activity-management',
+        request()->routeIs('painel.materials', 'painel.materials.most-downloaded', 'painel.users', 'painel.schools', 'painel.activities') => 'management-list',
         default => 'fallback',
     };
 
     $component = match ($variant) {
         'dashboard' => 'skeleton.dashboard',
         'material-grid' => 'skeleton.material-grid',
-        'favorite-grid' => 'skeleton.favorite-grid',
-        'category-library' => 'skeleton.category-grid',
+        'category-grid' => 'skeleton.category-grid',
         'material-detail' => 'skeleton.material-detail',
         'profile' => 'skeleton.profile',
         default => 'skeleton.management-list',
@@ -30,7 +23,7 @@
     visible: true,
     pendingRequests: 1,
     shownAt: performance.now(),
-    minimumDuration: 450,
+    minimumDuration: 350,
     hideTimer: null,
     start() {
         window.clearTimeout(this.hideTimer);
@@ -74,8 +67,7 @@
     },
 }" x-show="visible" x-transition.opacity.duration.150ms x-bind:aria-hidden="(! visible).toString()"
     x-bind:aria-busy="visible.toString()" data-app-loading-skeleton data-skeleton-variant="{{ $variant }}"
-    data-minimum-duration="450"
-    class="app-loading-overlay fixed z-30 overflow-x-hidden overflow-y-auto bg-slate-50" role="status" aria-live="polite"
+    class="app-loading-overlay fixed z-30 overflow-y-auto bg-slate-50" role="status" aria-live="polite"
     aria-label="Carregando conteúdo">
     <x-dynamic-component :component="$component" :mode="$variant" />
     <span class="sr-only">Carregando conteúdo</span>

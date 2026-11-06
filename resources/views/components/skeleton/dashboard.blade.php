@@ -7,12 +7,12 @@
 <div data-skeleton-layout="dashboard" class="mx-auto w-full max-w-screen-2xl space-y-6 px-4 py-6 sm:px-6 lg:space-y-8 lg:px-8 lg:py-8">
     @if ($isTeacher)
         <section class="space-y-3 rounded-3xl bg-blue-800 px-5 py-7 sm:px-8 sm:py-9">
-            <div class="app-skeleton-block h-10 w-[34rem] max-w-[80%] rounded-xl"></div>
-            <div class="app-skeleton-block h-7 w-[31rem] max-w-[90%] rounded-full"></div>
+            <div class="app-skeleton-block h-9 w-[34rem] max-w-[80%] rounded-xl"></div>
+            <div class="app-skeleton-block h-5 w-[31rem] max-w-[90%] rounded-full"></div>
             <div class="app-skeleton-block mt-6 h-12 w-full rounded-xl"></div>
         </section>
         <section class="space-y-5">
-            <div class="app-skeleton-block h-8 w-56 rounded-lg"></div>
+            <div class="app-skeleton-block h-7 w-56 rounded-lg"></div>
             <div class="grid grid-cols-[2.5rem_minmax(0,1fr)_2.5rem] items-center gap-3">
                 <div class="app-skeleton-block size-10 rounded-full"></div>
                 <div class="grid min-w-0 grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
@@ -24,8 +24,8 @@
             </div>
         </section>
         <div class="grid min-w-0 grid-cols-1 gap-8 xl:grid-cols-[minmax(0,3fr)_minmax(19rem,2fr)]">
-            <section class="space-y-5"><div class="app-skeleton-block h-8 w-80 max-w-[85%] rounded-lg"></div><div class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">@foreach (range(1, 3) as $card)<article class="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm"><div class="app-skeleton-block aspect-[2480/3508] rounded-xl"></div><div class="space-y-2 p-1 pt-4"><div class="app-skeleton-block h-3 w-1/3 rounded-full"></div><div class="app-skeleton-block h-5 w-4/5 rounded-full"></div><div class="app-skeleton-block h-3 w-full rounded-full"></div></div></article>@endforeach</div></section>
-            <section class="space-y-5"><div class="app-skeleton-block h-8 w-64 rounded-lg"></div><div class="space-y-3">@foreach (range(1, 3) as $row)<div class="flex h-28 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm"><div class="app-skeleton-block h-full w-20 rounded-none"></div><div class="flex flex-1 flex-col justify-center gap-3 p-4"><div class="app-skeleton-block h-4 w-3/4 rounded-full"></div><div class="app-skeleton-block h-3 w-1/3 rounded-full"></div></div></div>@endforeach</div></section>
+            <section class="space-y-5"><div class="app-skeleton-block h-7 w-80 max-w-[85%] rounded-lg"></div><div class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">@foreach (range(1, 3) as $card)<article class="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm"><div class="app-skeleton-block aspect-[2480/3508] rounded-xl"></div><div class="space-y-2 p-1 pt-4"><div class="app-skeleton-block h-3 w-1/3 rounded-full"></div><div class="app-skeleton-block h-5 w-4/5 rounded-full"></div><div class="app-skeleton-block h-3 w-full rounded-full"></div></div></article>@endforeach</div></section>
+            <section class="space-y-5"><div class="app-skeleton-block h-7 w-64 rounded-lg"></div><div class="space-y-3">@foreach (range(1, 3) as $row)<div class="flex h-28 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm"><div class="app-skeleton-block h-full w-20 rounded-none"></div><div class="flex flex-1 flex-col justify-center gap-3 p-4"><div class="app-skeleton-block h-4 w-3/4 rounded-full"></div><div class="app-skeleton-block h-3 w-1/3 rounded-full"></div></div></div>@endforeach</div></section>
         </div>
     @elseif ($isStaff)
         <div class="app-skeleton-block h-28 rounded-2xl"></div>
