@@ -1,6 +1,0 @@
-@props(['mode' => 'management-list'])
-<div data-skeleton-layout="{{ $mode }}" class="mx-auto w-full max-w-screen-2xl space-y-6 px-4 py-6 sm:px-6 lg:space-y-8 lg:px-8 lg:py-8">
-    <div class="flex items-center justify-between gap-4"><div class="app-skeleton-block h-10 w-64 rounded-xl"></div><div class="app-skeleton-block h-11 w-36 rounded-xl"></div></div>
-    <div class="grid grid-cols-1 gap-4 md:grid-cols-3"><div class="space-y-2 md:col-span-2"><div class="app-skeleton-block h-4 w-28 rounded-full"></div><div class="app-skeleton-block h-11 rounded-xl"></div></div><div class="space-y-2"><div class="app-skeleton-block h-4 w-20 rounded-full"></div><div class="app-skeleton-block h-11 rounded-xl"></div></div></div>
-    <section class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm"><div class="app-skeleton-block h-12 rounded-none"></div><div class="divide-y divide-slate-100">@foreach (range(1, 6) as $row)<div class="flex items-center gap-4 p-4"><div class="app-skeleton-block size-10 rounded-xl"></div><div class="flex-1 space-y-2"><div class="app-skeleton-block h-4 w-1/3 rounded-full"></div><div class="app-skeleton-block h-3 w-2/3 rounded-full"></div></div><div class="app-skeleton-block size-9 rounded-lg"></div></div>@endforeach</div></section>
-</div>

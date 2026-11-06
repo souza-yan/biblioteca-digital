@@ -46,10 +46,6 @@
     animation: app-skeleton-bounce 300ms ease-in-out infinite alternate, app-skeleton-shimmer 1.2s linear infinite;
 }
 
-.app-loading-overlay {
-    inset: var(--header-h) 0 0 0;
-}
-
 #app-sidebar {
     position: fixed;
     inset: 0 auto 0 0;
@@ -176,11 +172,6 @@
         padding-left: var(--sidebar-w);
     }
 
-    .app-loading-overlay {
-        left: var(--sidebar-w);
-        transition: left var(--sidebar-speed), opacity 150ms ease;
-    }
-
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -193,9 +184,5 @@
 
     .app-skeleton-block {
         animation: none;
-    }
-
-    .app-loading-overlay {
-        transition-duration: 1ms !important;
     }
 }
