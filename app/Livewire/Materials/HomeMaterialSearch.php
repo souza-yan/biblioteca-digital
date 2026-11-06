@@ -21,6 +21,11 @@ class HomeMaterialSearch extends Component
         $this->authorizeSearch();
     }
 
+    public function placeholder(): View
+    {
+        return view('livewire.materials.home-material-search-placeholder');
+    }
+
     public function render(): View
     {
         $this->authorizeSearch();

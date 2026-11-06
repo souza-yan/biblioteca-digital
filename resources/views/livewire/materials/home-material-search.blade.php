@@ -30,24 +30,19 @@
                 </p>
             </div>
 
-            <div role="listbox" aria-label="Materiais encontrados"
-                class="grid max-h-[24rem] grid-cols-1 overflow-y-auto sm:grid-cols-2">
+            <div wire:loading.grid wire:target="search" role="status" aria-busy="true"
+                class="hidden max-h-[24rem] grid-cols-1 overflow-y-auto sm:grid-cols-2">
+                @foreach (range(1, 6) as $result)
+                    <x-materials.search-result-skeleton />
+                @endforeach
+                <span class="sr-only">Carregando…</span>
+            </div>
+
+            <div wire:loading.remove wire:target="search" role="listbox" aria-label="Materiais encontrados"
+                aria-busy="false" class="grid max-h-[24rem] grid-cols-1 overflow-y-auto sm:grid-cols-2">
                 @forelse ($materials as $material)
-                    <a wire:key="home-search-material-{{ $material->getKey() }}"
-                        href="{{ route('painel.library.show', $material) }}" role="option"
-                        class="group flex min-w-0 items-center gap-3 border-b border-slate-100 px-4 py-3 transition hover:bg-blue-50 focus:bg-blue-50 focus:outline-none sm:px-5 sm:odd:border-r">
-                        <x-materials.pdf-cover :material="$material" :version="$material->currentVersion"
-                            :alt="'Prévia de '.$material->title" fit="contain"
-                            class="h-16 w-11 shrink-0 !aspect-auto rounded-lg" />
-                        <span class="min-w-0">
-                            <span class="block truncate font-semibold text-slate-900 group-hover:text-blue-800">
-                                {{ $material->title }}
-                            </span>
-                            <span class="mt-1 block truncate text-sm text-slate-500">
-                                {{ $material->category->name }}
-                            </span>
-                        </span>
-                    </a>
+                    <x-materials.search-result wire:key="home-search-material-{{ $material->getKey() }}"
+                        :material="$material" />
                 @empty
                     <div class="px-5 py-8 text-center sm:col-span-2">
                         <x-ts-icon icon="magnifying-glass" outline class="mx-auto size-8 text-slate-400" />
