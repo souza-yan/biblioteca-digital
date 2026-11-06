@@ -94,15 +94,13 @@ it('selects the skeleton layout that matches each administrative page', function
     'most downloaded' => ['painel.materials.most-downloaded', 'most-downloaded'],
 ]);
 
-it('renders profile element skeletons without the legacy overlay', function () {
+it('renders the profile skeleton on the account page', function () {
     $teacher = User::factory()->teacher()->create();
 
     $this->actingAs($teacher)
         ->get(route('profile.show'))
-        ->assertSee('aria-label="Carregando dados do perfil"', false)
-        ->assertSee('aria-label="Carregando segurança da conta"', false)
-        ->assertSee('aria-label="Carregando sessões do navegador"', false)
-        ->assertDontSee('data-app-loading-skeleton', false);
+        ->assertSee('data-skeleton-variant="profile"', false)
+        ->assertSee('data-skeleton-layout="profile"', false);
 });
 
 it('falls back to the generic management skeleton for an unmapped authenticated route', function () {
