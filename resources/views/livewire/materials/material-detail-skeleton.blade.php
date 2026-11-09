@@ -83,19 +83,18 @@
             </div>
             @if ($canManageVersions)
                 <div class="order-2 mt-4 space-y-4 rounded-2xl border border-slate-200 bg-slate-50/60 p-4 sm:order-4 sm:mt-8 sm:space-y-5 sm:p-6" data-skeleton-section="version-form">
-                    <div class="flex items-center gap-3 rounded-xl border border-blue-200 bg-blue-50 p-4 sm:hidden"><x-skeleton.block class="size-11 shrink-0 rounded-xl" /><div><x-skeleton.text class="text-base font-semibold">Enviar nova versão</x-skeleton.text><x-skeleton.text class="mt-0.5 text-sm">Toque para selecionar o arquivo</x-skeleton.text></div></div>
-                    <div class="hidden sm:block">
+                    <div>
                         <div class="flex items-center gap-3"><x-skeleton.block class="size-10 shrink-0 rounded-xl" /><div><x-skeleton.text class="w-fit text-base font-semibold">Enviar nova versão</x-skeleton.text><x-skeleton.text class="mt-0.5 text-sm">O arquivo atual será substituído sem apagar o histórico.</x-skeleton.text></div></div>
-                        <div class="mt-5">
-                            <x-skeleton.text class="mb-1 w-fit text-base font-medium">Arquivo *</x-skeleton.text>
-                            <div class="rounded-xl border border-gray-300 bg-white p-2">
-                                <x-skeleton.block class="h-11 rounded-lg" />
-                                <div class="px-1 pt-2"><x-skeleton.text class="w-fit text-sm">Nenhum arquivo selecionado</x-skeleton.text></div>
-                            </div>
+                    </div>
+                    <div>
+                        <x-skeleton.text class="mb-1 w-fit text-base font-medium">Arquivo *</x-skeleton.text>
+                        <div class="rounded-xl border border-gray-300 bg-white p-2">
+                            <x-skeleton.block class="h-11 rounded-lg" />
+                            <div class="px-1 pt-2"><x-skeleton.text class="w-fit text-sm">Nenhum arquivo selecionado</x-skeleton.text></div>
                         </div>
                     </div>
                     <div><x-skeleton.line class="w-36" /><x-skeleton.block class="mt-1 h-10 rounded-lg" /></div>
-                    <div class="flex justify-end border-t border-slate-200 pt-4"><x-skeleton.block class="h-10 w-full rounded-lg sm:w-32" /></div>
+                    <div class="flex justify-end border-t border-slate-200 pt-4"><div class="flex w-full items-center justify-center gap-2 rounded-lg bg-slate-200 px-5 py-2.5 text-sm font-semibold sm:w-auto"><span class="size-5"></span><span class="invisible">Salvar versão</span></div></div>
                 </div>
             @endif
         </section>

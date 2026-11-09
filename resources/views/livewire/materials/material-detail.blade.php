@@ -92,7 +92,7 @@
         </article>
 
         @if ($canViewVersionHistory)
-            <section class="mt-6 flex flex-col rounded-md border border-gray-200 bg-white p-4 shadow-sm sm:p-6">
+            <section x-data="{ versionPreview: null }" class="mt-6 flex flex-col rounded-md border border-gray-200 bg-white p-4 shadow-sm sm:p-6">
                 <h2 class="order-1 text-lg font-semibold text-gray-900">Versões</h2>
 
                 <div class="order-3 mt-4 hidden overflow-x-auto sm:order-2 sm:block">
@@ -138,7 +138,10 @@
                                         @if ($version->isNot($material->currentVersion)
                                             && in_array($version->mime_type, ['application/pdf', 'image/png', 'image/jpeg', 'image/webp', 'image/gif', 'text/plain', 'video/mp4', 'video/webm', 'audio/mpeg'], true))
                                             <x-ts-button color="blue"
-                                                href="{{ route('previews.version', [$material, $version]) }}"
+                                                data-preview-url="{{ route('previews.version', [$material, $version]) }}"
+                                                data-preview-name="{{ $version->original_name }}" data-preview-type="{{ $version->mime_type }}"
+                                                x-on:click="versionPreview = { url: $el.dataset.previewUrl, name: $el.dataset.previewName, type: $el.dataset.previewType }"
+                                                aria-haspopup="dialog" aria-controls="version-preview-modal-{{ $material->id }}"
                                                 aria-label="Ver prévia da versão {{ $version->version_number }}"
                                                 title="Ver prévia" class="!size-12 !p-0 justify-center">
                                                 <x-ts-icon icon="eye" outline class="size-7 text-white" />
@@ -169,7 +172,11 @@
                                 </div>
                                 @if ($version->isNot($material->currentVersion)
                                     && in_array($version->mime_type, ['application/pdf', 'image/png', 'image/jpeg', 'image/webp', 'image/gif', 'text/plain', 'video/mp4', 'video/webm', 'audio/mpeg'], true))
-                                    <x-ts-button color="blue" href="{{ route('previews.version', [$material, $version]) }}"
+                                    <x-ts-button color="blue"
+                                        data-preview-url="{{ route('previews.version', [$material, $version]) }}"
+                                        data-preview-name="{{ $version->original_name }}" data-preview-type="{{ $version->mime_type }}"
+                                        x-on:click="versionPreview = { url: $el.dataset.previewUrl, name: $el.dataset.previewName, type: $el.dataset.previewType }"
+                                        aria-haspopup="dialog" aria-controls="version-preview-modal-{{ $material->id }}"
                                         aria-label="Ver prévia da versão {{ $version->version_number }}" title="Ver prévia"
                                         class="!size-10 !p-0 shrink-0 justify-center">
                                         <x-ts-icon icon="eye" outline class="size-5 text-white" />
@@ -197,46 +204,23 @@
                 </div>
 
                 @if ($canManageVersions)
-                    <form wire:submit="saveVersion"
+                    <form wire:submit="saveVersion" novalidate
+                    x-data="{ progress: 0 }"
+                    x-on:livewire-upload-start="progress = 0"
+                    x-on:livewire-upload-progress="progress = $event.detail.progress"
                     class="order-2 mt-4 space-y-4 rounded-2xl border border-slate-200 bg-slate-50/60 p-4 sm:order-4 sm:mt-8 sm:space-y-5 sm:p-6">
 
-                    <div class="sm:hidden"
-                        x-data="{ selectedFileName: @js($versionForm->file instanceof \Livewire\Features\SupportFileUploads\TemporaryUploadedFile ? $versionForm->file->getClientOriginalName() : null) }">
-                        <input id="version-file-mobile" type="file" wire:model="versionForm.file" class="sr-only"
-                            accept="{{ implode(',', array_map(fn ($mime) => '.'.$mime, config('materials.upload.allowed_mimes'))) }}"
-                            required x-on:change="selectedFileName = $event.target.files[0]?.name ?? null">
-                        <label for="version-file-mobile"
-                            class="flex cursor-pointer items-center gap-3 rounded-xl border border-blue-200 bg-blue-50 p-4 text-left transition hover:border-blue-400 hover:bg-blue-100 focus-within:ring-2 focus-within:ring-blue-600">
-                            <span class="flex size-11 shrink-0 items-center justify-center rounded-xl bg-white text-blue-700 shadow-sm">
-                                <x-ts-icon icon="arrow-up-tray" outline class="size-5" />
-                            </span>
-                            <span class="min-w-0">
-                                <span class="block text-base font-semibold text-slate-900">Enviar nova versão</span>
-                                <span x-show="! selectedFileName" class="mt-0.5 block text-sm text-slate-600">
-                                    Toque para selecionar o arquivo
-                                </span>
-                                <span x-show="selectedFileName" x-cloak class="mt-0.5 block truncate text-sm font-medium text-blue-800"
-                                    x-text="selectedFileName"></span>
-                            </span>
-                        </label>
-                        @error('versionForm.file')
-                            <p class="mt-1.5 text-sm text-red-600">{{ $message }}</p>
-                        @enderror
+                    <div class="flex items-center gap-3">
+                        <span class="flex size-10 shrink-0 items-center justify-center rounded-xl bg-blue-100 text-blue-700">
+                            <x-ts-icon icon="arrow-up-tray" outline class="size-5" />
+                        </span>
+                        <div>
+                            <h3 class="text-base font-semibold text-slate-900">Enviar nova versão</h3>
+                            <p class="mt-0.5 text-sm text-slate-600">O arquivo atual será substituído sem apagar o histórico.</p>
+                        </div>
                     </div>
-
-                    <div class="hidden sm:block">
-                        <div class="flex items-center gap-3">
-                            <span class="flex size-10 shrink-0 items-center justify-center rounded-xl bg-blue-100 text-blue-700">
-                                <x-ts-icon icon="arrow-up-tray" outline class="size-5" />
-                            </span>
-                            <div>
-                                <h3 class="text-base font-semibold text-slate-900">Enviar nova versão</h3>
-                                <p class="mt-0.5 text-sm text-slate-600">O arquivo atual será substituído sem apagar o histórico.</p>
-                            </div>
-                        </div>
-                        <div class="mt-5">
-                            <x-materials.file-upload id="version-file" model="versionForm.file" :file="$versionForm->file" />
-                        </div>
+                    <div wire:key="version-upload-{{ $material->current_version_id ?? 'initial' }}">
+                        <x-materials.file-upload id="version-file" model="versionForm.file" :file="$versionForm->file" />
                     </div>
 
                     <div>
@@ -246,10 +230,9 @@
                         @enderror
                     </div>
 
-                    <div wire:loading wire:target="versionForm.file" x-data="{ progress: 0 }"
-                        x-on:livewire-upload-progress="progress = $event.detail.progress"
+                    <div wire:loading wire:target="versionForm.file" role="status" aria-live="polite"
                         class="space-y-1.5 rounded-lg border border-blue-100 bg-blue-50 p-3">
-                        <progress class="h-2 w-full overflow-hidden rounded-full accent-blue-600" max="100"
+                        <progress aria-label="Progresso do envio do arquivo" class="h-2 w-full overflow-hidden rounded-full accent-blue-600" max="100"
                             x-bind:value="progress"></progress>
                         <p class="text-xs font-medium text-blue-800">
                             Enviando arquivo: <span x-text="progress"></span>%
@@ -257,13 +240,19 @@
                     </div>
 
                     <div class="flex justify-end border-t border-slate-200 pt-4">
-                        <x-ts-button color="blue" type="submit" class="w-full justify-center sm:w-auto"
-                            wire:loading.attr="disabled" wire:target="saveVersion">
-                            Salvar versão
-                        </x-ts-button>
+                        <button type="submit"
+                            class="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-blue-800 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-900 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
+                            wire:loading.attr="disabled" wire:target="saveVersion,versionForm.file">
+                            <x-ts-icon icon="check" outline class="size-5" />
+                            <span wire:loading.remove wire:target="saveVersion,versionForm.file">Salvar versão</span>
+                            <span wire:loading wire:target="versionForm.file">Enviando arquivo...</span>
+                            <span wire:loading wire:target="saveVersion">Salvando versão...</span>
+                        </button>
                     </div>
                     </form>
                 @endif
+
+                @include('livewire.materials.partials.version-preview-modal')
             </section>
         @endif
     </div>

@@ -177,3 +177,13 @@ This project has domain-specific skills available in `**/skills/**`. You MUST ac
 - After the feature tests pass, ask the user to run the complete suite with `php artisan test --compact`.
 
 </laravel-boost-guidelines>
+
+## Padrão obrigatório de visualização de materiais
+
+- Ao alterar materiais, biblioteca, favoritos ou histórico de versões, preserve a mesma apresentação de imagens e arquivos no celular e no desktop.
+- As prévias devem abrir em um modal na própria tela, com título do arquivo e botão de fechar acessível. Não substitua a prévia por navegação direta para a URL do arquivo.
+- Reutilize `resources/views/components/materials/preview-content.blade.php` nas prévias atuais e históricas. Ele recebe em `state` o nome de um objeto Alpine confiável com `url`, `name` e `type`; não passe entrada do usuário como expressão.
+- Imagens usam `<img>` centralizado em uma área responsiva com `object-contain`, preservando a proporção original, sem cortes nem distorção. Não exiba imagens em iframe: o visualizador nativo pode deixá-las pequenas e alinhadas ao canto.
+- PDF e texto usam iframe preenchendo a área útil do modal; PDF abre com `#view=Fit`. Vídeo e áudio usam elementos próprios com controles. Formatos sem prévia suportada mostram mensagem, sem tentar renderização genérica.
+- Capas e miniaturas dos cards mantêm o padrão A4 `aspect-[2480/3508]`, reutilizando `components/materials/pdf-cover.blade.php`. A proporção A4 é do contêiner da capa, não uma exigência para deformar ou recortar o arquivo original no modal.
+- Carregue o conteúdo somente ao abrir a prévia e descarte-o ao fechar, inclusive para interromper reprodução de mídia. Preserve as rotas autenticadas e autorizações existentes.

@@ -95,48 +95,13 @@
                     </button>
                 </div>
                 <div class="min-h-0 flex-1 bg-slate-100">
-                    @if ($version->mime_type === 'application/pdf')
-                    <iframe
-                        class="block h-full w-full bg-slate-100"
-                        src="{{ $previewUrl }}#view=Fit"
-                        title="Prévia de {{ $version->original_name }}"
-                        loading="lazy"
-                    ></iframe>
-                    @elseif (in_array($version->mime_type, ['image/png', 'image/jpeg', 'image/webp', 'image/gif'], true))
-                        <div class="flex h-full items-center justify-center p-4">
-                            <img
-                                class="max-h-full max-w-full object-contain"
-                                src="{{ $previewUrl }}"
-                                alt="Prévia de {{ $version->original_name }}"
-                            >
+                    <template x-if="isPreviewOpen">
+                        <div class="h-full w-full" data-preview-url="{{ $previewUrl }}"
+                            data-preview-name="{{ $version->original_name }}" data-preview-type="{{ $version->mime_type }}"
+                            x-data="{ filePreview: { url: $el.dataset.previewUrl, name: $el.dataset.previewName, type: $el.dataset.previewType } }">
+                            <x-materials.preview-content state="filePreview" />
                         </div>
-                    @elseif ($version->mime_type === 'text/plain')
-                        <iframe
-                            class="h-full w-full bg-white"
-                            src="{{ $previewUrl }}"
-                            title="Prévia de {{ $version->original_name }}"
-                            loading="lazy"
-                        ></iframe>
-                    @elseif (in_array($version->mime_type, ['video/mp4', 'video/webm'], true))
-                        <div class="flex h-full items-center justify-center p-4">
-                            <video class="max-h-full max-w-full" controls preload="metadata">
-                                <source src="{{ $previewUrl }}" type="{{ $version->mime_type }}">
-                                Seu navegador não oferece suporte à reprodução de vídeo.
-                            </video>
-                        </div>
-                    @elseif ($version->mime_type === 'audio/mpeg')
-                        <div class="flex h-full items-center p-6">
-                            <audio class="w-full" controls preload="metadata">
-                                <source src="{{ $previewUrl }}" type="{{ $version->mime_type }}">
-                                Seu navegador não oferece suporte à reprodução de áudio.
-                            </audio>
-                        </div>
-                    @else
-                        <div class="flex h-full flex-col items-center justify-center gap-3 p-6 text-center text-slate-600">
-                            <x-ts-icon icon="document" outline class="size-12 text-slate-400" />
-                            <p class="text-sm">A visualização não está disponível para este tipo de arquivo.</p>
-                        </div>
-                    @endif
+                    </template>
                 </div>
             </div>
         </div>
