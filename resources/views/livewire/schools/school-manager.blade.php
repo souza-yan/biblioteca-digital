@@ -84,6 +84,11 @@
                                             {{ $manager->is_active ? 'Ativo' : 'Inativo' }}
                                         </span>
                                     </span>
+                                    <x-ts-button color="blue" wire:click="editManagerCpf({{ $school->id }}, {{ $manager->id }})"
+                                        aria-label="Atualizar CPF de {{ $manager->name }}" title="Atualizar CPF"
+                                        class="!size-12 !p-0 shrink-0 justify-center">
+                                        <x-ts-icon icon="identification" outline class="size-7 text-white" />
+                                    </x-ts-button>
                                     <x-ts-button :color="$manager->is_active ? 'red' : 'emerald'"
                                         wire:click="toggleManagerActive({{ $school->id }}, {{ $manager->id }})"
                                         wire:loading.attr="disabled"
@@ -174,6 +179,8 @@
                 wire:model="managerName" autocomplete="name" />
             <x-form.input id="manager-email" label="E-mail" :required="true" error="managerEmail"
                 wire:model="managerEmail" type="email" autocomplete="email" />
+            <x-form.input id="manager-cpf" label="CPF" :required="true" error="managerCpf"
+                wire:model="managerCpf" inputmode="numeric" maxlength="14" autocomplete="off" placeholder="000.000.000-00" />
         </form>
 
         <x-slot:footer>
@@ -182,6 +189,19 @@
                 wire:target="saveManager">
                 <span wire:loading.remove wire:target="saveManager">Cadastrar gestor</span>
                 <span wire:loading wire:target="saveManager">Cadastrando...</span>
+            </x-ts-button>
+        </x-slot:footer>
+    </x-ts-modal>
+
+    <x-ts-modal wire="showManagerCpfForm" title="Atualizar CPF do gestor" size="md" center>
+        <form id="manager-cpf-form" wire:submit="saveManagerCpf" class="space-y-4">
+            <x-form.input id="manager-cpf-correction" label="CPF" :required="true" error="managerCpfCorrection"
+                wire:model="managerCpfCorrection" inputmode="numeric" maxlength="14" autocomplete="off" placeholder="000.000.000-00" />
+        </form>
+        <x-slot:footer>
+            <x-ts-button color="red" type="button" wire:click="closeManagerCpfForm">Cancelar</x-ts-button>
+            <x-ts-button color="blue" type="submit" form="manager-cpf-form" wire:loading.attr="disabled" wire:target="saveManagerCpf">
+                Salvar CPF
             </x-ts-button>
         </x-slot:footer>
     </x-ts-modal>

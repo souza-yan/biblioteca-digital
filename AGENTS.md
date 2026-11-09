@@ -187,3 +187,12 @@ This project has domain-specific skills available in `**/skills/**`. You MUST ac
 - PDF e texto usam iframe preenchendo a área útil do modal; PDF abre com `#view=Fit`. Vídeo e áudio usam elementos próprios com controles. Formatos sem prévia suportada mostram mensagem, sem tentar renderização genérica.
 - Capas e miniaturas dos cards mantêm o padrão A4 `aspect-[2480/3508]`, reutilizando `components/materials/pdf-cover.blade.php`. A proporção A4 é do contêiner da capa, não uma exigência para deformar ou recortar o arquivo original no modal.
 - Carregue o conteúdo somente ao abrir a prévia e descarte-o ao fechar, inclusive para interromper reprodução de mídia. Preserve as rotas autenticadas e autorizações existentes.
+
+## CPF e transição do login
+
+- Professores e gestores novos precisam de CPF válido e único em todo o sistema. Use `App\Rules\Cpf` para normalização e validação, inclusive nas ações de backend. Armazene somente os 11 dígitos, como texto, preservando zeros à esquerda. Administradores não precisam de CPF.
+- O formulário de login envia `login`. CPF autentica somente professores e gestores; administrador continua por e-mail. E-mail permanece como contato e para recuperação de senha.
+- `CPF_LOGIN_ENABLED=false` mantém temporariamente login por e-mail para contas antigas, além do novo login por CPF. Após regularizar os CPFs reais, rode `php artisan accounts:cpf-status --no-interaction`; somente com zero pendências ative `CPF_LOGIN_ENABLED=true` e atualize o cache de configuração do ambiente. Não ative automaticamente nem gere CPFs fictícios para usuários existentes.
+- CPF de conta existente só pode ser corrigido pelo administrador: professores na edição em Professores, gestores pelo botão Atualizar CPF em Escolas. Não permita alterações por professores no Perfil nem pela Gestão na edição de terceiros.
+- CPF fica oculto na serialização padrão e não deve aparecer em listagens gerais, mensagens de duplicidade ou logs de atividade. As chaves do limite de login devem usar a identificação normalizada para unificar tentativas com e sem máscara.
+- As contas legadas criadas pelos seeders continuam sem CPF até regularização. CPFs sintéticos pertencem somente a factories/testes; não altere os CPFs reais em uma nova execução dos seeders.

@@ -7,9 +7,11 @@ use App\Enums\ActivityAction;
 use App\Enums\Role;
 use App\Models\School;
 use App\Models\User;
+use App\Rules\Cpf;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
 
 class UpdateUser
@@ -23,7 +25,7 @@ class UpdateUser
     {
         $hasGlobalAccountAttributes = array_intersect(
             array_keys($attributes),
-            ['name', 'email', 'password', 'password_confirmation'],
+            ['name', 'email', 'cpf', 'password', 'password_confirmation'],
         ) !== [];
         $requestedRole = $attributes['role'] ?? null;
         $requestedRoleValue = $requestedRole instanceof Role
@@ -36,7 +38,7 @@ class UpdateUser
 
         $schoolId = $attributes['school_id'] ?? null;
         $schoolIds = $attributes['school_ids'] ?? [];
-        $attributes = array_intersect_key($attributes, array_flip(['name', 'email', 'password', 'role']));
+        $attributes = array_intersect_key($attributes, array_flip(['name', 'email', 'cpf', 'password', 'role']));
 
         return DB::transaction(function () use ($actor, $user, $attributes, $schoolId, $schoolIds, $requestedRoleValue, $hasGlobalAccountAttributes): User {
             $lockedUsers = User::query()
@@ -138,6 +140,11 @@ class UpdateUser
                 $target->schools()->newPivotStatement()
                     ->where('user_id', $target->getKey())
                     ->update(['is_active' => false]);
+            }
+
+            if ($lockedActor->isAdmin()) {
+                $attributes['cpf'] = Cpf::normalize($attributes['cpf'] ?? $target->cpf);
+                Validator::make($attributes, ['cpf' => Cpf::rules($target->getKey(), $finalRole !== Role::ADMIN)], Cpf::messages())->validate();
             }
 
             $target->update($attributes);

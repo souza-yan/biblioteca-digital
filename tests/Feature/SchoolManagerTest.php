@@ -75,6 +75,7 @@ it('creates a staff manager with one active school membership', function () {
         ->call('openManagerForm', $school->getKey())
         ->set('managerName', 'Gestora de Demonstração')
         ->set('managerEmail', 'gestora.escola@example.com')
+        ->set('managerCpf', '52998224725')
         ->call('saveManager')
         ->assertHasNoErrors()
         ->assertSet('showManagerForm', false);
@@ -99,6 +100,7 @@ it('creates managers directly from schools', function () {
         ->call('openManagerForm', $school->getKey())
         ->set('managerName', 'Gestora sem situação')
         ->set('managerEmail', 'gestora.sem.situacao@example.com')
+        ->set('managerCpf', '52998224725')
         ->call('saveManager')
         ->assertHasNoErrors();
 

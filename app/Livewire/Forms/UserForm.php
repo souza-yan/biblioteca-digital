@@ -5,6 +5,7 @@ namespace App\Livewire\Forms;
 use App\Enums\Role;
 use App\Livewire\Concerns\InteractsWithCurrentUser;
 use App\Models\School;
+use App\Rules\Cpf;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
 use Livewire\Attributes\Locked;
@@ -20,6 +21,8 @@ class UserForm extends Form
     public string $name = '';
 
     public string $email = '';
+
+    public string $cpf = '';
 
     public string $password = '';
 
@@ -50,6 +53,7 @@ class UserForm extends Form
 
         return [
             'name' => $staffEditingExistingUser ? ['exclude'] : ['required', 'string', 'max:255'],
+            'cpf' => $staffEditingExistingUser ? ['exclude'] : Cpf::rules($this->userId),
             'email' => $staffEditingExistingUser ? ['exclude'] : [
                 'required',
                 'email',
@@ -78,8 +82,8 @@ class UserForm extends Form
      */
     public function messages(): array
     {
-        return $this->currentUser()->isStaff()
+        return Cpf::messages('cpf') + ($this->currentUser()->isStaff()
             ? ['email.unique' => 'Não foi possível salvar o usuário com os dados informados.']
-            : [];
+            : []);
     }
 }

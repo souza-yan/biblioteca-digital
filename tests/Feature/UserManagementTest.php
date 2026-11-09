@@ -40,6 +40,7 @@ it('allows staff to create a teacher from the user manager', function () {
         ->call('openCreate')
         ->set('form.name', 'Ana Professora')
         ->set('form.email', 'ana.professora@example.com')
+        ->set('form.cpf', '52998224725')
         ->set('form.password', config('accounts.default_password'))
         ->set('form.password_confirmation', config('accounts.default_password'))
         ->set('form.role', 'teacher')

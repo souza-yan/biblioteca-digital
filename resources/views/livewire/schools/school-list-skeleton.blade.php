@@ -33,6 +33,7 @@
                                     <x-skeleton.text class="mt-1 w-fit rounded-full px-2 py-0.5 text-xs font-semibold">{{ $manager->is_active ? 'Ativo' : 'Inativo' }}</x-skeleton.text>
                                 </div>
                                 <x-skeleton.block class="size-12 shrink-0 rounded-lg" />
+                                <x-skeleton.block class="size-12 shrink-0 rounded-lg" />
                             </div>
                         @empty
                             <div class="rounded-xl border border-dashed border-slate-200 px-4 py-3">

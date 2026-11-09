@@ -32,6 +32,7 @@ it('records all supported user, category, material and version actions with thei
     $createdUser = app(CreateUser::class)->handle($actor, [
         'name' => 'Novo Professor',
         'email' => 'novo.professor@example.com',
+        'cpf' => '52998224725',
         'password' => Hash::make('secret-password'),
         'role' => Role::TEACHER,
         'is_active' => true,

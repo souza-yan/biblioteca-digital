@@ -5,14 +5,17 @@ namespace App\Providers;
 use App\Actions\Fortify\ResetUserPassword;
 use App\Actions\Fortify\UpdateUserPassword;
 use App\Actions\Fortify\UpdateUserProfileInformation;
+use App\Enums\Role;
+use App\Http\Requests\Auth\LoginRequest;
 use App\Models\User;
+use App\Rules\Cpf;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
-use Illuminate\Support\Str;
 use Laravel\Fortify\Fortify;
+use Laravel\Fortify\Http\Requests\LoginRequest as FortifyLoginRequest;
 
 class FortifyServiceProvider extends ServiceProvider
 {
@@ -21,7 +24,7 @@ class FortifyServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        $this->app->bind(FortifyLoginRequest::class, LoginRequest::class);
     }
 
     /**
@@ -33,18 +36,35 @@ class FortifyServiceProvider extends ServiceProvider
         Fortify::updateUserPasswordsUsing(UpdateUserPassword::class);
         Fortify::resetUserPasswordsUsing(ResetUserPassword::class);
 
-        Fortify::authenticateUsing(function (Request $request) {
-            $user = User::where('email', $request->email)->first();
+        Fortify::authenticateUsing(function (Request $request): ?User {
+            $identifier = LoginRequest::identifier($request);
+            $query = User::query();
+
+            if (filter_var($identifier, FILTER_VALIDATE_EMAIL)) {
+                $query->where('email', $identifier);
+                if (config('accounts.cpf_login_enabled')) {
+                    $query->where('role', Role::ADMIN);
+                }
+            } elseif (Cpf::isValid($identifier)) {
+                $query->where('cpf', $identifier)->whereIn('role', [Role::STAFF, Role::TEACHER]);
+            } else {
+                return null;
+            }
+
+            $user = $query->first();
 
             if ($user && Hash::check($request->password, $user->password) && $user->is_active) {
                 return $user;
             }
 
-            return null; // login falha com a mensagem padrão de credenciais inválidas
+            return null;
         });
 
+        Fortify::confirmPasswordsUsing(fn (User $user, ?string $password): bool => $password !== null
+            && $user->is_active && Hash::check($password, $user->password));
+
         RateLimiter::for('login', function (Request $request) {
-            $throttleKey = Str::transliterate(Str::lower($request->input(Fortify::username())).'|'.$request->ip());
+            $throttleKey = hash('sha256', LoginRequest::identifier($request).'|'.$request->ip());
 
             return Limit::perMinute(5)->by($throttleKey);
         });

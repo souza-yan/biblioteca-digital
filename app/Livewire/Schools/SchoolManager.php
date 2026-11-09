@@ -6,6 +6,7 @@ use App\Actions\School\CreateSchool;
 use App\Actions\School\UpdateSchool;
 use App\Actions\User\CreateUser;
 use App\Actions\User\ToggleUserActive;
+use App\Actions\User\UpdateUserCpf;
 use App\Enums\Role;
 use App\Enums\SchoolRegion;
 use App\Enums\SchoolType;
@@ -13,6 +14,7 @@ use App\Livewire\Concerns\InteractsWithCurrentUser;
 use App\Livewire\Forms\SchoolForm;
 use App\Models\School;
 use App\Models\User;
+use App\Rules\Cpf;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Gate;
@@ -46,6 +48,18 @@ class SchoolManager extends Component
     public string $managerName = '';
 
     public string $managerEmail = '';
+
+    public string $managerCpf = '';
+
+    public bool $showManagerCpfForm = false;
+
+    #[Locked]
+    public ?int $editingManagerCpfId = null;
+
+    #[Locked]
+    public ?int $editingManagerCpfSchoolId = null;
+
+    public string $managerCpfCorrection = '';
 
     public function mount(): void
     {
@@ -141,14 +155,17 @@ class SchoolManager extends Component
         $schoolId = $this->managerSchoolId;
         abort_if($schoolId === null, 404);
         $school = $this->findAuthorizedSchool($schoolId);
+        $this->managerCpf = (string) Cpf::normalize($this->managerCpf);
         $attributes = $this->validate([
             'managerName' => ['required', 'string', 'max:255'],
             'managerEmail' => ['required', 'email', 'max:255', Rule::unique('users', 'email')],
-        ]);
+            'managerCpf' => Cpf::rules(),
+        ], Cpf::messages('managerCpf'));
 
         $createUser->handle($actor, [
             'name' => $attributes['managerName'],
             'email' => $attributes['managerEmail'],
+            'cpf' => $attributes['managerCpf'],
             'role' => Role::STAFF->value,
             'school_id' => $school->getKey(),
         ]);
@@ -184,6 +201,43 @@ class SchoolManager extends Component
                 'O gestor foi '.($manager->is_active ? 'ativado' : 'desativado').' com sucesso.'
             )
             ->send();
+    }
+
+    public function editManagerCpf(int $schoolId, int $managerId): void
+    {
+        $school = $this->findAuthorizedSchool($schoolId);
+        $manager = $school->users()->where('role', Role::STAFF)->findOrFail($managerId);
+        Gate::authorize('updateCpf', $manager);
+
+        $this->resetValidation();
+        $this->editingManagerCpfId = $manager->getKey();
+        $this->editingManagerCpfSchoolId = $school->getKey();
+        $this->managerCpfCorrection = $manager->cpf ?? '';
+        $this->showManagerCpfForm = true;
+    }
+
+    public function closeManagerCpfForm(): void
+    {
+        Gate::authorize('viewAny', School::class);
+        $this->showManagerCpfForm = false;
+        $this->editingManagerCpfId = null;
+        $this->editingManagerCpfSchoolId = null;
+        $this->managerCpfCorrection = '';
+        $this->resetValidation();
+    }
+
+    public function saveManagerCpf(UpdateUserCpf $updateUserCpf): void
+    {
+        abort_if($this->editingManagerCpfSchoolId === null || $this->editingManagerCpfId === null, 404);
+        $school = $this->findAuthorizedSchool($this->editingManagerCpfSchoolId);
+        $manager = $school->users()->where('role', Role::STAFF)->findOrFail($this->editingManagerCpfId);
+        Gate::authorize('updateCpf', $manager);
+
+        $this->managerCpfCorrection = (string) Cpf::normalize($this->managerCpfCorrection);
+        $this->validate(['managerCpfCorrection' => Cpf::rules($manager->getKey())], Cpf::messages('managerCpfCorrection'));
+        $updateUserCpf->handle($this->currentUser(), $manager, $this->managerCpfCorrection);
+        $this->closeManagerCpfForm();
+        $this->toast()->success('CPF atualizado!', 'O CPF do gestor foi salvo.')->send();
     }
 
     #[Layout('layouts.app')]
@@ -234,6 +288,7 @@ class SchoolManager extends Component
     {
         $this->managerName = '';
         $this->managerEmail = '';
+        $this->managerCpf = '';
         $this->managerSchoolId = null;
         $this->resetValidation();
     }

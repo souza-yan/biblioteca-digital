@@ -27,11 +27,18 @@
                 <form method="POST" action="{{ route('login') }}" class="space-y-5">
                     @csrf
 
-                    {{-- E-mail --}}
+                    {{-- Identificação da conta --}}
                     <div>
-                        <x-ts-input id="email" name="email" label="E-mail" type="email"
-                            placeholder="seu@email.com" value="{{ old('email') }}" autocomplete="username" required
+                        <x-ts-input id="login" name="login" label="CPF ou e-mail" type="text"
+                            placeholder="CPF ou e-mail do administrador" value="{{ old('login') }}" autocomplete="username" required
                             autofocus class="w-full" />
+                        <p class="mt-2 text-sm text-slate-600">
+                            @if (config('accounts.cpf_login_enabled'))
+                                Professores e gestores: CPF. Administradores: e-mail.
+                            @else
+                                Entre com seu CPF ou e-mail. O acesso por e-mail de professores e gestores será mantido durante a atualização dos cadastros.
+                            @endif
+                        </p>
                     </div>
 
                     {{-- Senha --}}

@@ -29,6 +29,7 @@ class UserFactory extends Factory
         return [
             'name' => fake()->name(),
             'email' => fake()->unique()->safeEmail(),
+            'cpf' => $this->fakeCpf(),
             'email_verified_at' => now(),
             'password' => static::$password ??= Hash::make((string) config('accounts.default_password')),
             'remember_token' => Str::random(10),
@@ -42,7 +43,7 @@ class UserFactory extends Factory
     // Estados novos: use assim -> User::factory()->admin()->create()
     public function admin(): static
     {
-        return $this->state(fn () => ['role' => Role::ADMIN]);
+        return $this->state(fn () => ['role' => Role::ADMIN, 'cpf' => null]);
     }
 
     public function staff(): static
@@ -66,6 +67,26 @@ class UserFactory extends Factory
     public function inactive(): static
     {
         return $this->state(fn () => ['is_active' => false]);
+    }
+
+    public function withoutCpf(): static
+    {
+        return $this->state(fn () => ['cpf' => null]);
+    }
+
+    private function fakeCpf(): string
+    {
+        $cpf = fake()->unique()->numerify('#########');
+        for ($position = 9; $position < 11; $position++) {
+            $sum = 0;
+            for ($index = 0; $index < $position; $index++) {
+                $sum += (int) $cpf[$index] * ($position + 1 - $index);
+            }
+            $digit = ($sum * 10) % 11;
+            $cpf .= (string) ($digit === 10 ? 0 : $digit);
+        }
+
+        return $cpf;
     }
 
     /** Indicate that the model's email address should be unverified. */

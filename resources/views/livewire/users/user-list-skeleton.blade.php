@@ -38,7 +38,12 @@
         <x-skeleton.table :columns="$columns">
             @forelse ($users as $user)
                 <tr>
-                    <td class="whitespace-nowrap px-5 py-4 text-lg font-medium"><x-skeleton.text>{{ $user->name }}</x-skeleton.text></td>
+                    <td class="whitespace-nowrap px-5 py-4 text-lg font-medium">
+                        <div class="flex items-center gap-3">
+                            <x-skeleton.block class="size-12 shrink-0 rounded-full" />
+                            <x-skeleton.text>{{ $user->name }}</x-skeleton.text>
+                        </div>
+                    </td>
                     <td class="whitespace-nowrap px-5 py-4 text-lg"><x-skeleton.text>{{ $user->email }}</x-skeleton.text></td>
                     @if ($actor->isAdmin())
                         <td class="px-5 py-4 text-lg"><x-skeleton.text>{{ $user->schools->pluck('name')->join(' / ') ?: 'Sem escola vinculada' }}</x-skeleton.text></td>

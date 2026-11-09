@@ -140,7 +140,20 @@
                     $localMembershipIsActive = (bool) ($schoolMembership?->pivot?->is_active ?? false);
                 @endphp
                 <tr wire:key="user-{{ $user->id }}">
-                    <td class="whitespace-nowrap px-5 py-4 text-lg font-medium text-black">{{ $user->name }}</td>
+                    <td class="whitespace-nowrap px-5 py-4 text-lg font-medium text-black">
+                        <div class="flex items-center gap-3">
+                            @if ($user->profile_photo_path)
+                                <img src="{{ $user->profile_photo_url }}" alt="Foto de {{ $user->name }}"
+                                    class="size-12 shrink-0 rounded-full object-cover ring-2 ring-blue-100" />
+                            @else
+                                <span class="flex size-12 shrink-0 items-center justify-center rounded-full bg-blue-50 text-base font-bold text-blue-800 ring-2 ring-blue-100"
+                                    aria-label="{{ $user->name }}">
+                                    {{ str($user->name)->trim()->substr(0, 1)->upper() }}
+                                </span>
+                            @endif
+                            <span>{{ $user->name }}</span>
+                        </div>
+                    </td>
                     <td class="whitespace-nowrap px-5 py-4 text-lg text-black">{{ $user->email }}</td>
                     @if ($actor->isAdmin())
                         <td class="px-5 py-4 text-lg text-black">{{ $user->schools->pluck('name')->join(' / ') ?: 'Sem escola vinculada' }}</td>
@@ -193,6 +206,8 @@
                         @if ($actor->isAdmin() || $editingUserId === null)
                             <x-ts-input wire:model="form.name" label="Nome *" autocomplete="name" required />
                             <x-ts-input wire:model="form.email" label="E-mail *" type="email" autocomplete="email" required />
+                            <x-ts-input wire:model="form.cpf" label="CPF *" placeholder="000.000.000-00"
+                                inputmode="numeric" maxlength="14" autocomplete="off" required />
                         @else
                             <div class="rounded-md bg-gray-50 p-3 text-sm text-gray-700" role="note">
                                 <p><span class="font-medium">Nome:</span> {{ $editingUser?->name }}</p>

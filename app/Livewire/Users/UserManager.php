@@ -11,6 +11,7 @@ use App\Livewire\Concerns\InteractsWithCurrentUser;
 use App\Livewire\Forms\UserForm;
 use App\Models\School;
 use App\Models\User;
+use App\Rules\Cpf;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -132,6 +133,7 @@ class UserManager extends Component
         $this->form->userId = $user->getKey();
         $this->form->name = $user->name;
         $this->form->email = $user->email;
+        $this->form->cpf = $actor->isAdmin() ? ($user->cpf ?? '') : '';
         $this->form->password = '';
         $this->form->password_confirmation = '';
         $this->form->role = $user->role->value;
@@ -158,6 +160,7 @@ class UserManager extends Component
         }
 
         $this->form->userId = $user?->getKey();
+        $this->form->cpf = (string) Cpf::normalize($this->form->cpf);
         $attributes = $this->form->validate();
         $attributes['school_ids'] = array_values(array_filter(
             $attributes['school_ids'] ?? [],

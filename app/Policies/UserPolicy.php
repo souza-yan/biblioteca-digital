@@ -22,6 +22,11 @@ class UserPolicy
         return $actor->is_active && $actor->isAdmin();
     }
 
+    public function updateCpf(User $actor, User $target): bool
+    {
+        return $actor->is_active && $actor->isAdmin() && ! $target->isAdmin();
+    }
+
     public function resetOwnPasswordToDefault(User $actor, User $target): bool
     {
         return $actor->is_active && $actor->is($target);

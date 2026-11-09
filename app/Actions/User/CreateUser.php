@@ -7,10 +7,12 @@ use App\Enums\ActivityAction;
 use App\Enums\Role;
 use App\Models\School;
 use App\Models\User;
+use App\Rules\Cpf;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
 
 class CreateUser
@@ -24,7 +26,7 @@ class CreateUser
     {
         $schoolId = $attributes['school_id'] ?? null;
         $schoolIds = $attributes['school_ids'] ?? [];
-        $attributes = array_intersect_key($attributes, array_flip(['name', 'email', 'role']));
+        $attributes = array_intersect_key($attributes, array_flip(['name', 'email', 'cpf', 'role']));
         $attributes['password'] = Hash::make((string) config('accounts.default_password'));
 
         return DB::transaction(function () use ($actor, $attributes, $schoolId, $schoolIds): User {
@@ -87,6 +89,9 @@ class CreateUser
                     ]);
                 }
             }
+
+            $attributes['cpf'] = Cpf::normalize($attributes['cpf'] ?? null);
+            Validator::make($attributes, ['cpf' => Cpf::rules(required: $role !== Role::ADMIN)], Cpf::messages())->validate();
 
             $user = User::create($attributes);
 

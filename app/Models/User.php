@@ -4,7 +4,9 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use App\Enums\Role;
+use App\Rules\Cpf;
 use Database\Factories\UserFactory;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -31,6 +33,7 @@ class User extends Authenticatable
     protected $fillable = [
         'name',
         'email',
+        'cpf',
         'password',
         'role',
         'is_active',
@@ -44,6 +47,7 @@ class User extends Authenticatable
     protected $hidden = [
         'password',
         'remember_token',
+        'cpf',
     ];
 
     /**
@@ -73,6 +77,11 @@ class User extends Authenticatable
     public function isAdmin(): bool
     {
         return $this->role === Role::ADMIN;
+    }
+
+    protected function cpf(): Attribute
+    {
+        return Attribute::make(set: fn (mixed $value): mixed => $value === '' ? null : Cpf::normalize($value));
     }
 
     public function isStaff(): bool

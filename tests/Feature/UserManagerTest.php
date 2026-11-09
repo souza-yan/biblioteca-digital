@@ -25,6 +25,7 @@ it('allows staff to create a teacher from the user manager', function () {
         ->assertDontSee('wire:model="form.role"', false)
         ->set('form.name', 'Ana Professora')
         ->set('form.email', 'ana.professora@example.com')
+        ->set('form.cpf', '52998224725')
         ->set('form.role', 'teacher')
         ->call('save')
         ->assertHasNoErrors();
@@ -373,6 +374,7 @@ it('creates a teacher with two schools using the additional selector', function 
         ->set('form.role', 'teacher')
         ->set('form.name', 'Professor de duas escolas')
         ->set('form.email', 'duas.escolas@example.com')
+        ->set('form.cpf', '52998224725')
         ->set('form.school_ids.0', $schools[0]->id)
         ->call('addSchool')
         ->assertSee('Outra escola')
@@ -394,6 +396,7 @@ it('saves only the selected school when the second selector is empty or removed'
         ->set('form.role', 'teacher')
         ->set('form.name', 'Professor de uma escola')
         ->set('form.email', 'uma.escola@example.com')
+        ->set('form.cpf', '52998224725')
         ->set('form.school_ids.0', $school->id)
         ->call('addSchool');
 
