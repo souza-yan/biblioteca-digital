@@ -1,4 +1,8 @@
 <div>
+    <x-skeleton.gate name="material-detail" label="Carregando detalhes do material">
+        <x-slot:skeleton>
+            @include('livewire.materials.material-detail-skeleton')
+        </x-slot:skeleton>
     <div class="mx-auto w-full max-w-screen-2xl space-y-6 px-4 py-6 sm:px-6 lg:space-y-8 lg:px-8 lg:py-8">
         <article x-data="{ isPreviewOpen: false }" class="rounded-md border border-gray-200 bg-white p-4 shadow-sm sm:p-6">
             <div class="flex flex-col justify-between gap-3 sm:flex-row sm:items-start sm:gap-4">
@@ -263,4 +267,5 @@
             </section>
         @endif
     </div>
+    </x-skeleton.gate>
 </div>

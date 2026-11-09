@@ -1,4 +1,8 @@
 <div>
+    <x-skeleton.gate name="material-library" label="Carregando biblioteca de materiais">
+        <x-slot:skeleton>
+            @include('livewire.materials.material-library-skeleton')
+        </x-slot:skeleton>
     <div class="mx-auto w-full max-w-screen-2xl space-y-6 px-4 py-6 sm:px-6 lg:space-y-8 lg:px-8 lg:py-8">
         <div class="mb-8 flex items-center justify-between gap-4">
             <h1 class="text-3xl font-bold tracking-tight text-blue-800 sm:text-4xl">Materiais publicados</h1>
@@ -151,4 +155,5 @@
 
         <x-pagination :paginator="$materials" class="mt-4" />
     </div>
+    </x-skeleton.gate>
 </div>

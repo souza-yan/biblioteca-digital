@@ -31,6 +31,10 @@
         </div>
 
         {{-- Categorias e controles administrativos de ativação. --}}
+        <x-skeleton.gate name="category-list" label="Carregando listagem de categorias">
+            <x-slot:skeleton>
+                @include('livewire.categories.category-list-skeleton')
+            </x-slot:skeleton>
         <x-data-table :columns="$categoryColumns">
             @forelse ($categories as $category)
                 <tr wire:key="category-{{ $category->id }}">
@@ -66,6 +70,7 @@
         </x-data-table>
 
         <x-pagination :paginator="$categories" class="mt-4" />
+        </x-skeleton.gate>
 
         {{-- Formulário para criar ou atualizar categorias globais da biblioteca. --}}
         <x-ts-modal wire="showForm" :title="$editingCategoryId === null ? 'Nova categoria' : 'Editar categoria'" size="xl" center>

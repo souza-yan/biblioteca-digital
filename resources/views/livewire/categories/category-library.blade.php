@@ -1,5 +1,9 @@
 <div>
     @php($isStaff = auth()->user()?->isStaff() ?? false)
+    <x-skeleton.gate name="category-library" label="Carregando categorias">
+        <x-slot:skeleton>
+            @include('livewire.categories.category-library-skeleton')
+        </x-slot:skeleton>
 
     <div class="mx-auto w-full max-w-screen-2xl space-y-6 px-4 py-6 sm:px-6 lg:space-y-8 lg:px-8 lg:py-8">
         <section @class([
@@ -210,4 +214,5 @@
         @endcan
     </div>
 
+    </x-skeleton.gate>
 </div>

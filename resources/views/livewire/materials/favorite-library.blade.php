@@ -1,4 +1,8 @@
 <div>
+    <x-skeleton.gate name="favorite-library" label="Carregando favoritos">
+        <x-slot:skeleton>
+            @include('livewire.materials.favorite-library-skeleton')
+        </x-slot:skeleton>
     <div class="mx-auto w-full max-w-screen-2xl space-y-6 px-4 py-6 sm:px-6 lg:space-y-8 lg:px-8 lg:py-8">
         <div class="mb-8">
             <h1 class="text-3xl font-bold tracking-tight text-blue-800 sm:text-4xl">Meus favoritos</h1>
@@ -57,4 +61,5 @@
 
         <x-pagination :paginator="$materials" class="mt-4" />
     </div>
+    </x-skeleton.gate>
 </div>

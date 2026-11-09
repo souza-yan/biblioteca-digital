@@ -1,3 +1,7 @@
+<x-skeleton.gate name="profile-sessions" label="Carregando sessões do navegador">
+    <x-slot:skeleton>
+        @include('profile.browser-sessions-skeleton')
+    </x-slot:skeleton>
 <div class="min-w-0 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
     <div class="flex items-start gap-4">
         <div class="flex items-center justify-center size-12 shrink-0 rounded-xl bg-blue-50 text-blue-900">
@@ -96,3 +100,4 @@
         </x-slot>
     </x-dialog-modal>
 </div>
+</x-skeleton.gate>

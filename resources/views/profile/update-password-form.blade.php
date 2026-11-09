@@ -1,3 +1,7 @@
+<x-skeleton.gate name="profile-password" label="Carregando segurança da conta" class="h-full min-w-0 [&>div]:h-full [&>div>div]:h-full">
+    <x-slot:skeleton>
+        @include('profile.update-password-skeleton')
+    </x-slot:skeleton>
 <div class="flex h-full min-w-0 flex-col rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6" x-data="{
     showCurrent: false,
     showNew: false,
@@ -136,3 +140,4 @@
         </div>
     </form>
 </div>
+</x-skeleton.gate>

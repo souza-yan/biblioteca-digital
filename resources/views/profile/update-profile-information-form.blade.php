@@ -1,3 +1,7 @@
+<x-skeleton.gate name="profile-information" label="Carregando informações do perfil" class="h-full min-w-0 [&>div]:h-full [&>div>div]:h-full">
+    <x-slot:skeleton>
+        @include('profile.update-profile-information-skeleton')
+    </x-slot:skeleton>
 <div class="flex h-full min-w-0 flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
 
     {{-- Resumo da conta --}}
@@ -145,3 +149,4 @@
         </form>
     </div>
 </div>
+</x-skeleton.gate>

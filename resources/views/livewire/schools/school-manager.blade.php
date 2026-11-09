@@ -17,6 +17,11 @@
         </div>
 
         {{-- Cards das escolas com os respectivos gestores e vínculos. --}}
+        <x-skeleton.gate name="school-list" label="Carregando escolas">
+            <x-slot:skeleton>
+                @include('livewire.schools.school-list-skeleton')
+            </x-slot:skeleton>
+            <div class="space-y-6 lg:space-y-8">
         <div class="grid grid-cols-1 gap-5 xl:grid-cols-2">
             @forelse ($schools as $school)
                 <article wire:key="school-{{ $school->id }}"
@@ -109,6 +114,8 @@
         </div>
 
         <x-pagination :paginator="$schools" />
+            </div>
+        </x-skeleton.gate>
     </div>
 
     {{-- Formulário dos dados cadastrais da escola. --}}

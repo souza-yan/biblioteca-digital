@@ -62,6 +62,10 @@
             </div>
 
             {{-- Acervo gerenciável e ações de ciclo de vida do material. --}}
+            <x-skeleton.gate name="material-list" label="Carregando listagem de materiais">
+                <x-slot:skeleton>
+                    @include('livewire.materials.material-list-skeleton')
+                </x-slot:skeleton>
             <x-data-table :columns="$materialColumns">
                 @forelse ($materials as $material)
                     <tr wire:key="material-{{ $material->id }}">
@@ -128,6 +132,7 @@
             </x-data-table>
 
             <x-pagination :paginator="$materials" class="mt-4" />
+            </x-skeleton.gate>
 
             {{-- Formulário compartilhado para criação e edição dos metadados. --}}
             @if ($showForm && $canCreateMaterials)

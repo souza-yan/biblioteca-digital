@@ -65,6 +65,11 @@
         </div>
 
         {{-- Cartões no celular evitam que a tabela e suas ações comprimam a busca. --}}
+        <x-skeleton.gate name="user-list" label="Carregando professores">
+            <x-slot:skeleton>
+                @include('livewire.users.user-list-skeleton')
+            </x-slot:skeleton>
+            <div class="space-y-6 lg:space-y-8">
         <div class="space-y-3 md:hidden">
             @forelse ($users as $user)
                 @php
@@ -179,6 +184,8 @@
         </div>
 
         <x-pagination :paginator="$users" class="mt-4" />
+            </div>
+        </x-skeleton.gate>
 
         {{-- Cadastro global e vínculos com escolas. --}}
         <x-ts-modal wire="showForm" :title="$editingUserId === null ? 'Novo professor' : 'Editar professor'" size="xl" center>

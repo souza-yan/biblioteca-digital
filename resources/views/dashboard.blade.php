@@ -9,6 +9,11 @@
         $maxDownloads = $isTeacher ? 0 : max(1, (int) $topDownloadedMaterials->max('downloads_count'));
     @endphp
 
+    <x-skeleton.gate name="dashboard" label="Carregando painel inicial">
+        <x-slot:skeleton>
+            @include('dashboard.skeleton')
+        </x-slot:skeleton>
+
     <div class="mx-auto w-full max-w-screen-2xl space-y-6 px-4 py-6 sm:px-6 lg:space-y-8 lg:px-8 lg:py-8">
 
         @if ($isTeacher)
@@ -623,4 +628,5 @@
             </div>
         @endif
     </div>
+    </x-skeleton.gate>
 </x-app-layout>

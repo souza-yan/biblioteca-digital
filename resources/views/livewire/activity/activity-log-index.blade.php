@@ -21,9 +21,9 @@
             @endforeach
         </nav>
 
-        {{-- A chave por aba força o Livewire a recriar tudo ao trocar de aba --}}
+        {{-- Filtros e tabela mantêm chaves por aba; o gate permanece estável. --}}
         <section role="tabpanel" aria-label="{{ $activeTabLabel }}" class="space-y-4"
-            wire:key="panel-{{ $activeTab }}">
+            wire:key="activity-panel">
 
             <div wire:key="filters-{{ $activeTab }}">
                 <x-activity.filters :fields="$filterFields" :option-groups="$filterOptions"
@@ -32,6 +32,11 @@
                     :selected-user-filter="$selectedUserFilter" :user-search-value="$userSearchValue" />
             </div>
 
+            <x-skeleton.gate name="activity-list" label="Carregando listagem de atividades">
+                <x-slot:skeleton>
+                    @include('livewire.activity.activity-list-skeleton')
+                </x-slot:skeleton>
+            <div class="space-y-4">
             <div wire:key="table-{{ $activeTab }}">
                 <x-data-table :columns="$columns" :header-style="$tableHeaderStyle" :compact-header="true"
                     :sticky-header="true"
@@ -53,6 +58,8 @@
             </div>
 
             <x-pagination :paginator="$records" />
+            </div>
+            </x-skeleton.gate>
         </section>
     </div>
 </div>
