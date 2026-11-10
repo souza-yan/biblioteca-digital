@@ -1,3 +1,4 @@
+<div class="min-w-0">
 <x-skeleton.gate name="profile-sessions" label="Carregando sessões do navegador">
     <x-slot:skeleton>
         @include('profile.browser-sessions-skeleton')
@@ -101,3 +102,4 @@
     </x-dialog-modal>
 </div>
 </x-skeleton.gate>
+</div>

@@ -1,3 +1,4 @@
+<div class="h-full min-w-0">
 <x-skeleton.gate name="profile-information" label="Carregando informações do perfil" class="h-full min-w-0 [&>div]:h-full [&>div>div]:h-full">
     <x-slot:skeleton>
         @include('profile.update-profile-information-skeleton')
@@ -5,7 +6,12 @@
 <div class="flex h-full min-w-0 flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
 
     {{-- Resumo da conta --}}
-    <div x-data="{ photoPreview: null }"
+    <div x-data="{ photoPreview: null, uploading: false, progress: 0 }"
+        x-on:livewire-upload-start="uploading = true; progress = 0"
+        x-on:livewire-upload-progress="progress = $event.detail.progress"
+        x-on:livewire-upload-finish="uploading = false"
+        x-on:livewire-upload-cancel="uploading = false; progress = 0"
+        x-on:livewire-upload-error="uploading = false; $tsui.interaction('toast').error('Falha no envio da foto!', 'Confira o formato, o tamanho da imagem e sua conexão e tente novamente.').send()"
         x-on:saved.window="photoPreview = null; if ($refs.photo) $refs.photo.value = ''"
         class="p-5 sm:p-6">
             @if (Laravel\Jetstream\Jetstream::managesProfilePhotos())
@@ -20,26 +26,26 @@
                    " />
             @endif
 
-            <div class="grid grid-cols-[auto_minmax(0,1fr)] items-center gap-x-4 gap-y-5 sm:gap-x-5 lg:grid-cols-[auto_minmax(0,1fr)_auto]">
+            <div class="grid grid-cols-[auto_minmax(0,1fr)] items-center gap-x-4 gap-y-4 sm:gap-x-5">
                 <div class="shrink-0">
                     <img x-show="! photoPreview" src="{{ $this->user->profile_photo_url }}"
-                        alt="{{ $this->user->name }}" class="size-20 rounded-full object-cover ring-4 ring-blue-100 sm:size-24">
+                        alt="{{ $this->user->name }}" class="size-20 rounded-full object-cover ring-4 ring-blue-100 sm:size-28">
 
                     <span x-show="photoPreview" style="display: none;"
-                        class="block size-20 rounded-full bg-cover bg-center bg-no-repeat ring-4 ring-blue-100 sm:size-24"
+                        class="block size-20 rounded-full bg-cover bg-center bg-no-repeat ring-4 ring-blue-100 sm:size-28"
                         x-bind:style="'background-image: url(\'' + photoPreview + '\');'"></span>
                 </div>
 
                 <div class="min-w-0 max-w-full flex-1">
-                    <h2 class="break-words text-2xl font-bold leading-tight text-gray-900 sm:text-3xl">{{ $this->user->name }}</h2>
-                    <p class="mt-2 break-all text-sm text-gray-500 sm:text-base">{{ $this->user->email }}</p>
+                    <h2 class="text-xl font-bold leading-snug text-gray-900 [overflow-wrap:anywhere] sm:text-2xl">{{ $this->user->name }}</h2>
+                    <p class="mt-2 text-sm text-gray-500 [overflow-wrap:anywhere] sm:text-base">{{ $this->user->email }}</p>
                 </div>
 
                 @if (Laravel\Jetstream\Jetstream::managesProfilePhotos())
-                    <div class="col-span-2 flex w-full items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 p-3 sm:gap-4 sm:p-4 lg:col-span-1 lg:w-auto lg:min-w-72">
+                    <div class="col-span-2 flex min-w-0 w-full items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 p-3 sm:gap-4 sm:p-4">
                         <button type="button" x-on:click.prevent="$refs.photo.click()" aria-label="Alterar foto"
                             title="Alterar foto"
-                            class="inline-flex size-14 shrink-0 items-center justify-center rounded-xl border border-blue-100 bg-white text-blue-900 shadow-sm transition hover:border-blue-200 hover:bg-blue-50">
+                            class="inline-flex size-12 shrink-0 items-center justify-center rounded-xl border border-blue-100 bg-white text-blue-900 shadow-sm transition hover:border-blue-200 hover:bg-blue-50 sm:size-14">
                             <x-ts-icon icon="camera" outline class="size-8" />
                         </button>
 
@@ -60,6 +66,10 @@
             </div>
 
         @if (Laravel\Jetstream\Jetstream::managesProfilePhotos())
+            <div x-cloak x-show="uploading" class="mt-3 text-sm text-blue-900" role="status">
+                Enviando foto: <span x-text="progress"></span>%
+                <progress max="100" x-bind:value="progress" aria-label="Progresso do envio da foto" class="mt-1 h-2 w-full"></progress>
+            </div>
             <p x-show="photoPreview" style="display: none;" class="mt-3 text-sm text-blue-900">
                 Clique em <strong>Salvar alterações</strong> para confirmar a nova foto.
             </p>
@@ -133,7 +143,7 @@
             </div>
 
             <div class="mt-auto flex flex-wrap items-center justify-end gap-3 pt-2">
-                <x-saved-toast title="Perfil atualizado!" message="Seus dados foram salvos com sucesso." />
+                <x-saved-toast on="profile-saved" title="Perfil atualizado!" message="Seus dados foram salvos com sucesso." />
 
                 <button type="submit" wire:loading.attr="disabled" wire:target="updateProfileInformation,photo"
                     class="inline-flex items-center gap-2 rounded-lg bg-blue-900 px-5 py-2.5 text-sm font-bold text-white shadow-sm transition hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-900 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50">
@@ -150,3 +160,4 @@
     </div>
 </div>
 </x-skeleton.gate>
+</div>

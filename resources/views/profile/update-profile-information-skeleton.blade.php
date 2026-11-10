@@ -1,14 +1,16 @@
 <div class="flex h-full min-w-0 flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
     <div class="p-5 sm:p-6">
-        <div class="grid grid-cols-[auto_minmax(0,1fr)] items-center gap-x-4 gap-y-5 sm:gap-x-5 lg:grid-cols-[auto_minmax(0,1fr)_auto]">
-            <x-skeleton.block class="size-20 shrink-0 rounded-full sm:size-24" />
+        <div class="grid grid-cols-[auto_minmax(0,1fr)] items-center gap-x-4 gap-y-4 sm:gap-x-5">
+            <x-skeleton.block class="size-20 shrink-0 rounded-full sm:size-28" />
             <div class="min-w-0 max-w-full flex-1">
-                <x-skeleton.text class="break-words text-2xl font-bold leading-tight sm:text-3xl">{{ $this->user->name }}</x-skeleton.text>
-                <x-skeleton.text class="mt-2 break-all text-sm sm:text-base">{{ $this->user->email }}</x-skeleton.text>
+                <x-skeleton.text class="text-xl font-bold leading-snug [overflow-wrap:anywhere] sm:text-2xl">{{ $this->user->name }}</x-skeleton.text>
+                <div class="mt-2 text-sm [overflow-wrap:anywhere] sm:text-base">
+                    <x-skeleton.text>{{ $this->user->email }}</x-skeleton.text>
+                </div>
             </div>
             @if (Laravel\Jetstream\Jetstream::managesProfilePhotos())
-                <div class="col-span-2 flex w-full items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 p-3 sm:gap-4 sm:p-4 lg:col-span-1 lg:w-auto lg:min-w-72">
-                    <x-skeleton.block class="size-14 shrink-0 rounded-xl" />
+                <div class="col-span-2 flex min-w-0 w-full items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 p-3 sm:gap-4 sm:p-4">
+                    <x-skeleton.block class="size-12 shrink-0 rounded-xl sm:size-14" />
                     <div class="min-w-0 flex-1 text-sm leading-6">
                         <x-skeleton.text class="font-semibold">{{ strtoupper(implode(' ou ', config('profile.photo.allowed_mimes'))) }}</x-skeleton.text>
                         <x-skeleton.text>Tamanho máximo de {{ number_format(config('profile.photo.max_size_kilobytes') / 1024, 2, ',', '.') }} MB</x-skeleton.text>

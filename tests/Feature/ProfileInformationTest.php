@@ -1,5 +1,6 @@
 <?php
 
+use App\Livewire\NavigationMenu;
 use App\Livewire\Profile\UpdateProfileInformationForm;
 use App\Models\User;
 use Illuminate\Http\UploadedFile;
@@ -44,6 +45,8 @@ test('profile photo can be updated without redirecting away from the profile', f
     Storage::fake('public');
     $this->actingAs($user = User::factory()->create());
 
+    $navigation = Livewire::test(NavigationMenu::class);
+
     Livewire::test(UpdateProfileInformationForm::class)
         ->set('photo', UploadedFile::fake()->image('avatar.png', 300, 300))
         ->call('updateProfileInformation')
@@ -54,6 +57,12 @@ test('profile photo can be updated without redirecting away from the profile', f
         ->assertDispatched('refresh-navigation-menu');
 
     expect($user->fresh()->profile_photo_path)->not->toBeNull();
+
+    Storage::disk('public')->assertExists($user->fresh()->profile_photo_path);
+
+    $navigation->dispatch('refresh-navigation-menu')
+        ->assertViewIs('livewire.navigation-menu')
+        ->assertSee($user->fresh()->profile_photo_url);
 });
 
 test('profile photo accepts the configured maximum and exposes it in the form', function () {

@@ -19,7 +19,6 @@
 
     {{-- TallStackUI: precisa vir ACIMA do @vite --}}
     <tallstackui:script />
-    <x-ts-toast />
     {{-- Fonts --}}
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
@@ -56,6 +55,11 @@
         Sua sessão expirou. <a href="{{ route('login') }}" class="underline">Entre novamente</a> para continuar.
     </div>
 
+    <a href="#main-content" class="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded-lg focus:bg-white focus:px-4 focus:py-3 focus:text-blue-900">Ir para o conteúdo</a>
+    <x-feedback />
+    <x-ts-toast />
+    <x-ts-dialog />
+
     {{-- Sidebar + Header fixos (ficam dentro do componente) --}}
     @livewire(\App\Livewire\NavigationMenu::class)
 
@@ -69,7 +73,7 @@
             </header>
         @endisset
 
-        <main>
+        <main id="main-content" tabindex="-1">
             {{ $slot }}
         </main>
     </div>
@@ -79,6 +83,17 @@
     @livewireScripts
     <script>
         document.addEventListener('livewire:init', () => {
+            Livewire.hook('commit', ({ component, succeed, fail }) => {
+                component.el.dispatchEvent(new CustomEvent('app-request-start', { bubbles: true }));
+                let finished = false;
+                const finish = () => {
+                    if (finished) return;
+                    finished = true;
+                    component.el.dispatchEvent(new CustomEvent('app-request-end', { bubbles: true }));
+                };
+                succeed(finish);
+                fail(finish);
+            });
             Livewire.hook('request', ({ fail }) => {
                 fail(({ status, preventDefault }) => {
                     if (status === 419) {

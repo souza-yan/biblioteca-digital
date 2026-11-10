@@ -67,10 +67,15 @@
                         <div class="mt-4 space-y-2">
                             @forelse ($school->users as $manager)
                                 <div class="flex min-w-0 items-center gap-3 rounded-xl bg-slate-50 px-3 py-2.5">
-                                    <span
-                                        class="flex size-10 shrink-0 items-center justify-center rounded-full bg-blue-100 font-semibold text-blue-900">
-                                        {{ \Illuminate\Support\Str::upper(\Illuminate\Support\Str::substr($manager->name, 0, 1)) }}
-                                    </span>
+                                    @if ($manager->profile_photo_path)
+                                        <img src="{{ $manager->profile_photo_url }}" alt="Foto de {{ $manager->name }}"
+                                            class="size-10 shrink-0 rounded-full object-cover ring-2 ring-blue-100" />
+                                    @else
+                                        <span
+                                            class="flex size-10 shrink-0 items-center justify-center rounded-full bg-blue-100 font-semibold text-blue-900">
+                                            {{ \Illuminate\Support\Str::upper(\Illuminate\Support\Str::substr($manager->name, 0, 1)) }}
+                                        </span>
+                                    @endif
                                     <span class="min-w-0 flex-1">
                                         <span
                                             class="block truncate text-sm font-semibold text-slate-800">{{ $manager->name }}</span>
@@ -90,7 +95,7 @@
                                         <x-ts-icon icon="identification" outline class="size-7 text-white" />
                                     </x-ts-button>
                                     <x-ts-button :color="$manager->is_active ? 'red' : 'emerald'"
-                                        wire:click="toggleManagerActive({{ $school->id }}, {{ $manager->id }})"
+                                        x-on:click="$tsui.interaction('dialog').wireable($wire.$id).question('Alterar acesso do gestor?', 'Confirme a alteração do vínculo deste gestor com a escola.').confirm('Confirmar', 'toggleManagerActive', [{{ $school->id }}, {{ $manager->id }}]).cancel('Cancelar').send()"
                                         wire:loading.attr="disabled"
                                         wire:target="toggleManagerActive({{ $school->id }}, {{ $manager->id }})"
                                         :aria-label="$manager->is_active

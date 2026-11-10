@@ -13,6 +13,24 @@ use Illuminate\Support\Facades\Hash;
 use Livewire\Features\SupportLockedProperties\CannotUpdateLockedPropertyException;
 use Livewire\Livewire;
 
+it('shows the teachers own profile photo in the user list', function () {
+    $admin = User::factory()->admin()->create();
+    $teacher = User::factory()->teacher()->create(['profile_photo_path' => 'profile-photos/teacher.jpg']);
+
+    Livewire::actingAs($admin)->test(UserManager::class)
+        ->assertSee('src="'.$teacher->profile_photo_url.'"', false)
+        ->assertSee('alt="Foto de '.e($teacher->name).'"', false);
+});
+
+it('keeps the teachers initial when they have no profile photo', function () {
+    $admin = User::factory()->admin()->create();
+    $teacher = User::factory()->teacher()->create(['name' => 'Professor sem foto', 'profile_photo_path' => null]);
+
+    Livewire::actingAs($admin)->test(UserManager::class)
+        ->assertSee($teacher->name)
+        ->assertDontSee('alt="Foto de '.$teacher->name.'"', false);
+});
+
 it('allows staff to create a teacher from the user manager', function () {
     $staff = User::factory()->staffInSchool()->create();
 

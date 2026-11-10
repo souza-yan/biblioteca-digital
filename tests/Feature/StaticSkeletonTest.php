@@ -20,7 +20,7 @@ it('renders an accessible static gate while keeping the real content server rend
         ->not->toContain('animate-', 'x-transition', 'wire:loading', 'wire:lazy');
 });
 
-it('keeps the gate closed for 450ms and never restarts it after an interaction', function () {
+it('keeps skeletons visible for at least 450ms initially and during fast slow and concurrent requests', function () {
     $html = view('components.skeleton.gate', [
         'name' => 'sample',
         'label' => 'Carregando',
@@ -35,27 +35,66 @@ it('keeps the gate closed for 450ms and never restarts it after an interaction',
         import assert from 'node:assert/strict';
         import vm from 'node:vm';
         let now = 0;
-        let callback;
-        let deadline;
-        let schedules = 0;
+        let sequence = 0;
+        const timers = new Map();
         const state = vm.runInNewContext('(' + process.argv[1] + ')', {
-            setTimeout(fn, delay) { schedules++; callback = fn; deadline = now + delay; return 1; },
-            clearTimeout() { callback = null; },
+            setTimeout(callback, delay) { timers.set(++sequence, { callback, deadline: now + delay }); return sequence; },
+            clearTimeout(id) { timers.delete(id); },
         });
+        function advance(milliseconds) {
+            now += milliseconds;
+            for (const [id, timer] of timers) {
+                if (timer.deadline <= now) { timers.delete(id); timer.callback(); }
+            }
+        }
+        const owner = {};
+        const child = {};
+        const other = {};
+        state.$el = { closest() { return owner; }, contains(target) { return target === child; } };
         state.start();
-        now = 449;
         state.start();
+        assert.equal(timers.size, 1);
+        advance(449);
         assert.equal(state.ready, false);
-        assert.equal(deadline, 450);
-        assert.equal(schedules, 1);
-        now = 450;
-        callback();
+        advance(1);
         assert.equal(state.ready, true);
-        state.start();
+        state.begin(other);
+        assert.equal(state.pending, 0);
         assert.equal(state.ready, true);
-        assert.equal(schedules, 1);
+        state.begin(owner);
+        state.finish(owner);
+        assert.equal(state.pending, 0);
+        assert.equal(state.ready, false);
+        advance(449);
+        assert.equal(state.ready, false);
+        advance(1);
+        assert.equal(state.ready, true);
+        state.begin(owner);
+        advance(600);
+        assert.equal(state.ready, true);
+        assert.equal(state.pending, 1);
+        state.finish(owner);
+        assert.equal(state.pending, 0);
+        state.begin(owner);
+        advance(200);
+        state.begin(child);
+        assert.equal(state.pending, 2);
+        assert.equal(timers.size, 1);
+        state.finish(other);
+        assert.equal(state.pending, 2);
+        state.finish(owner);
+        assert.equal(state.pending, 1);
+        state.finish(child);
+        assert.equal(state.pending, 0);
+        advance(449);
+        assert.equal(state.ready, false);
+        advance(1);
+        state.finish(owner);
+        assert.equal(state.pending, 0);
+        assert.equal(state.ready, true);
+        state.begin(owner);
         state.destroy();
-        assert.equal(callback, null);
+        assert.equal(timers.size, 0);
         JS, $state]);
     $process->run();
 
@@ -203,8 +242,28 @@ it('renders profile gates without replacing the Jetstream forms', function (stri
         ->assertSee('data-skeleton-gate="profile-information"', false)
         ->assertSee('data-skeleton-gate="profile-password"', false)
         ->assertSee('data-skeleton-gate="profile-sessions"', false)
+        ->assertSee('data-skeleton-gate="profile-security"', false)
         ->assertSee($user->name)->assertSee($user->email)
         ->assertSee('wire:submit="updateProfileInformation"', false)
         ->assertSee('wire:submit="updatePassword"', false)
         ->assertSee('wire:click="confirmLogout"', false);
 })->with(['teacher', 'staff', 'admin']);
+
+it('keeps profile skeleton state separate from the Livewire root across updates', function (string $component, string $gate) {
+    $this->actingAs(User::factory()->create());
+    $form = Livewire::test($component);
+
+    foreach ([$form->html(), $form->call('$refresh')->html()] as $html) {
+        $document = new DOMDocument;
+        @$document->loadHTML('<?xml encoding="UTF-8">'.$html);
+        $element = (new DOMXPath($document))->query('//*[@data-skeleton-gate="'.$gate.'"]')->item(0);
+
+        expect($element)->not->toBeNull();
+        expect($element->hasAttribute('wire:id'))->toBeFalse();
+        expect($element->parentNode->hasAttribute('wire:id'))->toBeTrue();
+    }
+})->with([
+    ['profile.update-profile-information-form', 'profile-information'],
+    ['profile.update-password-form', 'profile-password'],
+    ['profile.logout-other-browser-sessions-form', 'profile-sessions'],
+]);

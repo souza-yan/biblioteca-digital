@@ -22,6 +22,7 @@ class UpdateProfileInformationForm extends JetstreamUpdateProfileInformationForm
         $this->photo = null;
 
         $this->dispatch('saved');
+        $this->dispatch('profile-saved');
         $this->dispatch('refresh-navigation-menu');
     }
 }

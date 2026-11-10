@@ -17,8 +17,31 @@
                 @livewire('profile.logout-other-browser-sessions-form')
             </div>
 
+            <x-skeleton.gate name="profile-security" label="Carregando informações de segurança"
+                class="h-full min-w-0 [&>div]:h-full [&>div>div]:h-full">
+                <x-slot:skeleton>
+                    <div class="h-full min-w-0 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+                        <div class="flex items-start gap-4">
+                            <x-skeleton.block class="size-12 shrink-0 rounded-xl" />
+                            <div class="min-w-0">
+                                <x-skeleton.text class="w-fit text-lg font-bold">Sistema seguro</x-skeleton.text>
+                                <x-skeleton.text class="mt-1 text-sm">Sua conta é protegida por autenticação e controle de sessões.</x-skeleton.text>
+                            </div>
+                        </div>
+                        <div class="mt-5 space-y-3 text-sm">
+                            <div class="flex items-start gap-2">
+                                <x-skeleton.block class="mt-1 size-3 shrink-0 rounded" />
+                                <x-skeleton.text>Senhas armazenadas com segurança.</x-skeleton.text>
+                            </div>
+                            <div class="flex items-start gap-2">
+                                <x-skeleton.block class="mt-1 size-3 shrink-0 rounded" />
+                                <x-skeleton.text>Sessões podem ser encerradas a qualquer momento.</x-skeleton.text>
+                            </div>
+                        </div>
+                    </div>
+                </x-slot:skeleton>
             <section aria-labelledby="system-security-title"
-                class="min-w-0 rounded-2xl border border-emerald-100 bg-emerald-50 p-5 shadow-sm sm:p-6">
+                class="h-full min-w-0 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
                 <div class="flex items-start gap-4">
                     <span class="flex size-12 shrink-0 items-center justify-center rounded-xl bg-white text-emerald-700 shadow-sm">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
@@ -44,6 +67,7 @@
                     </li>
                 </ul>
             </section>
+            </x-skeleton.gate>
 
         </div>
     </div>

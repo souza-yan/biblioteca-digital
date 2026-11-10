@@ -11,6 +11,24 @@ use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Support\Facades\Hash;
 use Livewire\Livewire;
 
+it('shows the managers own profile photo in their school card', function () {
+    $admin = User::factory()->admin()->create();
+    $manager = User::factory()->staffInSchool()->create(['profile_photo_path' => 'profile-photos/manager.jpg']);
+
+    Livewire::actingAs($admin)->test(SchoolManager::class)
+        ->assertSee('src="'.$manager->profile_photo_url.'"', false)
+        ->assertSee('alt="Foto de '.e($manager->name).'"', false);
+});
+
+it('shows the managers initial when they have no profile photo', function () {
+    $admin = User::factory()->admin()->create();
+    $manager = User::factory()->staffInSchool()->create(['name' => 'Gestor sem foto', 'profile_photo_path' => null]);
+
+    Livewire::actingAs($admin)->test(SchoolManager::class)
+        ->assertSee($manager->name)
+        ->assertDontSee('alt="Foto de '.$manager->name.'"', false);
+});
+
 it('allows an administrator to access school management', function () {
     $admin = User::factory()->admin()->create();
 
