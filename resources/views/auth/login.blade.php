@@ -14,17 +14,50 @@
                         Biblioteca Digital de Robótica
                     </h1>
                 </div>
-                {{-- Erros de validação --}}
-                <x-validation-errors class="mb-5" />
-
-                {{-- Mensagem de status --}}
-                @if (session('status'))
-                    <div class="mb-5 rounded-lg border border-green-200 bg-green-50 p-3 text-sm text-green-800">
-                        {{ session('status') }}
-                    </div>
-                @endif
-
-                <form method="POST" action="{{ route('login') }}" class="space-y-5">
+                <form method="POST" action="{{ route('login') }}" class="space-y-5"
+                    x-data="{
+                        identifierLifetime: {{ config('accounts.remember_identifier_days') }} * 24 * 60 * 60 * 1000,
+                        restoreIdentifier() {
+                            try {
+                                const saved = localStorage.getItem('biblioteca.remembered-login');
+                                if (!saved) return;
+                                let record;
+                                try { record = JSON.parse(saved); } catch (error) { this.clearIdentifier(false); return; }
+                                if (!record || typeof record.identifier !== 'string' || !Number.isFinite(record.expiresAt) || record.expiresAt <= Date.now()) {
+                                    this.clearIdentifier(false);
+                                    return;
+                                }
+                                const login = this.$el.elements.namedItem('login');
+                                if (!login.value) login.value = record.identifier;
+                                this.$el.elements.namedItem('remember').checked = true;
+                            } catch (error) {}
+                        },
+                        saveIdentifier() {
+                            try {
+                                if (this.$el.elements.namedItem('remember').checked) {
+                                    localStorage.setItem('biblioteca.remembered-login', JSON.stringify({
+                                        identifier: this.$el.elements.namedItem('login').value.trim(),
+                                        expiresAt: Date.now() + this.identifierLifetime,
+                                    }));
+                                } else {
+                                    localStorage.removeItem('biblioteca.remembered-login');
+                                }
+                            } catch (error) {}
+                        },
+                        forgetIdentifier() {
+                            if (this.$el.elements.namedItem('remember').checked) return;
+                            try {
+                                localStorage.removeItem('biblioteca.remembered-login');
+                            } catch (error) {}
+                        },
+                        clearIdentifier(clearField = true) {
+                            try { localStorage.removeItem('biblioteca.remembered-login'); } catch (error) {}
+                            this.$el.elements.namedItem('remember').checked = false;
+                            if (clearField) this.$el.elements.namedItem('login').value = '';
+                        }
+                    }"
+                    x-init="$nextTick(() => restoreIdentifier())"
+                    x-on:submit="saveIdentifier()">
                     @csrf
 
                     {{-- Identificação da conta --}}
@@ -32,13 +65,6 @@
                         <x-ts-input id="login" name="login" label="CPF ou e-mail" type="text"
                             placeholder="CPF ou e-mail do administrador" value="{{ old('login') }}" autocomplete="username" required
                             autofocus class="w-full" />
-                        <p class="mt-2 text-sm text-slate-600">
-                            @if (config('accounts.cpf_login_enabled'))
-                                Professores e gestores: CPF. Administradores: e-mail.
-                            @else
-                                Entre com seu CPF ou e-mail. O acesso por e-mail de professores e gestores será mantido durante a atualização dos cadastros.
-                            @endif
-                        </p>
                     </div>
 
                     {{-- Senha --}}
@@ -48,9 +74,13 @@
                     </div>
 
                     {{-- Lembrar usuário --}}
-                    <div class="flex items-center">
-                        <x-ts-checkbox id="remember_me" name="remember" label="Lembrar de mim" />
+                    <div class="flex flex-wrap items-center justify-between gap-2">
+                        <x-ts-checkbox id="remember_me" name="remember" label="Lembrar de mim"
+                            x-on:change="forgetIdentifier()" />
+                        <button type="button" x-on:click="clearIdentifier()" class="min-h-11 rounded px-2 text-sm text-blue-800 underline">Esquecer identificação</button>
                     </div>
+
+                    <a href="{{ route('password.request') }}" class="inline-flex min-h-11 items-center rounded text-sm text-blue-800 underline">Esqueceu sua senha?</a>
 
                     {{-- Entrar --}}
                     <div class="pt-2">
