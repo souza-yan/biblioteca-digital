@@ -5,6 +5,7 @@ namespace App\Actions\Fortify;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Laravel\Fortify\Contracts\ResetsUserPasswords;
 
@@ -22,11 +23,12 @@ class ResetUserPassword implements ResetsUserPasswords
     public function reset(User $user, array $input): void
     {
         Validator::make($input, [
-            'password' => $this->passwordRules(),
+            'password' => [...$this->passwordRules($user), ...(! $user->isAdmin() ? [Rule::notIn([config('accounts.default_password')])] : [])],
         ])->validate();
 
         $user->forceFill([
             'password' => Hash::make($input['password']),
+            'must_change_password' => false,
         ])->save();
     }
 }

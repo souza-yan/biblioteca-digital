@@ -93,7 +93,9 @@ class CreateUser
             $attributes['cpf'] = Cpf::normalize($attributes['cpf'] ?? null);
             Validator::make($attributes, ['cpf' => Cpf::rules(required: $role !== Role::ADMIN)], Cpf::messages())->validate();
 
-            $user = User::create($attributes);
+            $user = new User($attributes);
+            $user->must_change_password = $role !== Role::ADMIN;
+            $user->save();
 
             if ($school !== null && ! $user->isAdmin()) {
                 $user->schools()->attach($school->getKey(), ['is_active' => true]);

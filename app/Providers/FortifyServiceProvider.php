@@ -7,6 +7,7 @@ use App\Actions\Fortify\UpdateUserPassword;
 use App\Actions\Fortify\UpdateUserProfileInformation;
 use App\Enums\Role;
 use App\Http\Requests\Auth\LoginRequest;
+use App\Http\Responses\LoginResponse;
 use App\Models\User;
 use App\Rules\Cpf;
 use Illuminate\Cache\RateLimiting\Limit;
@@ -14,6 +15,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
+use Laravel\Fortify\Contracts\LoginResponse as LoginResponseContract;
 use Laravel\Fortify\Fortify;
 use Laravel\Fortify\Http\Requests\LoginRequest as FortifyLoginRequest;
 
@@ -25,6 +27,7 @@ class FortifyServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->bind(FortifyLoginRequest::class, LoginRequest::class);
+        $this->app->singleton(LoginResponseContract::class, LoginResponse::class);
     }
 
     /**

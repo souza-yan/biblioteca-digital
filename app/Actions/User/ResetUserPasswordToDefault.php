@@ -31,6 +31,7 @@ class ResetUserPasswordToDefault
 
             $target->forceFill([
                 'password' => Hash::make((string) config('accounts.default_password')),
+                'must_change_password' => ! $target->isAdmin(),
                 'remember_token' => Str::random(60),
             ])->save();
 

@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Auth\FirstLoginPasswordController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DownloadController;
 use App\Http\Controllers\MaterialCoverController;
@@ -16,6 +17,12 @@ use App\Livewire\Materials\MaterialManager;
 use App\Livewire\Schools\SchoolManager;
 use App\Livewire\Users\UserManager;
 use Illuminate\Support\Facades\Route;
+
+Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'active'])->group(function () {
+    Route::get('/primeiro-acesso/senha', [FirstLoginPasswordController::class, 'edit'])->name('password.first-login');
+    Route::post('/primeiro-acesso/senha', [FirstLoginPasswordController::class, 'update'])
+        ->middleware('throttle:6,1')->name('password.first-login.update');
+});
 
 Route::middleware([
     'auth:sanctum',

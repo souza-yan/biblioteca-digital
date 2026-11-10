@@ -147,6 +147,10 @@ class UpdateUser
                 Validator::make($attributes, ['cpf' => Cpf::rules($target->getKey(), $finalRole !== Role::ADMIN)], Cpf::messages())->validate();
             }
 
+            if (isset($attributes['password'])) {
+                $target->must_change_password = $finalRole !== Role::ADMIN;
+            }
+
             $target->update($attributes);
 
             $this->logActivity->handle($lockedActor, ActivityAction::USER_UPDATED, 'Usuário atualizado.');

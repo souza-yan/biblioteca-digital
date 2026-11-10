@@ -1,4 +1,3 @@
-```blade
 <x-guest-layout>
     <x-authentication-card>
         <x-slot name="logo">
@@ -6,17 +5,14 @@
         </x-slot>
 
         <div class="mb-4 text-sm text-gray-600">
-            {{ __('Esqueceu sua senha? Não tem problema! Informe seu endereço de e-mail e enviaremos um link para redefinir sua senha.') }}
+            @if (in_array(config('mail.default'), ['log', 'array'], true))
+                Solicite a redefinição da senha à administração do sistema. Professores podem pedir encaminhamento à gestão da escola.
+            @else
+                Informe seu e-mail de cadastro para receber um link de redefinição de senha.
+            @endif
         </div>
 
-        @session('status')
-            <div class="mb-4 font-medium text-sm text-green-600">
-                {{ $value }}
-            </div>
-        @endsession
-
-        <x-validation-errors class="mb-4" />
-
+        @unless (in_array(config('mail.default'), ['log', 'array'], true))
         <form method="POST" action="{{ route('password.email') }}">
             @csrf
 
@@ -40,6 +36,7 @@
                 </x-button>
             </div>
         </form>
+        @endunless
+        <a href="{{ route('login') }}" class="mt-4 inline-flex min-h-11 items-center rounded text-sm text-blue-800 underline">Voltar para entrar</a>
     </x-authentication-card>
 </x-guest-layout>
-```

@@ -1,3 +1,4 @@
+<div class="h-full min-w-0">
 <x-skeleton.gate name="profile-password" label="Carregando segurança da conta" class="h-full min-w-0 [&>div]:h-full [&>div>div]:h-full">
     <x-slot:skeleton>
         @include('profile.update-password-skeleton')
@@ -8,6 +9,7 @@
     showConfirm: false,
     pw: '',
     get score() {
+        if (this.pw.length < 8 || !/[A-Za-z]/.test(this.pw)) return this.pw.length ? 1 : 0;
         let s = 0;
         if (this.pw.length >= 8) s++;
         if (/[a-z]/.test(this.pw) && /[A-Z]/.test(this.pw)) s++;
@@ -15,7 +17,7 @@
         if (/[^A-Za-z0-9]/.test(this.pw)) s++;
         return s;
     },
-    get label() { return ['muito fraca', 'fraca', 'razoável', 'boa', 'forte'][this.score]; }
+    get label() { return this.pw.length < 8 ? 'fraca' : ['muito fraca', 'fraca', 'média', 'forte', 'forte'][this.score]; }
 }"
     x-on:saved.window="pw = ''">
 
@@ -53,7 +55,6 @@
                     <x-ts-icon x-show="showCurrent" icon="eye-slash" outline class="size-6" />
                 </button>
             </div>
-            <x-input-error for="current_password" class="mt-2" />
         </div>
 
         {{-- Nova senha --}}
@@ -75,7 +76,6 @@
                     <x-ts-icon x-show="showNew" icon="eye-slash" outline class="size-6" />
                 </button>
             </div>
-            <x-input-error for="password" class="mt-2" />
 
             {{-- Medidor de força --}}
             <div class="mt-3 grid grid-cols-4 gap-2">
@@ -119,12 +119,9 @@
                     <x-ts-icon x-show="showConfirm" icon="eye-slash" outline class="size-6" />
                 </button>
             </div>
-            <x-input-error for="password_confirmation" class="mt-2" />
         </div>
 
         <div class="mt-auto flex flex-wrap items-center justify-end gap-3 pt-2">
-            <x-saved-toast title="Senha atualizada!" message="Sua nova senha foi salva com sucesso." />
-
             @livewire('profile.reset-default-password')
 
             <button type="submit" wire:loading.attr="disabled"
@@ -141,3 +138,4 @@
     </form>
 </div>
 </x-skeleton.gate>
+</div>

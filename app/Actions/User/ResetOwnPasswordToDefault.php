@@ -22,6 +22,7 @@ class ResetOwnPasswordToDefault
 
             $lockedActor->forceFill([
                 'password' => Hash::make((string) config('accounts.default_password')),
+                'must_change_password' => ! $lockedActor->isAdmin(),
             ])->save();
 
             $this->logActivity->handle(

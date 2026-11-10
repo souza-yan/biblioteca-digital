@@ -19,6 +19,8 @@
     @vite('resources/css/app.css')
 </head>
 <body>
+    <x-ts-toast />
+    <x-feedback />
     <div class="font-sans text-gray-900 antialiased">
         {{ $slot }}
     </div>

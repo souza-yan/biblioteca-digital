@@ -30,6 +30,7 @@ class UserFactory extends Factory
             'name' => fake()->name(),
             'email' => fake()->unique()->safeEmail(),
             'cpf' => $this->fakeCpf(),
+            'must_change_password' => false,
             'email_verified_at' => now(),
             'password' => static::$password ??= Hash::make((string) config('accounts.default_password')),
             'remember_token' => Str::random(10),
@@ -72,6 +73,11 @@ class UserFactory extends Factory
     public function withoutCpf(): static
     {
         return $this->state(fn () => ['cpf' => null]);
+    }
+
+    public function requiresPasswordChange(): static
+    {
+        return $this->state(fn () => ['must_change_password' => true]);
     }
 
     private function fakeCpf(): string

@@ -71,6 +71,7 @@ class User extends Authenticatable
             'password' => 'hashed',
             'role' => Role::class,
             'is_active' => 'boolean',
+            'must_change_password' => 'boolean',
         ];
     }
 
@@ -92,6 +93,11 @@ class User extends Authenticatable
     public function isTeacher(): bool
     {
         return $this->role === Role::TEACHER;
+    }
+
+    public function requiresPasswordChange(): bool
+    {
+        return ! $this->isAdmin() && $this->must_change_password;
     }
 
     public function assignableRoles(): array

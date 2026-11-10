@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\EnsurePasswordChanged;
 use App\Http\Middleware\EnsureStaffHasActiveSchool;
 use App\Http\Middleware\EnsureUserHasRole;
 use App\Http\Middleware\EnsureUserIsActive;
@@ -15,6 +16,7 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
+        $middleware->web(append: [EnsurePasswordChanged::class]);
         $middleware->alias([
             'role' => EnsureUserHasRole::class,
             'active' => EnsureUserIsActive::class,
