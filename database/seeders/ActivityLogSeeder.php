@@ -14,7 +14,7 @@ class ActivityLogSeeder extends Seeder
     public function run(): void
     {
         $admin = User::query()->where('email', 'admin@example.com')->firstOrFail();
-        $manager = User::query()->where('email', 'a@educacaocaraguatatuba.com.br')->firstOrFail();
+        $manager = User::query()->where('email', 'mariaaparecida@educacaocaraguatatuba.com.br')->firstOrFail();
         $teacher = User::query()->where('email', 'professor.a@educacaocaraguatatuba.com.br')->firstOrFail();
         $secondTeacher = User::query()->where('email', 'professor.b@educacaocaraguatatuba.com.br')->firstOrFail();
         $materials = Material::query()

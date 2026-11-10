@@ -21,12 +21,12 @@ test('creates repeatable participating school accounts from the central definiti
         ->and(User::query()->where('role', Role::TEACHER)->count())->toBe(4);
 
     foreach ([
-        'a' => 'Escola A',
-        'b' => 'Escola B',
-        'c' => 'Escola C',
-        'd' => 'Escola D',
-    ] as $emailSlug => $schoolName) {
-        $manager = User::query()->where('email', "{$emailSlug}@educacaocaraguatatuba.com.br")->firstOrFail();
+        'a' => ['mariaaparecida', 'EMEF Profa Maria Aparecida de Carvalho'],
+        'b' => ['luizsilvar', 'EMEF Luiz Silvar'],
+        'c' => ['mariathereza', 'EMEF Profa Maria Thereza de Souza Castro'],
+        'd' => ['luizribeiromuniz', 'EMEF Luiz Ribeiro Muniz'],
+    ] as $emailSlug => [$managerSlug, $schoolName]) {
+        $manager = User::query()->where('email', "{$managerSlug}@educacaocaraguatatuba.com.br")->firstOrFail();
         $teacher = User::query()->where('email', "professor.{$emailSlug}@educacaocaraguatatuba.com.br")->firstOrFail();
 
         expect($manager->name)->toBe("Gestão - {$schoolName}")

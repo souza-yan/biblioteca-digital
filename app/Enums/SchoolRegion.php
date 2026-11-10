@@ -7,6 +7,7 @@ enum SchoolRegion: string
     case North = 'north';
     case Center = 'center';
     case South = 'south';
+    case Unspecified = 'unspecified';
 
     public function label(): string
     {
@@ -14,6 +15,7 @@ enum SchoolRegion: string
             self::North => 'Norte',
             self::Center => 'Centro',
             self::South => 'Sul',
+            self::Unspecified => 'A definir',
         };
     }
 }
