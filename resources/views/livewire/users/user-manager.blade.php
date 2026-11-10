@@ -113,7 +113,8 @@
                             @endcan
                             @if (! $user->is($actor))
                                 @can('toggleActive', $user)
-                                    <x-ts-button :color="($actor->isStaff() ? $localMembershipIsActive : $user->is_active) ? 'red' : 'emerald'" wire:click="toggleActive({{ $user->id }})"
+                                    <x-ts-button :color="($actor->isStaff() ? $localMembershipIsActive : $user->is_active) ? 'red' : 'emerald'"
+                                        x-on:click="$tsui.interaction('dialog').wireable($wire.$id).question('Alterar situação do professor?', 'Confirme a alteração de acesso deste professor.').confirm('Confirmar', 'toggleActive', {{ $user->id }}).cancel('Cancelar').send()"
                                         wire:loading.attr="disabled" wire:target="toggleActive({{ $user->id }})"
                                         :aria-label="($actor->isStaff() ? $localMembershipIsActive : $user->is_active) ? 'Desativar usuário '.$user->name : 'Ativar usuário '.$user->name"
                                         :title="($actor->isStaff() ? $localMembershipIsActive : $user->is_active) ? 'Desativar usuário' : 'Ativar usuário'" class="!size-10 !p-0 justify-center">
@@ -177,7 +178,8 @@
                             @if ($user->is($actor))
                             @else
                                 @can('toggleActive', $user)
-                                    <x-ts-button :color="($actor->isStaff() ? $localMembershipIsActive : $user->is_active) ? 'red' : 'emerald'" wire:click="toggleActive({{ $user->id }})"
+                                    <x-ts-button :color="($actor->isStaff() ? $localMembershipIsActive : $user->is_active) ? 'red' : 'emerald'"
+                                        x-on:click="$tsui.interaction('dialog').wireable($wire.$id).question('Alterar situação do professor?', 'Confirme a alteração de acesso deste professor.').confirm('Confirmar', 'toggleActive', {{ $user->id }}).cancel('Cancelar').send()"
                                         wire:loading.attr="disabled" wire:target="toggleActive({{ $user->id }})"
                                         :aria-label="($actor->isStaff() ? $localMembershipIsActive : $user->is_active) ? 'Desativar usuário '.$user->name : 'Ativar usuário '.$user->name"
                                         :title="($actor->isStaff() ? $localMembershipIsActive : $user->is_active) ? 'Desativar usuário' : 'Ativar usuário'" class="!size-12 !p-0 justify-center">

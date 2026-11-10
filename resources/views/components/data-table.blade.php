@@ -1,6 +1,7 @@
-@props(['columns', 'headerStyle' => 'blue', 'stickyHeader' => false, 'compactHeader' => false])
+@props(['columns', 'headerStyle' => 'blue', 'stickyHeader' => false, 'compactHeader' => false, 'label' => 'Tabela de registros'])
 
-<div {{ $attributes->class('overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm') }}>
+<div tabindex="0" role="region" aria-label="{{ $label }}"
+    {{ $attributes->class('overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm') }}>
     <table class="min-w-full divide-y divide-slate-200">
         <thead @class([
             'z-10' => $stickyHeader,

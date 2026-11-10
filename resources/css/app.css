@@ -13,6 +13,18 @@
     display: none !important;
 }
 
+@layer base {
+    :where(button, a, input, select, textarea, [tabindex]):focus-visible {
+        outline: 2px solid #2563eb;
+        outline-offset: 3px;
+    }
+
+    button:not(:disabled), [role="button"] {
+        min-height: 2.75rem;
+        min-width: 2.75rem;
+    }
+}
+
 :root {
     --sidebar-w: 18rem;
     --sidebar-w-mini: 5rem;

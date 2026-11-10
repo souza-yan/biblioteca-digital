@@ -51,7 +51,8 @@
                                     title="Editar categoria" class="!size-12 !p-0 justify-center">
                                     <x-ts-icon icon="pencil-square" outline class="size-7 text-white" />
                                 </x-ts-button>
-                                <x-ts-button :color="$category->is_active ? 'red' : 'emerald'" wire:click="toggleActive({{ $category->id }})"
+                                <x-ts-button :color="$category->is_active ? 'red' : 'emerald'"
+                                    x-on:click="$tsui.interaction('dialog').wireable($wire.$id).question('Alterar situação da categoria?', 'Confirme a ativação ou desativação desta categoria.').confirm('Confirmar', 'toggleActive', {{ $category->id }}).cancel('Cancelar').send()"
                                     wire:loading.attr="disabled" wire:target="toggleActive({{ $category->id }})"
                                     :aria-label="$category->is_active ? 'Desativar categoria '.$category->name : 'Ativar categoria '.$category->name"
                                     :title="$category->is_active ? 'Desativar categoria' : 'Ativar categoria'" class="!size-12 !p-0 justify-center">

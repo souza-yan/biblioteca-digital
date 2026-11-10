@@ -11,6 +11,6 @@
             'px-5 py-10 text-center text-sm text-slate-500' => ! $compact,
         ])
     >
-        {{ $slot }}
+        <span role="status" class="block">{{ $slot }}</span>
     </td>
 </tr>
