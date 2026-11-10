@@ -41,13 +41,13 @@
             'size-full',
             'object-contain' => $fit === 'contain',
             'object-cover' => $fit !== 'contain',
-        ]) loading="lazy">
+        ]) loading="lazy" decoding="async">
     @elseif ($imageUrl)
         <img src="{{ $imageUrl }}" alt="{{ $label }}" @class([
             'size-full',
             'object-contain' => $fit === 'contain',
             'object-cover' => $fit !== 'contain',
-        ]) loading="lazy">
+        ]) loading="lazy" decoding="async">
     @else
         <div role="img" aria-label="Capa indisponível para {{ $material->title }}"
             @class(['flex size-full flex-col items-center justify-center gap-2 px-3 text-center', $placeholder['class']])>
