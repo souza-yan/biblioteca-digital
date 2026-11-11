@@ -83,17 +83,6 @@
     @livewireScripts
     <script>
         document.addEventListener('livewire:init', () => {
-            Livewire.hook('commit', ({ component, succeed, fail }) => {
-                component.el.dispatchEvent(new CustomEvent('app-request-start', { bubbles: true }));
-                let finished = false;
-                const finish = () => {
-                    if (finished) return;
-                    finished = true;
-                    component.el.dispatchEvent(new CustomEvent('app-request-end', { bubbles: true }));
-                };
-                succeed(finish);
-                fail(finish);
-            });
             Livewire.hook('request', ({ fail }) => {
                 fail(({ status, preventDefault }) => {
                     if (status === 419) {

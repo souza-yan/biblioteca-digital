@@ -17,10 +17,10 @@ it('renders an accessible static gate while keeping the real content server rend
     $html = Blade::render('<x-skeleton.gate name="sample" label="Carregando exemplo"><x-slot:skeleton><x-skeleton.line class="w-40" /></x-slot:skeleton><button>Conteúdo real</button></x-skeleton.gate>');
 
     expect($html)->toContain('data-skeleton-gate="sample"', 'role="status"', 'aria-busy="true"', 'aria-label="Carregando exemplo"', 'aria-hidden="true"', 'Carregando…', 'x-cloak', '<button>Conteúdo real</button>', 'wire:ignore.self')
-        ->not->toContain('animate-', 'x-transition', 'wire:loading', 'wire:lazy');
+        ->not->toContain('animate-', 'x-transition', 'wire:loading', 'wire:lazy', 'app-request-start', 'app-request-end');
 });
 
-it('keeps skeletons visible for at least 450ms initially and during fast slow and concurrent requests', function () {
+it('shows skeletons for 450ms on page entry without restarting after interactions', function () {
     $html = view('components.skeleton.gate', [
         'name' => 'sample',
         'label' => 'Carregando',
@@ -37,7 +37,7 @@ it('keeps skeletons visible for at least 450ms initially and during fast slow an
         let now = 0;
         let sequence = 0;
         const timers = new Map();
-        const state = vm.runInNewContext('(' + process.argv[1] + ')', {
+        const createState = () => vm.runInNewContext('(' + process.argv[1] + ')', {
             setTimeout(callback, delay) { timers.set(++sequence, { callback, deadline: now + delay }); return sequence; },
             clearTimeout(id) { timers.delete(id); },
         });
@@ -47,10 +47,7 @@ it('keeps skeletons visible for at least 450ms initially and during fast slow an
                 if (timer.deadline <= now) { timers.delete(id); timer.callback(); }
             }
         }
-        const owner = {};
-        const child = {};
-        const other = {};
-        state.$el = { closest() { return owner; }, contains(target) { return target === child; } };
+        const state = createState();
         state.start();
         state.start();
         assert.equal(timers.size, 1);
@@ -58,42 +55,21 @@ it('keeps skeletons visible for at least 450ms initially and during fast slow an
         assert.equal(state.ready, false);
         advance(1);
         assert.equal(state.ready, true);
-        state.begin(other);
-        assert.equal(state.pending, 0);
-        assert.equal(state.ready, true);
-        state.begin(owner);
-        state.finish(owner);
-        assert.equal(state.pending, 0);
-        assert.equal(state.ready, false);
+        for (let interaction = 0; interaction < 5; interaction++) {
+            state.start();
+            assert.equal(state.ready, true);
+            assert.equal(timers.size, 0);
+        }
+        const nextPage = createState();
+        nextPage.start();
+        assert.equal(nextPage.ready, false);
         advance(449);
-        assert.equal(state.ready, false);
+        assert.equal(nextPage.ready, false);
         advance(1);
-        assert.equal(state.ready, true);
-        state.begin(owner);
-        advance(600);
-        assert.equal(state.ready, true);
-        assert.equal(state.pending, 1);
-        state.finish(owner);
-        assert.equal(state.pending, 0);
-        state.begin(owner);
-        advance(200);
-        state.begin(child);
-        assert.equal(state.pending, 2);
-        assert.equal(timers.size, 1);
-        state.finish(other);
-        assert.equal(state.pending, 2);
-        state.finish(owner);
-        assert.equal(state.pending, 1);
-        state.finish(child);
-        assert.equal(state.pending, 0);
-        advance(449);
-        assert.equal(state.ready, false);
-        advance(1);
-        state.finish(owner);
-        assert.equal(state.pending, 0);
-        assert.equal(state.ready, true);
-        state.begin(owner);
-        state.destroy();
+        assert.equal(nextPage.ready, true);
+        const abandonedPage = createState();
+        abandonedPage.start();
+        abandonedPage.destroy();
         assert.equal(timers.size, 0);
         JS, $state]);
     $process->run();
