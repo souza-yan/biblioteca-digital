@@ -11,7 +11,7 @@
         </div>
     </div>
 
-    <div class="flex flex-wrap justify-end gap-3 border-t border-slate-200 bg-slate-50 px-6 py-4 text-end">
+    <div class="flex flex-wrap justify-end gap-3 bg-white px-6 py-4 text-end">
         {{ $footer }}
     </div>
 </x-modal>

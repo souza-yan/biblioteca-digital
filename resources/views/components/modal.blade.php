@@ -13,6 +13,9 @@ $maxWidth = [
 @endphp
 
 <div
+    wire:key="modal-{{ $id }}"
+    wire:ignore.self
+    x-cloak
     x-data="{ show: @entangle($attributes->wire('model')) }"
     x-on:close.stop="show = false"
     x-on:keydown.escape.window="show = false"
@@ -21,16 +24,10 @@ $maxWidth = [
     class="jetstream-modal fixed inset-0 z-50 overflow-y-auto px-4 py-6 sm:px-0"
     style="display: none;"
 >
-    <div x-show="show" class="fixed inset-0 z-0 transform transition-all" x-on:click="show = false" x-transition:enter="ease-out duration-300"
-                    x-transition:enter-start="opacity-0"
-                    x-transition:enter-end="opacity-100"
-                    x-transition:leave="ease-in duration-200"
-                    x-transition:leave-start="opacity-100"
-                    x-transition:leave-end="opacity-0">
-        <div class="absolute inset-0 bg-slate-950/60 backdrop-blur-sm"></div>
-    </div>
+    <div wire:ignore.self class="fixed inset-0 z-0 bg-slate-950/60 backdrop-blur-sm"
+        x-on:click="show = false" aria-hidden="true"></div>
 
-    <div x-show="show" role="dialog" aria-modal="true" tabindex="-1"
+    <div wire:ignore.self x-show="show" role="dialog" aria-modal="true" tabindex="-1"
                     @if ($labelledBy) aria-labelledby="{{ $labelledBy }}" @else aria-label="Confirmação" @endif
                     class="relative z-10 mb-6 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-xl transform transition-all sm:mx-auto sm:w-full {{ $maxWidth }}"
                     x-trap.inert.noscroll="show"

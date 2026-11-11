@@ -13,13 +13,13 @@
 </section>
 <section class="rounded-2xl border border-slate-200 bg-white p-4 sm:p-6">
     <x-skeleton.text class="w-fit text-lg font-bold sm:text-xl">Acesso rápido</x-skeleton.text>
-    <div class="mt-4 grid grid-cols-3 gap-2 sm:mt-5 sm:gap-3">
+    <div class="mt-4 grid grid-cols-3 gap-2 sm:mt-5 sm:gap-3 lg:gap-5">
         @foreach (['Professores e vínculos', 'Biblioteca de materiais', 'Dados da conta'] as $label)
-            <div class="flex min-h-28 flex-col items-center justify-center gap-2 rounded-xl border border-slate-200 p-3 text-center text-xs font-semibold sm:min-h-32 sm:text-sm"><x-skeleton.block class="size-10 rounded-xl" /><x-skeleton.text>{{ $label }}</x-skeleton.text></div>
+            <div class="flex min-h-28 flex-col items-center justify-center gap-2 rounded-xl border border-slate-200 p-3 text-center text-xs font-semibold sm:min-h-32 sm:text-sm lg:min-h-40 lg:gap-4 lg:p-6 lg:text-lg"><x-skeleton.block class="size-10 rounded-xl lg:size-14 lg:rounded-2xl" /><x-skeleton.text>{{ $label }}</x-skeleton.text></div>
         @endforeach
     </div>
 </section>
-<div>
+<div class="min-w-0">
     <section class="rounded-2xl border border-slate-200 bg-white p-4 sm:p-6">
         <div class="flex items-start justify-between gap-4"><x-skeleton.text class="text-lg font-bold sm:text-xl">Materiais mais acessados</x-skeleton.text><x-skeleton.text class="shrink-0 text-sm font-semibold">Ver materiais</x-skeleton.text></div>
         <div class="mt-4 space-y-2 sm:mt-5 sm:space-y-3">

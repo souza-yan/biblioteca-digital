@@ -218,32 +218,32 @@
 
             <section class="rounded-2xl border border-slate-200 bg-white p-4 sm:p-6" aria-labelledby="staff-actions-title">
                 <h2 id="staff-actions-title" class="text-lg font-bold text-slate-900 sm:text-xl">Acesso rápido</h2>
-                <div class="mt-4 grid grid-cols-3 gap-2 sm:mt-5 sm:gap-3">
+                <div class="mt-4 grid grid-cols-3 gap-2 sm:mt-5 sm:gap-3 lg:gap-5">
                     <a href="{{ route('painel.users') }}"
-                        class="flex min-h-28 flex-col items-center justify-center gap-2 rounded-xl border border-slate-200 p-3 text-center text-xs font-semibold text-slate-800 transition hover:border-blue-200 hover:bg-blue-50 sm:min-h-32 sm:text-sm">
-                        <span class="flex size-10 items-center justify-center rounded-xl bg-blue-50 text-blue-800">
-                            <x-ts-icon icon="users" outline class="size-5" />
+                        class="flex min-h-28 flex-col items-center justify-center gap-2 rounded-xl border border-slate-200 p-3 text-center text-xs font-semibold text-slate-800 transition hover:border-blue-200 hover:bg-blue-50 sm:min-h-32 sm:text-sm lg:min-h-40 lg:gap-4 lg:p-6 lg:text-lg">
+                        <span class="flex size-10 items-center justify-center rounded-xl bg-blue-50 text-blue-800 lg:size-14 lg:rounded-2xl">
+                            <x-ts-icon icon="users" outline class="size-5 lg:size-7" />
                         </span>
                         <span>Professores e vínculos</span>
                     </a>
                     <a href="{{ route('painel.materials') }}"
-                        class="flex min-h-28 flex-col items-center justify-center gap-2 rounded-xl border border-slate-200 p-3 text-center text-xs font-semibold text-slate-800 transition hover:border-blue-200 hover:bg-blue-50 sm:min-h-32 sm:text-sm">
-                        <span class="flex size-10 items-center justify-center rounded-xl bg-emerald-50 text-emerald-700">
-                            <x-ts-icon icon="book-open" outline class="size-5" />
+                        class="flex min-h-28 flex-col items-center justify-center gap-2 rounded-xl border border-slate-200 p-3 text-center text-xs font-semibold text-slate-800 transition hover:border-blue-200 hover:bg-blue-50 sm:min-h-32 sm:text-sm lg:min-h-40 lg:gap-4 lg:p-6 lg:text-lg">
+                        <span class="flex size-10 items-center justify-center rounded-xl bg-emerald-50 text-emerald-700 lg:size-14 lg:rounded-2xl">
+                            <x-ts-icon icon="book-open" outline class="size-5 lg:size-7" />
                         </span>
                         <span>Biblioteca de materiais</span>
                     </a>
                     <a href="{{ route('profile.show') }}"
-                        class="flex min-h-28 flex-col items-center justify-center gap-2 rounded-xl border border-slate-200 p-3 text-center text-xs font-semibold text-slate-800 transition hover:border-blue-200 hover:bg-blue-50 sm:min-h-32 sm:text-sm">
-                        <span class="flex size-10 items-center justify-center rounded-xl bg-violet-50 text-violet-700">
-                            <x-ts-icon icon="user-circle" outline class="size-5" />
+                        class="flex min-h-28 flex-col items-center justify-center gap-2 rounded-xl border border-slate-200 p-3 text-center text-xs font-semibold text-slate-800 transition hover:border-blue-200 hover:bg-blue-50 sm:min-h-32 sm:text-sm lg:min-h-40 lg:gap-4 lg:p-6 lg:text-lg">
+                        <span class="flex size-10 items-center justify-center rounded-xl bg-violet-50 text-violet-700 lg:size-14 lg:rounded-2xl">
+                            <x-ts-icon icon="user-circle" outline class="size-5 lg:size-7" />
                         </span>
                         <span>Dados da conta</span>
                     </a>
                 </div>
             </section>
 
-            <div>
+            <div class="min-w-0">
                 <section class="rounded-2xl border border-slate-200 bg-white p-4 sm:p-6" aria-labelledby="staff-materials-title">
                     <div class="flex items-start justify-between gap-4">
                         <div>
