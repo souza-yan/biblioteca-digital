@@ -66,7 +66,7 @@
 
                         <div class="mt-4 space-y-2">
                             @forelse ($school->users as $manager)
-                                <div class="flex min-w-0 items-center gap-3 rounded-xl bg-slate-50 px-3 py-2.5">
+                                <div class="flex min-w-0 flex-wrap items-center gap-3 rounded-xl bg-slate-50 px-3 py-2.5">
                                     @if ($manager->profile_photo_path)
                                         <img src="{{ $manager->profile_photo_url }}" alt="Foto de {{ $manager->name }}"
                                             class="size-10 shrink-0 rounded-full object-cover ring-2 ring-blue-100" />
@@ -89,21 +89,28 @@
                                             {{ $manager->is_active ? 'Ativo' : 'Inativo' }}
                                         </span>
                                     </span>
-                                    <x-ts-button color="blue" wire:click="editManagerCpf({{ $school->id }}, {{ $manager->id }})"
-                                        aria-label="Atualizar CPF de {{ $manager->name }}" title="Atualizar CPF"
-                                        class="!size-12 !p-0 shrink-0 justify-center">
-                                        <x-ts-icon icon="identification" outline class="size-7 text-white" />
-                                    </x-ts-button>
-                                    <x-ts-button :color="$manager->is_active ? 'red' : 'emerald'"
-                                        x-on:click="$tsui.interaction('dialog').wireable($wire.$id).question('Alterar acesso do gestor?', 'Confirme a alteração do vínculo deste gestor com a escola.').confirm('Confirmar', 'toggleManagerActive', [{{ $school->id }}, {{ $manager->id }}]).cancel('Cancelar').send()"
-                                        wire:loading.attr="disabled"
-                                        wire:target="toggleManagerActive({{ $school->id }}, {{ $manager->id }})"
-                                        :aria-label="$manager->is_active
-                                            ? 'Desativar gestor ' . $manager->name
-                                            : 'Ativar gestor ' . $manager->name" :title="$manager->is_active ? 'Desativar gestor' : 'Ativar gestor'"
-                                        class="!size-12 !p-0 shrink-0 justify-center">
-                                        <x-ts-icon :icon="$manager->is_active ? 'no-symbol' : 'check-circle'" outline class="size-7 text-white" />
-                                    </x-ts-button>
+                                    <div class="flex w-full shrink-0 justify-end gap-2 sm:w-auto">
+                                        <x-ts-button color="blue" wire:click="editManager({{ $school->id }}, {{ $manager->id }})"
+                                            aria-label="Editar gestor {{ $manager->name }}" title="Editar gestor"
+                                            class="!size-12 !p-0 shrink-0 justify-center">
+                                            <x-ts-icon icon="pencil-square" outline class="size-7 text-white" />
+                                        </x-ts-button>
+                                        <x-ts-button color="yellow" wire:click="openManagerPasswordResetConfirmation({{ $school->id }}, {{ $manager->id }})"
+                                            aria-label="Redefinir senha de {{ $manager->name }}" title="Redefinir senha"
+                                            class="!size-12 !p-0 shrink-0 justify-center">
+                                            <x-ts-icon icon="key" outline class="size-7" />
+                                        </x-ts-button>
+                                        <x-ts-button :color="$manager->is_active ? 'red' : 'emerald'"
+                                            x-on:click="$tsui.interaction('dialog').wireable($wire.$id).question('Alterar acesso do gestor?', 'Confirme a alteração do vínculo deste gestor com a escola.').confirm('Confirmar', 'toggleManagerActive', [{{ $school->id }}, {{ $manager->id }}]).cancel('Cancelar').send()"
+                                            wire:loading.attr="disabled"
+                                            wire:target="toggleManagerActive({{ $school->id }}, {{ $manager->id }})"
+                                            :aria-label="$manager->is_active
+                                                ? 'Desativar gestor ' . $manager->name
+                                                : 'Ativar gestor ' . $manager->name" :title="$manager->is_active ? 'Desativar gestor' : 'Ativar gestor'"
+                                            class="!size-12 !p-0 shrink-0 justify-center">
+                                            <x-ts-icon :icon="$manager->is_active ? 'no-symbol' : 'check-circle'" outline class="size-7 text-white" />
+                                        </x-ts-button>
+                                    </div>
                                 </div>
                             @empty
                                 <p
@@ -167,18 +174,20 @@
         </x-slot:footer>
     </x-ts-modal>
 
-    <x-ts-modal wire="showManagerForm" title="Adicionar gestor" size="lg" center>
+    <x-ts-modal wire="showManagerForm" :title="$editingManagerId === null ? 'Adicionar gestor' : 'Editar gestor'" size="lg" center>
         <form id="manager-form" wire:submit="saveManager" class="space-y-4">
-            @if ($managerSchool)
+            @if ($managerSchool && $editingManagerId === null)
                 <div class="rounded-xl border border-blue-100 bg-blue-50 p-4">
                     <p class="text-xs font-semibold uppercase tracking-wide text-blue-700">Escola</p>
                     <p class="mt-1 font-semibold text-blue-950">{{ $managerSchool->name }}</p>
                 </div>
             @endif
 
-            <p class="text-sm text-slate-600">
-                O gestor será criado com o cargo Gestão e receberá a senha inicial padrão: <strong>“{{ config('accounts.default_password') }}”</strong>.
-            </p>
+            @if ($editingManagerId === null)
+                <p class="text-sm text-slate-600">
+                    O gestor será criado com o cargo Gestão e receberá a senha inicial padrão: <strong>“{{ config('accounts.default_password') }}”</strong>.
+                </p>
+            @endif
 
             <x-form.input id="manager-name" label="Nome" :required="true" error="managerName"
                 wire:model="managerName" autocomplete="name" />
@@ -186,14 +195,37 @@
                 wire:model="managerEmail" type="email" autocomplete="email" />
             <x-form.input id="manager-cpf" label="CPF" :required="true" error="managerCpf"
                 wire:model="managerCpf" inputmode="numeric" maxlength="14" autocomplete="off" placeholder="000.000.000-00" />
+            @if ($editingManagerId !== null)
+                <x-form.select id="manager-school" label="Escola" :required="true" error="managerDestinationSchoolId"
+                    wire:model="managerDestinationSchoolId">
+                    @foreach ($managerSchoolOptions as $schoolOption)
+                        <option value="{{ $schoolOption->id }}">{{ $schoolOption->name }}</option>
+                    @endforeach
+                </x-form.select>
+            @endif
         </form>
 
         <x-slot:footer>
             <x-ts-button color="red" type="button" wire:click="closeManagerForm">Cancelar</x-ts-button>
             <x-ts-button color="blue" type="submit" form="manager-form" wire:loading.attr="disabled"
                 wire:target="saveManager">
-                <span wire:loading.remove wire:target="saveManager">Cadastrar gestor</span>
-                <span wire:loading wire:target="saveManager">Cadastrando...</span>
+                <span wire:loading.remove wire:target="saveManager">{{ $editingManagerId === null ? 'Cadastrar gestor' : 'Salvar alterações' }}</span>
+                <span wire:loading wire:target="saveManager">Salvando...</span>
+            </x-ts-button>
+        </x-slot:footer>
+    </x-ts-modal>
+
+    <x-ts-modal wire="showManagerPasswordResetConfirmation" title="Redefinir senha do gestor" size="md" center>
+        <p class="text-base font-semibold text-slate-900">Deseja redefinir a senha de {{ $passwordResetManager?->name ?? 'este gestor' }}?</p>
+        <p class="mt-2 text-sm text-slate-600">
+            A senha voltará ao padrão <strong>“{{ config('accounts.default_password') }}”</strong>.
+            Todas as sessões serão encerradas e o gestor deverá trocar a senha no próximo acesso.
+        </p>
+        <x-slot:footer>
+            <x-ts-button color="slate" type="button" wire:click="closeManagerPasswordResetConfirmation">Cancelar</x-ts-button>
+            <x-ts-button color="red" type="button" wire:click="resetManagerPassword" wire:loading.attr="disabled" wire:target="resetManagerPassword">
+                <span wire:loading.remove wire:target="resetManagerPassword">Redefinir senha</span>
+                <span wire:loading wire:target="resetManagerPassword">Redefinindo...</span>
             </x-ts-button>
         </x-slot:footer>
     </x-ts-modal>

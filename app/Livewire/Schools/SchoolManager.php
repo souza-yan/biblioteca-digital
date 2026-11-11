@@ -5,7 +5,9 @@ namespace App\Livewire\Schools;
 use App\Actions\School\CreateSchool;
 use App\Actions\School\UpdateSchool;
 use App\Actions\User\CreateUser;
+use App\Actions\User\ResetUserPasswordToDefault;
 use App\Actions\User\ToggleUserActive;
+use App\Actions\User\UpdateUser;
 use App\Actions\User\UpdateUserCpf;
 use App\Enums\Role;
 use App\Enums\SchoolRegion;
@@ -19,6 +21,7 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Locked;
 use Livewire\Component;
@@ -50,6 +53,19 @@ class SchoolManager extends Component
     public string $managerEmail = '';
 
     public string $managerCpf = '';
+
+    #[Locked]
+    public ?int $editingManagerId = null;
+
+    public ?int $managerDestinationSchoolId = null;
+
+    public bool $showManagerPasswordResetConfirmation = false;
+
+    #[Locked]
+    public ?int $passwordResetManagerId = null;
+
+    #[Locked]
+    public ?int $passwordResetManagerSchoolId = null;
 
     public bool $showManagerCpfForm = false;
 
@@ -147,7 +163,23 @@ class SchoolManager extends Component
         $this->showManagerForm = false;
     }
 
-    public function saveManager(CreateUser $createUser): void
+    public function editManager(int $schoolId, int $managerId): void
+    {
+        $manager = $this->findAuthorizedManager($schoolId, $managerId);
+        Gate::authorize('manage', $manager);
+        Gate::authorize('updateCpf', $manager);
+
+        $this->resetManagerForm();
+        $this->editingManagerId = $manager->getKey();
+        $this->managerSchoolId = $schoolId;
+        $this->managerDestinationSchoolId = $schoolId;
+        $this->managerName = $manager->name;
+        $this->managerEmail = $manager->email;
+        $this->managerCpf = $manager->cpf ?? '';
+        $this->showManagerForm = true;
+    }
+
+    public function saveManager(CreateUser $createUser, UpdateUser $updateUser): void
     {
         $actor = $this->currentUser();
         Gate::authorize('create', User::class);
@@ -155,27 +187,75 @@ class SchoolManager extends Component
         $schoolId = $this->managerSchoolId;
         abort_if($schoolId === null, 404);
         $school = $this->findAuthorizedSchool($schoolId);
+        $manager = $this->editingManagerId === null
+            ? null
+            : $this->findAuthorizedManager($schoolId, $this->editingManagerId);
+        if ($manager !== null) {
+            Gate::authorize('manage', $manager);
+            Gate::authorize('updateCpf', $manager);
+        }
         $this->managerCpf = (string) Cpf::normalize($this->managerCpf);
-        $attributes = $this->validate([
-            'managerName' => ['required', 'string', 'max:255'],
-            'managerEmail' => ['required', 'email', 'max:255', Rule::unique('users', 'email')],
-            'managerCpf' => Cpf::rules(),
-        ], Cpf::messages('managerCpf'));
+        try {
+            $attributes = $this->validate([
+                'managerName' => ['required', 'string', 'max:255'],
+                'managerEmail' => ['required', 'email', 'max:255', Rule::unique('users', 'email')->ignore($manager?->getKey())],
+                'managerCpf' => Cpf::rules($manager?->getKey()),
+                'managerDestinationSchoolId' => $manager === null ? ['exclude'] : ['required', 'integer', Rule::exists('schools', 'id')],
+            ], Cpf::messages('managerCpf'));
 
-        $createUser->handle($actor, [
-            'name' => $attributes['managerName'],
-            'email' => $attributes['managerEmail'],
-            'cpf' => $attributes['managerCpf'],
-            'role' => Role::STAFF->value,
-            'school_id' => $school->getKey(),
-        ]);
+            $userAttributes = [
+                'name' => $attributes['managerName'],
+                'email' => $attributes['managerEmail'],
+                'cpf' => $attributes['managerCpf'],
+                'school_id' => $manager === null ? $school->getKey() : $attributes['managerDestinationSchoolId'],
+            ];
+
+            if ($manager === null) {
+                $createUser->handle($actor, [...$userAttributes, 'role' => Role::STAFF->value]);
+            } else {
+                $updateUser->handle($actor, $manager, $userAttributes);
+            }
+        } catch (ValidationException $exception) {
+            $this->toast()->error('Confira os dados do gestor', collect($exception->errors())->flatten()->first())->send();
+            throw $exception;
+        }
 
         $this->resetManagerForm();
         $this->showManagerForm = false;
 
         $this->toast()
-            ->success('Gestor cadastrado!', 'O gestor foi criado e vinculado à escola.')
+            ->success(
+                $manager === null ? 'Gestor cadastrado!' : 'Gestor atualizado!',
+                $manager === null ? 'O gestor foi criado e vinculado à escola.' : 'As informações do gestor foram salvas.'
+            )
             ->send();
+    }
+
+    public function openManagerPasswordResetConfirmation(int $schoolId, int $managerId): void
+    {
+        $manager = $this->findAuthorizedManager($schoolId, $managerId);
+        Gate::authorize('resetPassword', $manager);
+        $this->passwordResetManagerId = $manager->getKey();
+        $this->passwordResetManagerSchoolId = $schoolId;
+        $this->showManagerPasswordResetConfirmation = true;
+    }
+
+    public function closeManagerPasswordResetConfirmation(): void
+    {
+        Gate::authorize('viewAny', School::class);
+        $this->passwordResetManagerId = null;
+        $this->passwordResetManagerSchoolId = null;
+        $this->showManagerPasswordResetConfirmation = false;
+    }
+
+    public function resetManagerPassword(ResetUserPasswordToDefault $resetUserPasswordToDefault): void
+    {
+        abort_if($this->passwordResetManagerSchoolId === null || $this->passwordResetManagerId === null, 404);
+        $manager = $this->findAuthorizedManager($this->passwordResetManagerSchoolId, $this->passwordResetManagerId);
+        Gate::authorize('resetPassword', $manager);
+        $resetUserPasswordToDefault->handle($this->currentUser(), $manager);
+        $this->closeManagerPasswordResetConfirmation();
+        $this->toast()->success('Senha redefinida!', 'A senha voltou ao padrão “'.config('accounts.default_password').'”. As sessões foram encerradas e o gestor deverá trocar a senha no próximo acesso.')->send();
     }
 
     public function toggleManagerActive(
@@ -265,6 +345,10 @@ class SchoolManager extends Component
             'managerSchool' => $this->managerSchoolId === null
                 ? null
                 : School::query()->find($this->managerSchoolId),
+            'managerSchoolOptions' => $this->showManagerForm && $this->editingManagerId !== null
+                ? School::query()->orderBy('name')->get(['id', 'name']) : collect(),
+            'passwordResetManager' => $this->passwordResetManagerId === null
+                ? null : User::query()->find($this->passwordResetManagerId),
         ]);
     }
 
@@ -274,6 +358,14 @@ class SchoolManager extends Component
         Gate::authorize('update', $school);
 
         return $school;
+    }
+
+    private function findAuthorizedManager(int $schoolId, int $managerId): User
+    {
+        return $this->findAuthorizedSchool($schoolId)->users()
+            ->where('role', Role::STAFF)
+            ->wherePivot('is_active', true)
+            ->findOrFail($managerId);
     }
 
     private function resetSchoolForm(): void
@@ -289,6 +381,8 @@ class SchoolManager extends Component
         $this->managerName = '';
         $this->managerEmail = '';
         $this->managerCpf = '';
+        $this->editingManagerId = null;
+        $this->managerDestinationSchoolId = null;
         $this->managerSchoolId = null;
         $this->resetValidation();
     }

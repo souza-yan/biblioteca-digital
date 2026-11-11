@@ -25,15 +25,18 @@
                     </div>
                     <div class="mt-4 space-y-2">
                         @forelse ($school->users as $manager)
-                            <div class="flex min-w-0 items-center gap-3 rounded-xl bg-slate-50 px-3 py-2.5">
+                            <div class="flex min-w-0 flex-wrap items-center gap-3 rounded-xl bg-slate-50 px-3 py-2.5">
                                 <x-skeleton.circle />
                                 <div class="min-w-0 flex-1">
                                     <x-skeleton.text class="truncate text-sm font-semibold">{{ $manager->name }}</x-skeleton.text>
                                     <x-skeleton.text class="truncate text-xs">{{ $manager->email }}</x-skeleton.text>
                                     <x-skeleton.text class="mt-1 w-fit rounded-full px-2 py-0.5 text-xs font-semibold">{{ $manager->is_active ? 'Ativo' : 'Inativo' }}</x-skeleton.text>
                                 </div>
-                                <x-skeleton.block class="size-12 shrink-0 rounded-lg" />
-                                <x-skeleton.block class="size-12 shrink-0 rounded-lg" />
+                                <div class="flex w-full shrink-0 justify-end gap-2 sm:w-auto">
+                                    <x-skeleton.block class="size-12 shrink-0 rounded-lg" />
+                                    <x-skeleton.block class="size-12 shrink-0 rounded-lg" />
+                                    <x-skeleton.block class="size-12 shrink-0 rounded-lg" />
+                                </div>
                             </div>
                         @empty
                             <div class="rounded-xl border border-dashed border-slate-200 px-4 py-3">
