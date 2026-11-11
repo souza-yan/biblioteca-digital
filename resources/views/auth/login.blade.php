@@ -77,10 +77,7 @@
                     <div class="flex flex-wrap items-center justify-between gap-2">
                         <x-ts-checkbox id="remember_me" name="remember" label="Lembrar de mim"
                             x-on:change="forgetIdentifier()" />
-                        <button type="button" x-on:click="clearIdentifier()" class="min-h-11 rounded px-2 text-sm text-blue-800 underline">Esquecer identificação</button>
                     </div>
-
-                    <a href="{{ route('password.request') }}" class="inline-flex min-h-11 items-center rounded text-sm text-blue-800 underline">Esqueceu sua senha?</a>
 
                     {{-- Entrar --}}
                     <div class="pt-2">
