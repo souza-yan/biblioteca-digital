@@ -73,6 +73,9 @@
             message="As outras sessões foram encerradas com sucesso." />
     </div>
 
+</div>
+</x-skeleton.gate>
+
     <!-- Modal de confirmação -->
     <x-dialog-modal wire:model.live="confirmingLogout">
         <x-slot name="title">Encerrar outras sessões</x-slot>
@@ -100,6 +103,4 @@
             </button>
         </x-slot>
     </x-dialog-modal>
-</div>
-</x-skeleton.gate>
 </div>

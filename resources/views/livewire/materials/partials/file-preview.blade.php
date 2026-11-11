@@ -74,7 +74,7 @@
             x-cloak
             x-show="isPreviewOpen"
             x-transition.opacity
-            class="fixed inset-0 z-[100] bg-slate-950/75 p-3 sm:p-6"
+            class="fixed inset-0 z-[100] bg-slate-950/75 p-3 backdrop-blur-sm sm:p-6"
             role="dialog"
             aria-modal="true"
             aria-labelledby="file-preview-title-{{ $version->getKey() }}"

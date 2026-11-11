@@ -1,11 +1,12 @@
 <template x-teleport="body">
     <div id="version-preview-modal-{{ $material->id }}"
         x-cloak x-show="versionPreview !== null"
+        x-transition.opacity.duration.200ms
         x-trap.inert.noscroll="versionPreview !== null"
         x-on:keydown.escape.window="versionPreview = null"
         x-on:click.self="versionPreview = null"
         role="dialog" aria-modal="true" aria-labelledby="version-preview-title-{{ $material->id }}"
-        class="fixed inset-0 z-[100] bg-slate-950/75 p-3 sm:p-6">
+        class="fixed inset-0 z-[100] bg-slate-950/75 p-3 backdrop-blur-sm sm:p-6">
         <div class="flex h-full w-full flex-col overflow-hidden rounded-lg bg-white shadow-2xl">
             <div class="flex shrink-0 items-center justify-between gap-4 border-b border-slate-200 px-4 py-3 sm:px-6">
                 <h2 id="version-preview-title-{{ $material->id }}" class="truncate text-base font-semibold text-slate-900"

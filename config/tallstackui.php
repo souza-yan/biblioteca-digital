@@ -203,7 +203,7 @@ return [
             [
                 'z-index' => 'z-50',
                 'overflow' => false,
-                'blur' => false,
+                'blur' => true,
                 'persistent' => false,
             ],
         ],
@@ -354,7 +354,7 @@ return [
                 */
                 'z-index' => 'z-50',
                 'overflow' => false,
-                'blur' => false,
+                'blur' => 'sm',
                 'persistent' => false,
                 'size' => '2xl',
                 'center' => false,
