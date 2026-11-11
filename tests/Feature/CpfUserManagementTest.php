@@ -3,7 +3,6 @@
 use App\Actions\Fortify\UpdateUserProfileInformation;
 use App\Actions\User\CreateUser;
 use App\Actions\User\UpdateUser;
-use App\Actions\User\UpdateUserCpf;
 use App\Enums\Role;
 use App\Livewire\Schools\SchoolManager;
 use App\Livewire\Users\UserManager;
@@ -83,7 +82,7 @@ it('rejects duplicate CPF through backend actions and preserves existing account
     expect(fn () => app(CreateUser::class)->handle($admin, [
         'name' => 'Professora Ana', 'email' => 'ana@example.com', 'role' => Role::TEACHER, 'cpf' => '529.982.247-25',
     ]))->toThrow(ValidationException::class);
-    expect(fn () => app(UpdateUserCpf::class)->handle($admin, $target, '529.982.247-25'))
+    expect(fn () => app(UpdateUser::class)->handle($admin, $target, ['cpf' => '529.982.247-25']))
         ->toThrow(ValidationException::class);
 
     $this->assertDatabaseMissing('users', ['email' => 'ana@example.com']);
@@ -120,9 +119,9 @@ it('lets administrators regularize a legacy manager without changing its members
     $manager = User::factory()->staffInSchool()->withoutCpf()->create();
     $school = $manager->school();
 
-    Livewire::actingAs($admin)->test(SchoolManager::class)->call('editManagerCpf', $school->getKey(), $manager->getKey())
-        ->set('managerCpfCorrection', '529.982.247-25')->call('saveManagerCpf')
-        ->assertHasNoErrors()->assertSet('showManagerCpfForm', false);
+    Livewire::actingAs($admin)->test(SchoolManager::class)->call('editManager', $school->getKey(), $manager->getKey())
+        ->set('managerCpf', '529.982.247-25')->call('saveManager')
+        ->assertHasNoErrors()->assertSet('showManagerForm', false);
 
     expect($manager->fresh()->cpf)->toBe('52998224725');
     $this->assertDatabaseHas('school_user', ['user_id' => $manager->getKey(), 'school_id' => $school->getKey(), 'is_active' => true]);
@@ -137,8 +136,6 @@ it('does not let management change a teacher CPF through crafted form state or t
     Livewire::actingAs($staff)->test(UserManager::class)->call('editUser', $teacher->getKey())
         ->assertSet('form.cpf', '')->set('form.cpf', '52998224725')->call('save')->assertHasNoErrors();
     expect(fn () => app(UpdateUser::class)->handle($staff, $teacher, ['cpf' => '52998224725']))
-        ->toThrow(AuthorizationException::class);
-    expect(fn () => app(UpdateUserCpf::class)->handle($staff, $teacher, '52998224725'))
         ->toThrow(AuthorizationException::class);
 
     expect($teacher->fresh()->cpf)->toBe($originalCpf);

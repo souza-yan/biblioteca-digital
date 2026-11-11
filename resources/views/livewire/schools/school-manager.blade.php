@@ -230,16 +230,4 @@
         </x-slot:footer>
     </x-ts-modal>
 
-    <x-ts-modal wire="showManagerCpfForm" title="Atualizar CPF do gestor" size="md" center>
-        <form id="manager-cpf-form" wire:submit="saveManagerCpf" class="space-y-4">
-            <x-form.input id="manager-cpf-correction" label="CPF" :required="true" error="managerCpfCorrection"
-                wire:model="managerCpfCorrection" inputmode="numeric" maxlength="14" autocomplete="off" placeholder="000.000.000-00" />
-        </form>
-        <x-slot:footer>
-            <x-ts-button color="red" type="button" wire:click="closeManagerCpfForm">Cancelar</x-ts-button>
-            <x-ts-button color="blue" type="submit" form="manager-cpf-form" wire:loading.attr="disabled" wire:target="saveManagerCpf">
-                Salvar CPF
-            </x-ts-button>
-        </x-slot:footer>
-    </x-ts-modal>
 </div>
