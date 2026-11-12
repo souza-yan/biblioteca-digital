@@ -226,7 +226,7 @@
                         </span>
                         <span>Professores e vínculos</span>
                     </a>
-                    <a href="{{ route('painel.materials') }}"
+                    <a href="{{ route('painel.library.categories') }}"
                         class="flex min-h-28 flex-col items-center justify-center gap-2 rounded-xl border border-slate-200 p-3 text-center text-xs font-semibold text-slate-800 transition hover:border-blue-200 hover:bg-blue-50 sm:min-h-32 sm:text-sm lg:min-h-40 lg:gap-4 lg:p-6 lg:text-lg">
                         <span class="flex size-10 items-center justify-center rounded-xl bg-emerald-50 text-emerald-700 lg:size-14 lg:rounded-2xl">
                             <x-ts-icon icon="book-open" outline class="size-5 lg:size-7" />
@@ -249,7 +249,7 @@
                         <div>
                             <h2 id="staff-materials-title" class="text-lg font-bold text-slate-900 sm:text-xl">Materiais mais acessados</h2>
                         </div>
-                        <a href="{{ route('painel.materials') }}" class="shrink-0 text-sm font-semibold text-blue-800 hover:underline">Ver materiais</a>
+                        <a href="{{ route('painel.library.categories') }}" class="shrink-0 text-sm font-semibold text-blue-800 hover:underline">Ver materiais</a>
                     </div>
                     <div class="mt-4 space-y-2 sm:mt-5 sm:space-y-3">
                         @forelse ($topDownloadedMaterials as $material)
