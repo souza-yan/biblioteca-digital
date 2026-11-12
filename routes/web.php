@@ -14,6 +14,7 @@ use App\Livewire\Materials\FavoriteLibrary;
 use App\Livewire\Materials\MaterialDetail;
 use App\Livewire\Materials\MaterialLibrary;
 use App\Livewire\Materials\MaterialManager;
+use App\Livewire\Materials\OwnContentManager;
 use App\Livewire\Schools\SchoolManager;
 use App\Livewire\Users\UserManager;
 use Illuminate\Support\Facades\Route;
@@ -60,6 +61,10 @@ Route::middleware([
     Route::get('/painel/atividades', ActivityLogIndex::class)
         ->middleware('role:admin')
         ->name('painel.activities');
+
+    Route::get('/painel/gerenciar-materiais', OwnContentManager::class)
+        ->middleware('role:staff')
+        ->name('painel.manage-content');
 
     Route::get('/painel/escolas', SchoolManager::class)
         ->middleware('role:admin')

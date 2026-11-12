@@ -16,6 +16,7 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Locked;
 use Livewire\Component;
@@ -42,11 +43,15 @@ class MaterialManager extends Component
     public bool $showForm = false;
 
     #[Locked]
+    public bool $embedded = false;
+
+    #[Locked]
     public ?int $editingMaterialId = null;
 
-    public function mount(): void
+    public function mount(bool $embedded = false): void
     {
         $this->authorizeManager();
+        $this->embedded = $embedded;
 
         $this->statusFilter = MaterialStatus::PUBLISHED->value;
     }
@@ -117,6 +122,7 @@ class MaterialManager extends Component
             : $this->findManagedMaterial($this->editingMaterialId, 'update');
 
         $temporaryFile = $this->form->file;
+        $retainUpload = false;
 
         if ($material === null) {
             Gate::authorize('create', Material::class);
@@ -193,12 +199,19 @@ class MaterialManager extends Component
             $this->resetForm();
             $this->showForm = false;
             $this->resetPage();
-        } finally {
-            if ($temporaryFile instanceof TemporaryUploadedFile) {
-                $temporaryFile->delete();
-            }
+        } catch (ValidationException $exception) {
+            $retainUpload = $temporaryFile instanceof TemporaryUploadedFile
+                && ! array_key_exists('form.file', $exception->errors());
 
-            $this->form->file = null;
+            throw $exception;
+        } finally {
+            if (! $retainUpload) {
+                if ($temporaryFile instanceof TemporaryUploadedFile) {
+                    $temporaryFile->delete();
+                }
+
+                $this->form->file = null;
+            }
         }
     }
 
@@ -263,6 +276,7 @@ class MaterialManager extends Component
         $materials = Material::query()
             ->with(['category', 'currentVersion'])
             ->visibleTo($actor)
+            ->when($actor->isStaff(), fn (Builder $query): Builder => $query->where('created_by', $actor->getKey()))
             ->when(filled($this->search), function (Builder $query): void {
                 $query->where(function (Builder $query): void {
                     $query
@@ -273,10 +287,9 @@ class MaterialManager extends Component
             ->where('status', $status->value)
             ->when(
                 filled($this->categoryFilter),
-                fn (Builder $query): Builder => $query->where(
-                    'category_id',
-                    $this->categoryFilter
-                )
+                fn (Builder $query): Builder => $this->categoryFilter === 'uncategorized'
+                    ? $query->whereNull('category_id')
+                    : $query->where('category_id', $this->categoryFilter)
             )
             ->orderBy('title')
             ->paginate($actor->isStaff() ? 10 : 15);

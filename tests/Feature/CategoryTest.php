@@ -1,6 +1,7 @@
 <?php
 
 use App\Actions\Category\ListCategoryOptions;
+use App\Enums\MaterialStatus;
 use App\Livewire\Categories\CategoryLibrary;
 use App\Livewire\Categories\CategoryManager;
 use App\Livewire\Materials\MaterialLibrary;
@@ -13,6 +14,72 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Livewire;
+
+it('keeps category cards read only and hides inactive categories from the shared library', function () {
+    $staff = User::factory()->staffInSchool()->create();
+    $category = Category::factory()->create(['created_by' => $staff->getKey()]);
+    $inactive = Category::factory()->inactive()->create(['created_by' => $staff->getKey()]);
+
+    Livewire::actingAs($staff)->test(CategoryLibrary::class)
+        ->assertSee($category->name)
+        ->assertDontSee($inactive->name)
+        ->assertDontSee('Editar categoria')
+        ->assertDontSee('Desativar categoria');
+});
+
+it('keeps published materials browsable without a category after its deactivation', function (string $role) {
+    $creator = User::factory()->staffInSchool()->create();
+    $viewer = $role === 'staff' ? $creator : User::factory()->teacher()->create();
+    $category = Category::factory()->create(['created_by' => $creator->getKey()]);
+    $published = Material::factory()->published()->for($category)->create(['created_by' => $creator->getKey()]);
+    $draft = Material::factory()->draft()->for($category)->create();
+    $archived = Material::factory()->archived()->for($category)->create();
+    $other = Material::factory()->published()->create();
+
+    $manager = Livewire::actingAs($creator)->test(CategoryManager::class)
+        ->call('toggleActive', $category->getKey())->assertHasNoErrors();
+
+    $this->assertDatabaseHas('materials', ['id' => $published->getKey(), 'category_id' => null, 'status' => MaterialStatus::PUBLISHED->value]);
+
+    Livewire::actingAs($viewer)->test(CategoryLibrary::class)
+        ->assertDontSee($category->name)
+        ->assertSee('Sem categoria')
+        ->assertViewHas('uncategorizedCount', 1)
+        ->assertSee(route('painel.library', ['categoryFilter' => 'uncategorized']), false)
+        ->set('search', 'Sem categoria')
+        ->assertSee('Sem categoria');
+
+    Livewire::actingAs($viewer)->test(MaterialLibrary::class)
+        ->set('categoryFilter', 'uncategorized')
+        ->assertSee($published->title)
+        ->assertDontSee($draft->title)
+        ->assertDontSee($archived->title)
+        ->assertDontSee($other->title);
+
+    $this->actingAs($creator);
+    $manager->call('toggleActive', $category->getKey())->assertHasNoErrors();
+
+    $this->assertDatabaseHas('materials', ['id' => $published->getKey(), 'category_id' => $category->getKey(), 'detached_category_id' => null]);
+    Livewire::actingAs($viewer)->test(CategoryLibrary::class)
+        ->assertViewHas('uncategorizedCount', 0)
+        ->assertSee($category->name);
+    Livewire::actingAs($viewer)->test(MaterialLibrary::class)
+        ->set('categoryFilter', 'uncategorized')->assertDontSee($published->title);
+})->with(['staff', 'teacher']);
+
+it('shows naturally uncategorized materials without creating a physical category', function () {
+    $viewer = User::factory()->teacher()->create();
+    $material = Material::factory()->published()->create(['category_id' => null]);
+    $categoryCount = Category::query()->count();
+
+    Livewire::actingAs($viewer)->test(CategoryLibrary::class)
+        ->assertViewHas('uncategorizedCount', 1)->assertSee('Sem categoria')
+        ->set('search', 'termo inexistente')->assertViewHas('uncategorizedCount', 0);
+    Livewire::actingAs($viewer)->test(MaterialLibrary::class)
+        ->set('categoryFilter', 'uncategorized')->assertSee($material->title);
+
+    $this->assertDatabaseCount('categories', $categoryCount);
+});
 
 it('exposes only active categories with published materials to teachers', function () {
     $activeCategory = Category::factory()->create(['name' => 'Categoria ativa']);
@@ -148,7 +215,7 @@ it('allows staff to create a category and material from the category library', f
     ]);
 });
 
-it('allows staff to edit a category they created from the category library', function () {
+it('allows staff to edit a category they created from their management section', function () {
     $staff = User::factory()->staffInSchool()->create();
     $category = Category::factory()->create([
         'name' => 'Categoria da própria gestão',
@@ -156,11 +223,11 @@ it('allows staff to edit a category they created from the category library', fun
     ]);
 
     Livewire::actingAs($staff)
-        ->test(CategoryLibrary::class)
+        ->test(CategoryManager::class)
         ->call('editCategory', $category->getKey())
-        ->assertSet('showCategoryForm', true)
-        ->set('categoryForm.name', 'Categoria atualizada pela gestão')
-        ->call('saveCategory')
+        ->assertSet('showForm', true)
+        ->set('form.name', 'Categoria atualizada pela gestão')
+        ->call('save')
         ->assertHasNoErrors();
 
     $this->assertDatabaseHas('categories', [
@@ -176,7 +243,7 @@ it('forbids staff from editing a category created by another manager', function 
     $category = Category::factory()->create(['created_by' => $otherStaff->getKey()]);
 
     Livewire::actingAs($staff)
-        ->test(CategoryLibrary::class)
+        ->test(CategoryManager::class)
         ->call('editCategory', $category->getKey())
         ->assertForbidden();
 });

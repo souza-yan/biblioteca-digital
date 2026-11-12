@@ -23,7 +23,7 @@
         </div>
         @if ($isStaff)
             <div class="grid grid-cols-2 gap-3 md:hidden">
-                @forelse ($categories as $category)
+                @forelse ($categoryCards as $category)
                     <x-categories.library-card-skeleton :category="$category" compact />
                 @empty
                     <div class="col-span-2 rounded-2xl border border-dashed border-slate-300 bg-white px-4 py-10"><x-skeleton.line class="mx-auto w-60 max-w-full" /></div>
@@ -31,7 +31,7 @@
             </div>
         @endif
         <div @class(['grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3', 'hidden md:grid' => $isStaff])>
-            @forelse ($categories as $category)
+            @forelse ($categoryCards as $category)
                 <x-categories.library-card-skeleton :category="$category" />
             @empty
                 <div class="rounded-2xl border border-dashed border-slate-300 bg-white px-6 py-12 md:col-span-2 xl:col-span-3">

@@ -2,17 +2,11 @@
 
 @if ($compact)
     <article class="flex min-h-40 min-w-0 flex-col rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-        <div class="flex min-h-0 flex-1 flex-col">
+        <div class="flex min-h-0 min-w-0 flex-1 flex-col">
             <x-skeleton.block class="size-10 rounded-xl" />
-            <x-skeleton.text class="mt-3 line-clamp-2 text-sm font-semibold leading-5">{{ $category->name }}</x-skeleton.text>
+            <x-skeleton.text class="mt-3 line-clamp-2 break-words text-sm font-semibold leading-5">{{ $category->name }}</x-skeleton.text>
             <div class="mt-auto pt-3"><x-skeleton.text class="w-fit text-xs font-medium">{{ $category->published_materials_count }} {{ $category->published_materials_count === 1 ? 'material' : 'materiais' }}</x-skeleton.text></div>
         </div>
-        @can('update', $category)
-            <div class="mt-3 flex items-center justify-between border-t border-slate-100 pt-3">
-                <x-skeleton.badge />
-                <div class="flex gap-2"><x-skeleton.block class="size-9 rounded-lg" /><x-skeleton.block class="size-9 rounded-lg" /></div>
-            </div>
-        @endcan
     </article>
 @else
     <article class="flex min-h-48 flex-col rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">

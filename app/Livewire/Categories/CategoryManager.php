@@ -31,17 +31,21 @@ class CategoryManager extends Component
     public bool $showForm = false;
 
     #[Locked]
+    public bool $embedded = false;
+
+    #[Locked]
     public ?int $editingCategoryId = null;
 
-    public function mount(): void
+    public function mount(bool $embedded = false): void
     {
         $this->authorizeManager();
+        $this->embedded = $embedded;
     }
 
     public function updatedSearch(): void
     {
         $this->authorizeManager();
-        $this->resetPage();
+        $this->resetPage(pageName: $this->embedded ? 'categoriesPage' : 'page');
     }
 
     public function openCreate(): void
@@ -111,7 +115,7 @@ class CategoryManager extends Component
 
         $this->resetForm();
         $this->showForm = false;
-        $this->resetPage();
+        $this->resetPage(pageName: $this->embedded ? 'categoriesPage' : 'page');
     }
 
     public function toggleActive(
@@ -136,9 +140,10 @@ class CategoryManager extends Component
     #[Layout('layouts.app')]
     public function render(): View
     {
-        $this->authorizeManager();
+        $actor = $this->authorizeManager();
 
         $categories = Category::query()
+            ->when($actor->isStaff(), fn (Builder $query): Builder => $query->where('created_by', $actor->getKey()))
             ->when($this->search !== '', function (Builder $query): void {
                 $query->where(function (Builder $query): void {
                     $query->where('name', 'like', '%'.$this->search.'%')
@@ -146,7 +151,7 @@ class CategoryManager extends Component
                 });
             })
             ->orderBy('name')
-            ->paginate(15);
+            ->paginate(15, pageName: $this->embedded ? 'categoriesPage' : 'page');
 
         return view('livewire.categories.category-manager', [
             'categories' => $categories,

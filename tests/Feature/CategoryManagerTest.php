@@ -7,6 +7,23 @@ use App\Models\User;
 use Livewire\Features\SupportLockedProperties\CannotUpdateLockedPropertyException;
 use Livewire\Livewire;
 
+it('lists only categories created by the current manager including inactive ones', function () {
+    $staff = User::factory()->staffInSchool()->create();
+    $own = Category::factory()->inactive()->create(['created_by' => $staff->getKey()]);
+    $other = Category::factory()->create();
+
+    Livewire::actingAs($staff)->test(CategoryManager::class)
+        ->assertSee('Minhas categorias')->assertSee($own->name)->assertDontSee($other->name)
+        ->set('search', $other->name)->assertDontSee($other->name);
+
+    Livewire::actingAs($staff)->test(CategoryManager::class)
+        ->call('toggleActive', $other->getKey())->assertForbidden();
+    $this->assertDatabaseHas('categories', ['id' => $other->getKey(), 'is_active' => true]);
+
+    Livewire::actingAs(User::factory()->admin()->create())->test(CategoryManager::class)
+        ->assertSee($own->name)->assertSee($other->name);
+});
+
 it('allows admins to create categories with generated unique slugs', function () {
     $user = User::factory()->admin()->create();
 
@@ -186,8 +203,8 @@ it('renders category management actions for categories created by staff', functi
     $this->actingAs($staff)
         ->get('/painel/categorias')
         ->assertOk()
-        ->assertSee('Categorias')
-        ->assertSee('Nova categoria')
+        ->assertSee('Minhas categorias')
+        ->assertDontSee('wire:click="openCreate"', false)
         ->assertSee('Editar categoria');
 });
 

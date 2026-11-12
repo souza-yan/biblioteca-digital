@@ -1,6 +1,7 @@
 <?php
 
 use App\Enums\MaterialStatus;
+use App\Livewire\Materials\MaterialLibrary;
 use App\Livewire\Materials\MaterialManager;
 use App\Models\Category;
 use App\Models\Material;
@@ -10,6 +11,54 @@ use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Features\SupportLockedProperties\CannotUpdateLockedPropertyException;
 use Livewire\Livewire;
+
+it('lists only the current managers materials for every status filter', function (MaterialStatus $status) {
+    $staff = User::factory()->staffInSchool()->create();
+    $own = Material::factory()->create(['created_by' => $staff->getKey(), 'status' => $status]);
+    $other = Material::factory()->create(['status' => $status]);
+
+    Livewire::actingAs($staff)->test(MaterialManager::class)
+        ->set('statusFilter', $status->value)
+        ->assertSee('Meus materiais')->assertSee($own->title)->assertDontSee($other->title)
+        ->set('search', $other->title)->assertDontSee($other->title);
+
+    Livewire::actingAs(User::factory()->admin()->create())->test(MaterialManager::class)
+        ->set('statusFilter', $status->value)->assertSee($own->title)->assertSee($other->title);
+})->with(MaterialStatus::cases());
+
+it('filters the managers own uncategorized materials without showing other creators materials', function () {
+    $staff = User::factory()->staffInSchool()->create();
+    $own = Material::factory()->published()->create(['created_by' => $staff->getKey(), 'category_id' => null]);
+    $categorized = Material::factory()->published()->create(['created_by' => $staff->getKey()]);
+    $other = Material::factory()->published()->create(['category_id' => null]);
+
+    Livewire::actingAs($staff)->test(MaterialManager::class)
+        ->set('categoryFilter', 'uncategorized')
+        ->assertSee($own->title)->assertDontSee($categorized->title)->assertDontSee($other->title);
+});
+
+it('lets staff archive and republish their own uncategorized material from management', function () {
+    $staff = User::factory()->staffInSchool()->create();
+    $material = Material::factory()->published()->create(['created_by' => $staff->getKey(), 'category_id' => null]);
+    $version = MaterialVersion::factory()->for($material)->create();
+    $material->update(['current_version_id' => $version->getKey()]);
+    $teacher = User::factory()->teacher()->create();
+
+    $manager = Livewire::actingAs($staff)->test(MaterialManager::class)
+        ->call('archive', $material->getKey())->assertHasNoErrors()
+        ->set('statusFilter', MaterialStatus::ARCHIVED->value)->assertSee($material->title);
+
+    $this->assertDatabaseHas('materials', ['id' => $material->getKey(), 'status' => MaterialStatus::ARCHIVED->value, 'category_id' => null]);
+    Livewire::actingAs($teacher)->test(MaterialLibrary::class)
+        ->set('categoryFilter', 'uncategorized')->assertDontSee($material->title);
+
+    $this->actingAs($staff);
+    $manager->call('publish', $material->getKey())->assertHasNoErrors();
+
+    $this->assertDatabaseHas('materials', ['id' => $material->getKey(), 'status' => MaterialStatus::PUBLISHED->value, 'category_id' => null, 'archived_at' => null]);
+    Livewire::actingAs($teacher)->test(MaterialLibrary::class)
+        ->set('categoryFilter', 'uncategorized')->assertSee($material->title);
+});
 
 it('allows admins to create materials with the authenticated creator', function (string $role) {
     Storage::fake('local');
@@ -310,7 +359,7 @@ it('renders the material manager route for admins', function () {
 
 it('paginates published materials by ten for staff', function () {
     $staff = User::factory()->staffInSchool()->create();
-    Material::factory()->published()->count(11)->create();
+    Material::factory()->published()->count(11)->create(['created_by' => $staff->getKey()]);
 
     Livewire::actingAs($staff)
         ->test(MaterialManager::class)
@@ -318,28 +367,31 @@ it('paginates published materials by ten for staff', function () {
         ->assertSee('wire:click="nextPage(\'page\')"', false);
 });
 
-it('shows the material creation flow to staff with publication control', function () {
+it('hides the creation shortcut from staff management while preserving the shared form', function () {
     $staff = User::factory()->staffInSchool()->create();
 
     Livewire::actingAs($staff)
         ->test(MaterialManager::class)
-        ->assertSee('Visualizar conteúdos')
-        ->assertSee('Novo material')
+        ->assertDontSee('Visualizar conteúdos')
+        ->assertDontSee('aria-label="Gerenciar meus conteúdos"', false)
+        ->assertDontSee('wire:click="openCreate"', false)
         ->call('openCreate')
         ->assertSet('showForm', true)
         ->assertSee('Status inicial');
 });
 
-it('shows staff a download action for published materials with a current version', function () {
+it('keeps management focused on editing and archiving without a download action', function () {
     $staff = User::factory()->staffInSchool()->create();
-    $material = Material::factory()->published()->create(['title' => 'Material disponível para baixar']);
+    $material = Material::factory()->published()->create(['title' => 'Material disponível para baixar', 'created_by' => $staff->getKey()]);
     $version = MaterialVersion::factory()->for($material)->create();
     $material->update(['current_version_id' => $version->getKey()]);
 
     Livewire::actingAs($staff)
         ->test(MaterialManager::class)
-        ->assertSee('Baixar '.$material->title)
-        ->assertSee(route('downloads.show', $material), false);
+        ->assertSee('Editar material '.$material->title)
+        ->assertSee('Arquivar material '.$material->title)
+        ->assertDontSee('Baixar '.$material->title)
+        ->assertDontSee(route('downloads.show', $material), false);
 });
 
 it('opens the edit modal for materials created by staff', function () {

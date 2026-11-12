@@ -68,40 +68,20 @@
 
             @if ($isStaff)
                 <div class="grid grid-cols-2 gap-3 md:hidden">
-                    @forelse ($categories as $category)
-                        <article wire:key="category-library-mobile-{{ $category->id }}"
+                    @forelse ($categoryCards as $category)
+                        <article wire:key="category-library-mobile-{{ $category->id ?? 'uncategorized' }}"
                             class="flex min-h-40 min-w-0 flex-col rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-                            <a href="{{ route('painel.library', ['categoryFilter' => $category->getKey()]) }}"
-                                class="flex min-h-0 flex-1 flex-col rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-600">
+                            <a href="{{ route('painel.library', ['categoryFilter' => $category->getKey() ?? 'uncategorized']) }}"
+                                class="flex min-h-0 min-w-0 flex-1 flex-col rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-600">
                                 <span class="flex size-10 items-center justify-center rounded-xl bg-blue-50 text-blue-700">
                                     <x-ts-icon icon="folder" outline class="size-5" />
                                 </span>
-                                <span class="mt-3 line-clamp-2 text-sm font-semibold leading-5 text-slate-900">{{ $category->name }}</span>
+                                <span class="mt-3 line-clamp-2 break-words text-sm font-semibold leading-5 text-slate-900">{{ $category->name }}</span>
                                 <span class="mt-auto pt-3 text-xs font-medium text-slate-500">
                                     {{ $category->published_materials_count }}
                                     {{ $category->published_materials_count === 1 ? 'material' : 'materiais' }}
                                 </span>
                             </a>
-                            @can('update', $category)
-                                <div class="mt-3 flex items-center justify-between border-t border-slate-100 pt-3">
-                                    <x-categories.status-badge :active="$category->is_active" />
-                                    <div class="flex gap-2">
-                                        <x-ts-button color="blue" wire:click="editCategory({{ $category->id }})"
-                                            aria-label="Editar categoria {{ $category->name }}" title="Editar categoria"
-                                            class="!size-9 !p-0 justify-center">
-                                            <x-ts-icon icon="pencil-square" outline class="size-5 text-white" />
-                                        </x-ts-button>
-                                        <x-ts-button :color="$category->is_active ? 'red' : 'emerald'"
-                                            x-on:click="$tsui.interaction('dialog').wireable($wire.$id).question('Alterar situação da categoria?', 'Confirme a ativação ou desativação desta categoria.').confirm('Confirmar', 'toggleCategoryActive', {{ $category->id }}).cancel('Cancelar').send()"
-                                            wire:loading.attr="disabled" wire:target="toggleCategoryActive({{ $category->id }})"
-                                            :aria-label="$category->is_active ? 'Desativar categoria '.$category->name : 'Ativar categoria '.$category->name"
-                                            :title="$category->is_active ? 'Desativar categoria' : 'Ativar categoria'"
-                                            class="!size-9 !p-0 justify-center">
-                                            <x-ts-icon :icon="$category->is_active ? 'no-symbol' : 'check-circle'" outline class="size-5 text-white" />
-                                        </x-ts-button>
-                                    </div>
-                                </div>
-                            @endcan
                         </article>
                     @empty
                         <div class="col-span-2 rounded-2xl border border-dashed border-slate-300 bg-white px-4 py-10 text-center text-sm text-slate-600">
@@ -115,10 +95,10 @@
                 'grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3',
                 'hidden md:grid' => $isStaff,
             ])>
-                @forelse ($categories as $category)
+                @forelse ($categoryCards as $category)
                     <a
-                        wire:key="category-library-{{ $category->id }}"
-                        href="{{ route('painel.library', ['categoryFilter' => $category->getKey()]) }}"
+                        wire:key="category-library-{{ $category->id ?? 'uncategorized' }}"
+                        href="{{ route('painel.library', ['categoryFilter' => $category->getKey() ?? 'uncategorized']) }}"
                         class="group flex min-h-48 flex-col rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-blue-300 hover:shadow-md sm:p-6"
                     >
                         <span class="flex size-12 items-center justify-center rounded-2xl bg-blue-50 text-blue-700">
@@ -160,7 +140,7 @@
         </section>
 
         @can('create', \App\Models\Category::class)
-            <x-ts-modal wire="showCategoryForm" :title="$editingCategoryId === null ? 'Nova categoria' : 'Editar categoria'" size="xl" center>
+            <x-ts-modal wire="showCategoryForm" title="Nova categoria" size="xl" center>
                 <form id="category-library-form" wire:submit="saveCategory" class="space-y-4">
                     <x-ts-input wire:model="categoryForm.name" label="Nome *" required />
                     <x-ts-input wire:model="categoryForm.description" label="Descrição" />
@@ -181,7 +161,13 @@
 
         @can('create', \App\Models\Material::class)
             <x-ts-modal wire="showMaterialForm" title="Novo material" size="2xl" center>
-                <form id="material-library-form" wire:submit="saveMaterial" class="min-w-0 space-y-4 pb-1">
+                <form id="material-library-form" wire:submit="saveMaterial" class="min-w-0 space-y-4 pb-1"
+                    x-data="{ uploading: false }"
+                    x-on:livewire-upload-start="uploading = true"
+                    x-on:livewire-upload-finish="uploading = false"
+                    x-on:livewire-upload-error="uploading = false"
+                    x-on:livewire-upload-cancel="uploading = false"
+                    x-on:submit.capture="if (uploading) { $event.preventDefault(); $event.stopImmediatePropagation(); }">
                     <x-ts-input wire:model="materialForm.title" label="Título *" required />
                     <x-ts-input wire:model="materialForm.description" label="Descrição" />
                     <x-ts-select.styled wire:key="material-category-select-{{ $activeCategories->pluck('id')->join('-') }}"
@@ -204,7 +190,7 @@
                 <x-slot:footer>
                     <div class="grid w-full grid-cols-2 gap-3 sm:flex sm:justify-end">
                         <x-ts-button color="red" type="button" wire:click="closeMaterialForm" class="w-full justify-center sm:w-auto">Cancelar</x-ts-button>
-                        <x-ts-button color="emerald" type="submit" form="material-library-form" wire:loading.attr="disabled" wire:target="saveMaterial" class="w-full justify-center sm:w-auto">
+                        <x-ts-button color="emerald" type="submit" form="material-library-form" wire:loading.attr="disabled" wire:target="saveMaterial,materialForm.file" class="w-full justify-center sm:w-auto">
                             <span wire:loading.remove wire:target="saveMaterial">Salvar material</span>
                             <span wire:loading wire:target="saveMaterial">Salvando...</span>
                         </x-ts-button>

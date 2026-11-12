@@ -47,7 +47,8 @@ class NavigationMenu extends Component
         if ($currentUser->isStaff()) {
             return [...$items,
                 ['label' => 'Professores', 'route' => 'painel.users', 'active' => request()->routeIs('painel.users'), 'icon' => 'users'],
-                ['label' => 'Materiais', 'route' => 'painel.library.categories', 'active' => request()->routeIs('painel.library*') || request()->routeIs('painel.materials*') || request()->routeIs('painel.categories'), 'icon' => 'book'],
+                ['label' => 'Materiais', 'route' => 'painel.library.categories', 'active' => request()->routeIs('painel.library*'), 'icon' => 'book'],
+                ['label' => 'Gerenciar Materiais', 'route' => 'painel.manage-content', 'active' => request()->routeIs('painel.manage-content', 'painel.materials*', 'painel.categories'), 'icon' => 'folder'],
             ];
         }
 

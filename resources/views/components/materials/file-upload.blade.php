@@ -4,7 +4,8 @@
     'file' => null,
 ])
 
-<div x-data="{ selectedFileName: @js($file instanceof \Livewire\Features\SupportFileUploads\TemporaryUploadedFile ? $file->getClientOriginalName() : null), uploading: false, progress: 0 }"
+<div wire:key="material-upload-{{ $id }}" x-data="{ selectedFileName: @js($file instanceof \Livewire\Features\SupportFileUploads\TemporaryUploadedFile ? $file->getClientOriginalName() : null), uploading: false, progress: 0 }"
+    x-init="$watch('$wire.' + @js($model), value => { if (! value) selectedFileName = null })"
     x-on:livewire-upload-start="uploading = true; progress = 0"
     x-on:livewire-upload-progress="progress = $event.detail.progress"
     x-on:livewire-upload-finish="uploading = false"
@@ -14,7 +15,7 @@
         Arquivo <span aria-hidden="true" class="font-bold text-red-500">*</span>
     </label>
     <input id="{{ $id }}" type="file" wire:model="{{ $model }}" class="peer sr-only"
-        accept="{{ implode(',', array_map(fn ($mime) => '.'.$mime, config('materials.upload.allowed_mimes'))) }}" required
+        accept="{{ implode(',', array_map(fn ($mime) => '.'.$mime, config('materials.upload.allowed_mimes'))) }}" aria-required="true"
         x-on:change="selectedFileName = $event.target.files[0]?.name ?? null">
     <div class="rounded-xl border border-gray-300 bg-white p-2 text-base text-gray-700 peer-focus-visible:ring-2 peer-focus-visible:ring-blue-600">
         <label for="{{ $id }}"

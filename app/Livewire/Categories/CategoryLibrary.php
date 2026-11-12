@@ -4,8 +4,6 @@ namespace App\Livewire\Categories;
 
 use App\Actions\Category\CreateCategory;
 use App\Actions\Category\ListCategoryOptions;
-use App\Actions\Category\ToggleCategoryActive;
-use App\Actions\Category\UpdateCategory;
 use App\Actions\Material\CreateMaterialWithVersion;
 use App\Enums\MaterialStatus;
 use App\Livewire\Concerns\InteractsWithCurrentUser;
@@ -17,8 +15,9 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Layout;
-use Livewire\Attributes\Locked;
 use Livewire\Component;
 use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 use Livewire\WithFileUploads;
@@ -39,9 +38,6 @@ class CategoryLibrary extends Component
     public string $search = '';
 
     public bool $showCategoryForm = false;
-
-    #[Locked]
-    public ?int $editingCategoryId = null;
 
     public bool $showMaterialForm = false;
 
@@ -72,70 +68,23 @@ class CategoryLibrary extends Component
         $this->showCategoryForm = false;
     }
 
-    public function editCategory(int $categoryId): void
+    public function saveCategory(CreateCategory $createCategory): void
     {
-        $category = $this->findManageableCategory($categoryId, 'update');
-
-        $this->resetValidation();
-        $this->editingCategoryId = $category->getKey();
-        $this->categoryForm->categoryId = $category->getKey();
-        $this->categoryForm->name = $category->name;
-        $this->categoryForm->slug = $category->slug;
-        $this->categoryForm->description = $category->description ?? '';
-        $this->showCategoryForm = true;
-    }
-
-    public function saveCategory(
-        CreateCategory $createCategory,
-        UpdateCategory $updateCategory,
-    ): void {
         $actor = $this->currentUser();
-
-        $category = $this->editingCategoryId === null
-            ? null
-            : $this->findManageableCategory($this->editingCategoryId, 'update');
-
-        if ($category === null) {
-            Gate::authorize('create', Category::class);
-        }
+        Gate::authorize('create', Category::class);
 
         $this->categoryForm->generateSlugFromName();
-        $this->categoryForm->categoryId = $category?->getKey();
+        $this->categoryForm->categoryId = null;
         $attributes = $this->categoryForm->validate();
-
-        if ($category === null) {
-            $category = $createCategory->handle($actor, $attributes);
-            $message = 'A categoria foi cadastrada com sucesso.';
-        } else {
-            $updateCategory->handle($actor, $category, $attributes);
-            $message = 'As informações da categoria foram atualizadas com sucesso.';
-        }
+        $category = $createCategory->handle($actor, $attributes);
 
         $this->toast()
-            ->success('Categoria atualizada!', $message)
+            ->success('Categoria cadastrada!', 'A categoria foi cadastrada com sucesso.')
             ->send();
 
         $this->resetCategoryForm();
         $this->showCategoryForm = false;
         $this->preferredMaterialCategoryId = $category->getKey();
-    }
-
-    public function toggleCategoryActive(
-        int $categoryId,
-        ToggleCategoryActive $toggleCategoryActive,
-    ): void {
-        $actor = $this->currentUser();
-        $category = $this->findManageableCategory($categoryId, 'toggleActive');
-
-        $toggleCategoryActive->handle($actor, $category);
-        $category->refresh();
-
-        $this->toast()
-            ->success(
-                'Status atualizado!',
-                'A categoria foi '.($category->is_active ? 'ativada' : 'desativada').' com sucesso.',
-            )
-            ->send();
     }
 
     public function openMaterialCreate(): void
@@ -160,6 +109,7 @@ class CategoryLibrary extends Component
         Gate::authorize('create', Material::class);
 
         $temporaryFile = $this->materialForm->file;
+        $retainUpload = false;
 
         try {
             if ($temporaryFile instanceof UploadedFile) {
@@ -196,12 +146,19 @@ class CategoryLibrary extends Component
 
             $this->resetMaterialForm();
             $this->showMaterialForm = false;
-        } finally {
-            if ($temporaryFile instanceof TemporaryUploadedFile) {
-                $temporaryFile->delete();
-            }
+        } catch (ValidationException $exception) {
+            $retainUpload = $temporaryFile instanceof TemporaryUploadedFile
+                && ! array_key_exists('materialForm.file', $exception->errors());
 
-            $this->materialForm->file = null;
+            throw $exception;
+        } finally {
+            if (! $retainUpload) {
+                if ($temporaryFile instanceof TemporaryUploadedFile) {
+                    $temporaryFile->delete();
+                }
+
+                $this->materialForm->file = null;
+            }
         }
     }
 
@@ -212,12 +169,12 @@ class CategoryLibrary extends Component
         $actor = $this->currentUser();
 
         $categories = Category::query()
+            ->where('is_active', true)
             ->withCount([
                 'materials as published_materials_count' => fn (Builder $query): Builder => $query
                     ->where('status', MaterialStatus::PUBLISHED),
             ])
             ->when(! $actor->isStaff(), fn (Builder $query): Builder => $query
-                ->where('is_active', true)
                 ->whereHas('materials', fn (Builder $query): Builder => $query
                     ->where('status', MaterialStatus::PUBLISHED)))
             ->when($this->search !== '', function (Builder $query): void {
@@ -231,8 +188,24 @@ class CategoryLibrary extends Component
             ->orderBy('name')
             ->paginate(12);
 
+        $uncategorizedCount = trim($this->search) === '' || Str::contains(Str::lower('Sem categoria'), Str::lower(trim($this->search)))
+            ? Material::query()->published()->whereNull('category_id')->count()
+            : 0;
+        $categoryCards = $categories->getCollection()->values();
+
+        if ($uncategorizedCount > 0) {
+            $uncategorizedCategory = new Category([
+                'name' => 'Sem categoria',
+                'description' => 'Materiais publicados sem uma categoria ativa.',
+            ]);
+            $uncategorizedCategory->setAttribute('published_materials_count', $uncategorizedCount);
+            $categoryCards = $categoryCards->prepend($uncategorizedCategory);
+        }
+
         return view('livewire.categories.category-library', [
             'categories' => $categories,
+            'categoryCards' => $categoryCards,
+            'uncategorizedCount' => $uncategorizedCount,
             'activeCategories' => $listCategoryOptions->active(),
             'creationStatuses' => [
                 MaterialStatus::DRAFT,
@@ -244,17 +217,7 @@ class CategoryLibrary extends Component
     private function resetCategoryForm(): void
     {
         $this->categoryForm->reset();
-        $this->editingCategoryId = null;
         $this->resetValidation();
-    }
-
-    private function findManageableCategory(int $categoryId, string $ability): Category
-    {
-        $category = Category::query()->findOrFail($categoryId);
-
-        Gate::authorize($ability, $category);
-
-        return $category;
     }
 
     private function resetMaterialForm(): void
