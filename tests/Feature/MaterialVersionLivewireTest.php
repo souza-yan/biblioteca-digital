@@ -131,7 +131,7 @@ it('shows management links only to admins and staff and library to teachers', fu
         ->assertSee('Professores')
         ->assertSee(route('painel.library.categories'), false)
         ->assertSee('Materiais')
-        ->assertSee('Visualizar conteúdos');
+        ->assertDontSee('Visualizar conteúdos');
 
     $this->get(route('painel.library.categories'))
         ->assertOk()

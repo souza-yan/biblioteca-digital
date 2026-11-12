@@ -20,8 +20,10 @@ class MaterialPolicy
 
     public function view(User $user, Material $material): bool
     {
-        return $user->is_active && ($this->isGlobalManager($user)
-            || ($user->isTeacher() && $material->status === MaterialStatus::PUBLISHED));
+        return $user->is_active && ($user->isAdmin()
+            || ($user->isTeacher() && $material->status === MaterialStatus::PUBLISHED)
+            || ($user->isStaff() && $user->hasExactlyOneActiveSchool()
+                && ($material->status === MaterialStatus::PUBLISHED || $material->created_by === $user->getKey())));
     }
 
     public function create(User $user): bool
@@ -62,11 +64,5 @@ class MaterialPolicy
             || ($user->isStaff()
                 && $user->hasExactlyOneActiveSchool()
                 && $material->created_by === $user->getKey()));
-    }
-
-    private function isGlobalManager(User $user): bool
-    {
-        return $user->is_active && ($user->isAdmin()
-            || ($user->isStaff() && $user->hasExactlyOneActiveSchool()));
     }
 }

@@ -153,7 +153,7 @@ it('forbids management from uploading a version to another user material', funct
     Storage::fake('local');
     $staff = User::factory()->staffInSchool()->create();
     $otherCreator = User::factory()->admin()->create();
-    $material = Material::factory()->create(['created_by' => $otherCreator->getKey()]);
+    $material = Material::factory()->published()->create(['created_by' => $otherCreator->getKey()]);
 
     Livewire::actingAs($staff)
         ->test(MaterialDetail::class, ['material' => $material])
