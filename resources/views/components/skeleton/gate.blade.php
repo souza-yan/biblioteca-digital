@@ -8,7 +8,7 @@
         timer: null,
         start() {
             if (this.ready || this.timer !== null) return;
-            this.timer = setTimeout(() => { this.ready = true; this.timer = null; }, 450);
+            this.timer = setTimeout(() => { this.ready = true; this.timer = null; }, 650);
         },
         destroy() { clearTimeout(this.timer); },
     }" x-init="start()">

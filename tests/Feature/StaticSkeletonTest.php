@@ -20,7 +20,7 @@ it('renders an accessible static gate while keeping the real content server rend
         ->not->toContain('animate-', 'x-transition', 'wire:loading', 'wire:lazy', 'app-request-start', 'app-request-end');
 });
 
-it('shows skeletons for 450ms on page entry without restarting after interactions', function () {
+it('shows skeletons for 650ms on page entry without restarting after interactions', function () {
     $html = view('components.skeleton.gate', [
         'name' => 'sample',
         'label' => 'Carregando',
@@ -51,7 +51,7 @@ it('shows skeletons for 450ms on page entry without restarting after interaction
         state.start();
         state.start();
         assert.equal(timers.size, 1);
-        advance(449);
+        advance(649);
         assert.equal(state.ready, false);
         advance(1);
         assert.equal(state.ready, true);
@@ -63,7 +63,7 @@ it('shows skeletons for 450ms on page entry without restarting after interaction
         const nextPage = createState();
         nextPage.start();
         assert.equal(nextPage.ready, false);
-        advance(449);
+        advance(649);
         assert.equal(nextPage.ready, false);
         advance(1);
         assert.equal(nextPage.ready, true);
@@ -170,7 +170,7 @@ it('keeps the activity list gate identity when switching tabs', function () {
 
 it('renders the category management list inside a gate for authorized roles', function (string $role) {
     $user = $role === 'admin' ? User::factory()->admin()->create() : User::factory()->staffInSchool()->create();
-    $category = Category::factory()->create();
+    $category = Category::factory()->create(['created_by' => $user->getKey()]);
 
     $this->actingAs($user)->get(route('painel.categories'))->assertOk()
         ->assertSee('data-skeleton-gate="category-list"', false)->assertSee($category->name);

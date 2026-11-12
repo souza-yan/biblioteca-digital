@@ -106,9 +106,9 @@
         <a href="{{ route('dashboard') }}" @click="closeMobileMenu()"
             class="sidebar-municipal-logo flex shrink-0 items-center justify-center border-t border-blue-700 px-5 py-5 transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white"
             aria-label="Ir para a página inicial">
-            <span class="flex w-full items-center justify-center rounded-xl bg-white px-4 py-3 shadow-sm">
-                <img src="{{ asset('images/logo_caraguatatuba.svg') }}" alt="Logo Prefeitura de Caraguatatuba"
-                    class="h-14 w-full object-contain">
+            <span class="flex w-full items-center justify-center rounded-xl bg-white px-4 py-3 shadow-sm"
+                aria-hidden="true">
+                {!! file_get_contents(public_path('images/logo_caraguatatuba.svg')) !!}
             </span>
         </a>
     </aside>

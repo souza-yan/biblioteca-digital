@@ -1,6 +1,22 @@
 <div>
     <div class="mx-auto w-full max-w-screen-2xl space-y-6 px-4 py-6 sm:px-6 lg:space-y-8 lg:px-8 lg:py-8">
         {{-- Cabeçalho da listagem de professores. --}}
+        <x-skeleton.gate name="user-controls" label="Carregando controles de professores">
+            <x-slot:skeleton>
+                <div class="space-y-6 lg:space-y-8">
+                    <h1 class="mb-8 text-3xl font-bold tracking-tight sm:text-4xl"><x-skeleton.text class="w-fit">{{ $actor->isStaff() ? 'Professores da escola' : 'Professores' }}</x-skeleton.text></h1>
+                    <div class="mb-5 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+                        <div @class(['grid w-full flex-1 gap-4', 'max-w-xl' => ! $actor->isAdmin(), 'max-w-4xl md:grid-cols-2' => $actor->isAdmin()])>
+                            <div><x-skeleton.text class="w-fit text-sm font-medium">Buscar por nome ou e-mail</x-skeleton.text><x-skeleton.block class="mt-1 h-[38px] rounded-md" /></div>
+                            @if ($actor->isAdmin())
+                                <div><x-skeleton.text class="w-fit text-sm font-medium">Filtrar por escola</x-skeleton.text><x-skeleton.block class="mt-1 h-[38px] rounded-md" /></div>
+                            @endif
+                        </div>
+                        <x-skeleton.block class="h-11 w-40 self-end rounded-md lg:self-auto" />
+                    </div>
+                </div>
+            </x-slot:skeleton>
+            <div class="space-y-6 lg:space-y-8">
         <div class="mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
             <div class="min-w-0">
                 <h1 class="text-3xl font-bold tracking-tight text-blue-800 sm:text-4xl">
@@ -59,12 +75,15 @@
                 @endif
             </div>
 
-            <x-ts-button color="blue" wire:click="openCreate" class="w-full justify-center lg:w-auto">
-                <span class="text-white text-base">Novo professor</span>
+            <x-ts-button color="blue" wire:click="openCreate" class="w-auto self-end justify-center lg:self-auto">
+                <x-ts-icon icon="plus" outline class="size-5 shrink-0 lg:hidden" aria-hidden="true" />
+                <span class="text-sm text-white lg:text-base">Novo professor</span>
             </x-ts-button>
         </div>
 
         {{-- Cartões no celular evitam que a tabela e suas ações comprimam a busca. --}}
+            </div>
+        </x-skeleton.gate>
         <x-skeleton.gate name="user-list" label="Carregando professores">
             <x-slot:skeleton>
                 @include('livewire.users.user-list-skeleton')
