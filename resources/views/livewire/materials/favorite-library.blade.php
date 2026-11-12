@@ -16,13 +16,13 @@
                         <x-ts-button color="yellow" wire:click="removeFavorite({{ $material->id }})"
                             wire:loading.attr="disabled" wire:target="removeFavorite({{ $material->id }})"
                             aria-label="Remover {{ $material->title }} dos favoritos" title="Remover dos favoritos"
-                            class="!size-9 !p-0 shrink-0 justify-center">
+                            class="!size-11 !p-0 shrink-0 justify-center">
                             <x-ts-icon icon="bookmark" solid class="size-5 text-amber-950" />
                         </x-ts-button>
                         <x-icon-button icon="eye" wire:click="openMobileMaterialDetail({{ $material->id }})"
                             wire:loading.attr="disabled"
                             wire:target="openMobileMaterialDetail({{ $material->id }})"
-                            label="Ver detalhes de {{ $material->title }}" class="!size-9 [&_svg]:!size-5" />
+                            label="Ver detalhes de {{ $material->title }}" class="!size-11 [&_svg]:!size-5" />
                     </x-slot:actions>
                 </x-materials.card>
             @empty

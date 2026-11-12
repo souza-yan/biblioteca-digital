@@ -4,6 +4,7 @@ use App\Enums\ActivityAction;
 use App\Enums\MaterialStatus;
 use App\Livewire\Materials\MaterialDetail;
 use App\Livewire\Materials\MaterialLibrary;
+use App\Livewire\Materials\MaterialManager;
 use App\Models\Category;
 use App\Models\Material;
 use App\Models\MaterialVersion;
@@ -65,7 +66,7 @@ it('allows staff to browse published materials and forbids administrators from t
     Livewire::test(MaterialLibrary::class)->assertForbidden();
 });
 
-it('allows staff to edit its own published material from the library card', function () {
+it('keeps viewing and version actions in the library and editing in material management', function () {
     $staff = User::factory()->staffInSchool()->create();
     $category = Category::factory()->create(['is_active' => true]);
     $material = Material::factory()->published()->for($category)->create([
@@ -76,15 +77,20 @@ it('allows staff to edit its own published material from the library card', func
 
     Livewire::actingAs($staff)
         ->test(MaterialLibrary::class)
-        ->call('openEditMaterial', $material->getKey())
-        ->assertSet('showEditForm', true)
-        ->assertSee('Editar material')
-        ->set('editForm.title', 'Material atualizado')
-        ->set('editForm.author', 'Autoria atualizada')
-        ->set('editForm.category_id', (string) $category->getKey())
-        ->call('saveEditMaterial')
+        ->assertSee('Gerenciar versões de '.$material->title)
+        ->assertSee('Ver detalhes de '.$material->title)
+        ->assertDontSee('Editar '.$material->title)
+        ->assertDontSee('Editar material');
+
+    Livewire::test(MaterialManager::class)
+        ->call('editMaterial', $material->getKey())
+        ->assertSet('showForm', true)
+        ->set('form.title', 'Material atualizado')
+        ->set('form.author', 'Autoria atualizada')
+        ->set('form.category_id', (string) $category->getKey())
+        ->call('save')
         ->assertHasNoErrors()
-        ->assertSet('showEditForm', false);
+        ->assertSet('showForm', false);
 
     $this->assertDatabaseHas('materials', [
         'id' => $material->getKey(),

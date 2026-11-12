@@ -4,11 +4,9 @@ namespace App\Livewire\Materials;
 
 use App\Actions\Activity\LogActivity;
 use App\Actions\Favorite\ToggleFavorite;
-use App\Actions\Material\UpdateMaterial;
 use App\Enums\ActivityAction;
 use App\Enums\MaterialStatus;
 use App\Livewire\Concerns\InteractsWithCurrentUser;
-use App\Livewire\Forms\MaterialForm;
 use App\Models\Category;
 use App\Models\Material;
 use Illuminate\Contracts\View\View;
@@ -16,7 +14,6 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Str;
 use Livewire\Attributes\Layout;
-use Livewire\Attributes\Locked;
 use Livewire\Attributes\Url;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -43,13 +40,6 @@ class MaterialLibrary extends Component
     public bool $showMobileMaterialDetail = false;
 
     public ?int $mobileMaterialId = null;
-
-    public MaterialForm $editForm;
-
-    public bool $showEditForm = false;
-
-    #[Locked]
-    public ?int $editingMaterialId = null;
 
     public function mount(): void
     {
@@ -151,44 +141,6 @@ class MaterialLibrary extends Component
         $this->mobileMaterialId = null;
     }
 
-    public function openEditMaterial(int $materialId): void
-    {
-        $material = $this->findEditableMaterial($materialId);
-
-        $this->resetValidation();
-        $this->editingMaterialId = $material->getKey();
-        $this->editForm->materialId = $material->getKey();
-        $this->editForm->title = $material->title;
-        $this->editForm->description = $material->description ?? '';
-        $this->editForm->category_id = (string) $material->category_id;
-        $this->editForm->type = $material->type;
-        $this->editForm->author = $material->author;
-        $this->showEditForm = true;
-    }
-
-    public function closeEditMaterial(): void
-    {
-        $this->resetEditForm();
-    }
-
-    public function saveEditMaterial(UpdateMaterial $updateMaterial): void
-    {
-        abort_unless($this->editingMaterialId !== null, 404);
-
-        $material = $this->findEditableMaterial($this->editingMaterialId);
-        $this->editForm->materialId = $material->getKey();
-        $this->editForm->type = $material->type;
-        $attributes = $this->editForm->validate();
-
-        $updateMaterial->handle($this->currentUser(), $material, $attributes);
-
-        $this->resetEditForm();
-
-        $this->toast()
-            ->success('Material atualizado!', 'As alterações foram salvas corretamente.')
-            ->send();
-    }
-
     #[Layout('layouts.app')]
     public function render(): View
     {
@@ -206,7 +158,9 @@ class MaterialLibrary extends Component
             ->when($this->search !== '', fn (Builder $query): Builder => $this->applySearch($query))
             ->when(
                 $this->categoryFilter,
-                fn (Builder $query): Builder => $query->where('category_id', $this->categoryFilter)
+                fn (Builder $query): Builder => $this->categoryFilter === 'uncategorized'
+                    ? $query->whereNull('category_id')
+                    : $query->where('category_id', $this->categoryFilter)
             )
             ->when(
                 $this->authorFilter !== '',
@@ -243,10 +197,6 @@ class MaterialLibrary extends Component
             'isTeacher' => $user->isTeacher(),
             'authors' => $authors,
             'categories' => $categories,
-            'activeCategories' => Category::query()
-                ->where('is_active', true)
-                ->orderBy('name')
-                ->get(['id', 'name']),
             'mobileMaterial' => $mobileMaterial,
             'mobilePreviewUrl' => $mobileMaterial instanceof Material
                 ? ($user->isTeacher()
@@ -272,23 +222,6 @@ class MaterialLibrary extends Component
                 ->whereRaw("LOWER(title) LIKE ? ESCAPE '!'", [$searchPattern])
                 ->orWhereRaw("LOWER(author) LIKE ? ESCAPE '!'", [$searchPattern]);
         });
-    }
-
-    private function findEditableMaterial(int $materialId): Material
-    {
-        $material = Material::query()->findOrFail($materialId);
-
-        Gate::authorize('update', $material);
-
-        return $material;
-    }
-
-    private function resetEditForm(): void
-    {
-        $this->editForm->reset();
-        $this->editingMaterialId = null;
-        $this->showEditForm = false;
-        $this->resetValidation();
     }
 
     /**

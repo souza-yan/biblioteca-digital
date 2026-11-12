@@ -25,9 +25,9 @@
             <x-skeleton.text class="mt-1 break-words text-xs">{{ $material->category?->name ?? 'Sem categoria' }}</x-skeleton.text>
         </div>
         @if ($actions > 0)
-            <div class="mt-3 flex items-center justify-end gap-1.5 border-t border-slate-100 pt-3">
+            <div class="mt-3 flex flex-wrap items-center justify-end gap-1.5 border-t border-slate-100 pt-3 sm:flex-nowrap">
                 @for ($action = 0; $action < $actions; $action++)
-                    <x-skeleton.block class="size-9 shrink-0 rounded-lg" />
+                    <x-skeleton.block class="size-11 shrink-0 rounded-lg" />
                 @endfor
             </div>
         @endif

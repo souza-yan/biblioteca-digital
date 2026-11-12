@@ -63,7 +63,7 @@
         </div>
 
         @isset($actions)
-            <div class="mt-3 flex items-center justify-end gap-1.5 border-t border-slate-100 pt-3">{{ $actions }}</div>
+            <div class="mt-3 flex flex-wrap items-center justify-end gap-1.5 border-t border-slate-100 pt-3 sm:flex-nowrap">{{ $actions }}</div>
         @endisset
     </article>
 @endif

@@ -14,7 +14,7 @@
         'warning' => 'bg-amber-400 text-amber-950 hover:bg-amber-500 focus:ring-amber-500',
     ][$variant] ?? 'bg-blue-800 text-white hover:bg-blue-900 focus:ring-blue-600';
 
-    $baseClasses = 'inline-flex size-11 shrink-0 items-center justify-center rounded-lg shadow-sm transition focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50';
+    $baseClasses = 'inline-flex size-11 min-h-11 min-w-11 shrink-0 items-center justify-center rounded-lg shadow-sm transition focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50';
 @endphp
 
 @if ($href)

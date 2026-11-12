@@ -6,13 +6,6 @@
     <div class="mx-auto w-full max-w-screen-2xl space-y-6 px-4 py-6 sm:px-6 lg:space-y-8 lg:px-8 lg:py-8">
         <div class="mb-8 flex items-center justify-between gap-4">
             <h1 class="text-3xl font-bold tracking-tight text-blue-800 sm:text-4xl">Materiais publicados</h1>
-            <button type="button" wire:click="toggleTitleSort" wire:loading.attr="disabled" wire:target="toggleTitleSort"
-                class="inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2"
-                aria-label="Ordenar materiais por título" title="Ordenar por título">
-                <x-ts-icon icon="arrows-up-down" outline class="size-4" />
-                <span class="hidden sm:inline">Título</span>
-                <span aria-hidden="true">{{ $titleSortDirection === 'asc' ? '↑' : '↓' }}</span>
-            </button>
         </div>
 
         {{-- Filtros para localizar materiais publicados. --}}
@@ -32,6 +25,7 @@
             </x-form.select>
             <x-form.select id="material-category-filter" label="Categoria" wire:model.live="categoryFilter">
                 <option value="">Todas as categorias</option>
+                <option value="uncategorized">Sem categoria</option>
                 @foreach ($categories as $category)
                     <option value="{{ $category->id }}">{{ $category->name }}</option>
                 @endforeach
@@ -62,7 +56,7 @@
                                 :aria-label="$material->is_favorited ? 'Remover dos favoritos' : 'Adicionar aos favoritos'"
                                 :title="$material->is_favorited ? 'Remover dos favoritos' : 'Adicionar aos favoritos'"
                                 wire:loading.attr="disabled" wire:target="toggleFavorite"
-                                class="!size-9 !p-0 shrink-0 justify-center">
+                                class="!size-11 !p-0 shrink-0 justify-center">
                                 @if ($material->is_favorited)
                                     <x-ts-icon icon="bookmark" solid class="size-5 text-amber-950" />
                                 @else
@@ -75,20 +69,17 @@
                             @can('update', $material)
                                 <x-icon-button icon="arrow-up-tray" variant="primary"
                                     :href="route('painel.library.show', ['material' => $material, 'categoryFilter' => $categoryFilter ?: null])"
-                                    label="Gerenciar versões de {{ $material->title }}" class="!size-9 [&_svg]:!size-5" />
-                                <x-icon-button icon="pencil-square" variant="primary" wire:click="openEditMaterial({{ $material->id }})"
-                                    wire:loading.attr="disabled" wire:target="openEditMaterial({{ $material->id }})"
-                                    label="Editar {{ $material->title }}" class="!size-9 [&_svg]:!size-5" />
+                                    label="Gerenciar versões de {{ $material->title }}" class="!size-11 [&_svg]:!size-5" />
                             @endcan
                             <x-icon-button icon="eye" variant="success" wire:click="openMobileMaterialDetail({{ $material->id }})"
                                 wire:loading.attr="disabled"
                                 wire:target="openMobileMaterialDetail({{ $material->id }})"
-                                label="Ver detalhes de {{ $material->title }}" class="!size-9 [&_svg]:!size-5" />
+                                label="Ver detalhes de {{ $material->title }}" class="!size-11 [&_svg]:!size-5" />
                         @else
                             <x-icon-button icon="eye" wire:click="openMobileMaterialDetail({{ $material->id }})"
                                 wire:loading.attr="disabled"
                                 wire:target="openMobileMaterialDetail({{ $material->id }})"
-                                label="Ver detalhes de {{ $material->title }}" class="!size-9 [&_svg]:!size-5" />
+                                label="Ver detalhes de {{ $material->title }}" class="!size-11 [&_svg]:!size-5" />
                         @endif
                     </x-slot:actions>
                 </x-materials.card>
@@ -122,33 +113,6 @@
                             :href="route('downloads.show', $mobileMaterial)"
                             label="Baixar {{ $mobileMaterial->title }}" />
                     @endif
-                </div>
-            </x-slot:footer>
-        </x-ts-modal>
-
-        <x-ts-modal wire="showEditForm" title="Editar material" size="xl" center>
-            <form id="library-material-edit-form" wire:submit="saveEditMaterial" class="space-y-4 pb-1">
-                <x-ts-input wire:model="editForm.title" label="Título *" required />
-                <x-ts-input wire:model="editForm.author" label="Autor *" required />
-                <x-ts-select.styled wire:key="library-material-category-select-{{ $activeCategories->pluck('id')->join('-') }}"
-                    wire:model="editForm.category_id" label="Categoria *"
-                    placeholder="Busque e selecione uma categoria" searchable :options="$activeCategories
-                        ->map(fn($category) => ['label' => $category->name, 'value' => $category->id])
-                        ->all()"
-                    select="label:label|value:value" required />
-                <x-ts-input wire:model="editForm.description" label="Descrição" />
-            </form>
-
-            <x-slot:footer>
-                <div class="grid w-full grid-cols-2 gap-3 sm:flex sm:justify-end">
-                    <x-ts-button color="red" type="button" wire:click="closeEditMaterial" class="w-full justify-center sm:w-auto">
-                        Cancelar
-                    </x-ts-button>
-                    <x-ts-button color="blue" type="submit" form="library-material-edit-form"
-                        wire:loading.attr="disabled" wire:target="saveEditMaterial" class="w-full justify-center sm:w-auto">
-                        <span wire:loading.remove wire:target="saveEditMaterial">Salvar alterações</span>
-                        <span wire:loading wire:target="saveEditMaterial">Salvando...</span>
-                    </x-ts-button>
                 </div>
             </x-slot:footer>
         </x-ts-modal>
