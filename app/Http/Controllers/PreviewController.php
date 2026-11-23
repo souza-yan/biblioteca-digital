@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Actions\Activity\LogActivity;
 use App\Enums\ActivityAction;
+use App\Models\ActivityLog;
 use App\Models\Material;
 use App\Models\MaterialVersion;
 use App\Models\User;
@@ -16,6 +17,8 @@ use Symfony\Component\HttpFoundation\Response;
 
 class PreviewController extends Controller
 {
+    private const ACCESS_DEDUPLICATION_SECONDS = 120;
+
     private const SUPPORTED_MIME_TYPES = [
         'application/pdf',
         'image/png',
@@ -36,7 +39,7 @@ class PreviewController extends Controller
 
         abort_unless($version instanceof MaterialVersion, 404);
 
-        return $this->servePreview($material, $version, $logActivity, $request->boolean('access_recorded'));
+        return $this->servePreview($material, $version, $logActivity);
     }
 
     public function version(
@@ -58,7 +61,6 @@ class PreviewController extends Controller
         Material $material,
         MaterialVersion $version,
         LogActivity $logActivity,
-        bool $accessRecorded = false,
     ): Response {
         abort_unless(in_array($version->mime_type, self::SUPPORTED_MIME_TYPES, true), 404);
 
@@ -92,7 +94,7 @@ class PreviewController extends Controller
             $response = response()->file($disk->path($version->file_path), $headers);
         }
 
-        if (! $accessRecorded) {
+        if (! $this->accessRecentlyRecorded($user, $material)) {
             $logActivity->handle(
                 $user,
                 ActivityAction::MATERIAL_PREVIEWED,
@@ -102,5 +104,18 @@ class PreviewController extends Controller
         }
 
         return $response;
+    }
+
+    /**
+     * Avoids duplicating the access already recorded when the material page embeds its preview.
+     */
+    private function accessRecentlyRecorded(User $user, Material $material): bool
+    {
+        return ActivityLog::query()
+            ->where('user_id', $user->getKey())
+            ->where('material_id', $material->getKey())
+            ->where('action', ActivityAction::MATERIAL_PREVIEWED)
+            ->where('created_at', '>=', now()->subSeconds(self::ACCESS_DEDUPLICATION_SECONDS))
+            ->exists();
     }
 }

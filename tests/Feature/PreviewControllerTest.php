@@ -49,11 +49,33 @@ it('does not duplicate a teacher access already recorded by the material detail'
     $material->update(['current_version_id' => $version->getKey()]);
     Storage::disk('local')->put($version->file_path, '%PDF-1.4 conteúdo');
 
+    ActivityLog::query()->create([
+        'user_id' => $teacher->getKey(),
+        'material_id' => $material->getKey(),
+        'action' => ActivityAction::MATERIAL_PREVIEWED,
+        'description' => 'Material consultado.',
+    ]);
+
+    $this->actingAs($teacher)
+        ->get(route('previews.show', $material))
+        ->assertOk();
+
+    expect(ActivityLog::query()->where('action', ActivityAction::MATERIAL_PREVIEWED)->count())->toBe(1);
+});
+
+it('records the teacher access even when the client asks to skip it', function () {
+    Storage::fake('local');
+    $teacher = User::factory()->teacher()->create();
+    $material = Material::factory()->published()->create();
+    $version = MaterialVersion::factory()->for($material)->create(['mime_type' => 'application/pdf']);
+    $material->update(['current_version_id' => $version->getKey()]);
+    Storage::disk('local')->put($version->file_path, '%PDF-1.4 conteúdo');
+
     $this->actingAs($teacher)
         ->get(route('previews.show', ['material' => $material, 'access_recorded' => 1]))
         ->assertOk();
 
-    $this->assertDatabaseMissing('activity_logs', [
+    $this->assertDatabaseHas('activity_logs', [
         'user_id' => $teacher->getKey(),
         'material_id' => $material->getKey(),
         'action' => ActivityAction::MATERIAL_PREVIEWED->value,

@@ -95,7 +95,7 @@ class FavoriteLibrary extends Component
             'materials' => $materials,
             'mobileMaterial' => $mobileMaterial,
             'mobilePreviewUrl' => $mobileMaterial instanceof Material
-                ? route('previews.show', ['material' => $mobileMaterial, 'access_recorded' => 1])
+                ? route('previews.show', $mobileMaterial)
                 : null,
         ]);
     }

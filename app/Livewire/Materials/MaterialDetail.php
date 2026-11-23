@@ -131,9 +131,7 @@ class MaterialDetail extends Component
         return view('livewire.materials.material-detail', [
             'material' => $material,
             'isTeacher' => $actor->isTeacher(),
-            'previewUrl' => $actor->isTeacher()
-                ? route('previews.show', ['material' => $material, 'access_recorded' => 1])
-                : route('previews.show', $material),
+            'previewUrl' => route('previews.show', $material),
             'isFavorited' => $isFavorited,
             'canManageVersions' => $canManageVersions,
             'canViewVersionHistory' => $canViewVersionHistory,

@@ -199,9 +199,7 @@ class MaterialLibrary extends Component
             'categories' => $categories,
             'mobileMaterial' => $mobileMaterial,
             'mobilePreviewUrl' => $mobileMaterial instanceof Material
-                ? ($user->isTeacher()
-                    ? route('previews.show', ['material' => $mobileMaterial, 'access_recorded' => 1])
-                    : route('previews.show', $mobileMaterial))
+                ? route('previews.show', $mobileMaterial)
                 : null,
             'recentSearches' => session()->get('material_library_recent_searches', []),
             'searchSuggestions' => $this->searchSuggestions(),
