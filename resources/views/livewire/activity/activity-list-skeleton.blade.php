@@ -3,13 +3,13 @@
         @forelse ($records as $record)
             <tr>
                 @if ($activeTab === 'downloads')
-                    <td class="whitespace-nowrap px-4 py-3 text-lg"><x-skeleton.text>{{ $record->downloaded_at->format('d/m/Y H:i') }}</x-skeleton.text></td>
+                    <td class="whitespace-nowrap px-4 py-3 text-lg"><x-skeleton.text>{{ $record->downloaded_at->inDisplayTimezone()->format('d/m/Y H:i') }}</x-skeleton.text></td>
                     <td class="px-4 py-3 text-lg font-medium"><x-skeleton.text>{{ $record->user->name }}</x-skeleton.text></td>
                     <td class="px-4 py-3 text-lg"><x-skeleton.text>{{ $record->material->title }}</x-skeleton.text></td>
                     <td class="whitespace-nowrap px-4 py-3 text-lg"><x-skeleton.text>{{ $record->version->version_number }}</x-skeleton.text></td>
                     <td class="px-4 py-3 text-lg"><x-skeleton.text>{{ $record->material->category->name }}</x-skeleton.text></td>
                 @else
-                    <td class="whitespace-nowrap px-4 py-3 text-lg"><x-skeleton.text>{{ $record->created_at->format('d/m/Y H:i') }}</x-skeleton.text></td>
+                    <td class="whitespace-nowrap px-4 py-3 text-lg"><x-skeleton.text>{{ $record->created_at->inDisplayTimezone()->format('d/m/Y H:i') }}</x-skeleton.text></td>
                     <td class="px-4 py-3 text-lg font-medium"><x-skeleton.text>{{ $record->user->name }}</x-skeleton.text></td>
                     <td class="whitespace-nowrap px-4 py-3"><x-skeleton.text class="w-fit rounded-full px-3 py-1 text-base font-medium">{{ $record->action->label() }}</x-skeleton.text></td>
                     <td class="px-4 py-3 text-lg"><x-skeleton.text>{{ $record->description }}</x-skeleton.text></td>

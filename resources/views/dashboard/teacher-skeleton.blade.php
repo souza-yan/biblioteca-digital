@@ -34,7 +34,7 @@
                 @if ($publishedMaterials->count() > 1)<x-skeleton.block class="size-9 justify-self-center rounded-full sm:hidden" />@endif
                 <div class="flex gap-3 overflow-hidden pb-2 sm:grid sm:grid-cols-2 sm:gap-5 sm:overflow-visible sm:pb-0 lg:grid-cols-3">
                     @forelse ($publishedMaterials as $material)
-                        <x-materials.card-skeleton variant="featured" :material="$material" :date="$material->published_at?->format('d/m/Y') ?? 'Data não informada'" :type="$material->type" />
+                        <x-materials.card-skeleton variant="featured" :material="$material" :date="$material->published_at?->inDisplayTimezone()->format('d/m/Y') ?? 'Data não informada'" :type="$material->type" />
                     @empty
                         <div class="w-full rounded-2xl border border-dashed border-slate-300 bg-white px-6 py-12 sm:col-span-2 lg:col-span-3"><x-skeleton.block class="mx-auto size-10 rounded" /><x-skeleton.text class="mx-auto mt-3 w-fit font-semibold">Ainda não há materiais publicados.</x-skeleton.text></div>
                     @endforelse

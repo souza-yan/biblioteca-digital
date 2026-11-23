@@ -44,7 +44,7 @@
         <div class="flex items-start justify-between gap-4"><div class="min-w-0"><x-skeleton.text class="text-2xl font-bold">Atividades recentes</x-skeleton.text><x-skeleton.text class="mt-1 text-base">Últimos registros no sistema.</x-skeleton.text></div><x-skeleton.text class="w-fit shrink-0 text-base font-semibold">Ver todas ›</x-skeleton.text></div>
         <div class="mt-6 divide-y divide-slate-100">
             @forelse ($recentActivities as $activity)
-                <div class="flex items-start justify-between gap-4 py-4 first:pt-0 last:pb-0"><div class="min-w-0"><x-skeleton.text class="text-base font-semibold leading-6">{{ $activity->description }}</x-skeleton.text><x-skeleton.text class="mt-1 truncate text-base">{{ $activity->user->name }} @if ($activity->material) · {{ $activity->material->title }} @endif</x-skeleton.text></div><x-skeleton.text class="shrink-0 text-base">{{ $activity->created_at->format('d/m H:i') }}</x-skeleton.text></div>
+                <div class="flex items-start justify-between gap-4 py-4 first:pt-0 last:pb-0"><div class="min-w-0"><x-skeleton.text class="text-base font-semibold leading-6">{{ $activity->description }}</x-skeleton.text><x-skeleton.text class="mt-1 truncate text-base">{{ $activity->user->name }} @if ($activity->material) · {{ $activity->material->title }} @endif</x-skeleton.text></div><x-skeleton.text class="shrink-0 text-base">{{ $activity->created_at->inDisplayTimezone()->format('d/m H:i') }}</x-skeleton.text></div>
             @empty
                 <div class="py-8"><x-skeleton.text class="text-center text-base">Nenhuma atividade registrada.</x-skeleton.text></div>
             @endforelse

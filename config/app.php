@@ -68,6 +68,13 @@ return [
     'timezone' => 'UTC',
 
     /*
+    | Timezone used to show dates to users and to interpret date filters.
+    | Values keep being stored in the application timezone (UTC).
+    */
+
+    'display_timezone' => env('APP_DISPLAY_TIMEZONE', 'America/Sao_Paulo'),
+
+    /*
     |--------------------------------------------------------------------------
     | Application Locale Configuration
     |--------------------------------------------------------------------------

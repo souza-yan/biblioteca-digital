@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use Illuminate\Support\Carbon;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -19,6 +20,11 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        Carbon::macro('inDisplayTimezone', function (): Carbon {
+            /** @var Carbon $this */
+            return $this->copy()->setTimezone((string) config('app.display_timezone'));
+        });
+
         $uploadLimitBytes = (int) ini_parse_quantity((string) ini_get('upload_max_filesize'));
         $postLimitBytes = (int) ini_parse_quantity((string) ini_get('post_max_size'));
         $configuredLimitKilobytes = (int) config('materials.upload.max_size_kilobytes');

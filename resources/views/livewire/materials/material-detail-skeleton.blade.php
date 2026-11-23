@@ -50,7 +50,7 @@
                     <tbody class="divide-y divide-gray-100">
                         @forelse ($versions as $version)
                             <tr>
-                                @foreach ([$version->version_number, $version->original_name, $version->mime_type, number_format($version->size / 1024, 1).' KB', $version->change_note ?: '—', $version->publisher?->name ?? '—', $version->created_at?->format('d/m/Y H:i')] as $value)
+                                @foreach ([$version->version_number, $version->original_name, $version->mime_type, number_format($version->size / 1024, 1).' KB', $version->change_note ?: '—', $version->publisher?->name ?? '—', $version->created_at?->inDisplayTimezone()->format('d/m/Y H:i')] as $value)
                                     <td @class(['px-4 py-3 text-sm', 'whitespace-nowrap' => $loop->last])><x-skeleton.text>{{ $value }}</x-skeleton.text></td>
                                 @endforeach
                                 <td class="px-4 py-3 text-right text-sm">

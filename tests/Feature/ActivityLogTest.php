@@ -259,3 +259,46 @@ it('shows the activity navigation link only to admins', function () {
         ->assertOk()
         ->assertSee('Atividades');
 });
+
+it('interprets date filters and shows times in the display timezone', function () {
+    config(['app.display_timezone' => 'America/Sao_Paulo']);
+    $admin = User::factory()->admin()->create();
+    $actor = User::factory()->teacher()->create();
+
+    // 23:30 em São Paulo no dia 20 corresponde a 02:30 UTC do dia 21.
+    ActivityLog::factory()->withoutMaterial()->create([
+        'user_id' => $actor->getKey(),
+        'action' => ActivityAction::USER_CREATED,
+        'description' => 'Noite do dia 20',
+        'created_at' => '2026-09-21 02:30:00',
+    ]);
+    // 01:00 UTC do dia 20 ainda é dia 19 em São Paulo.
+    ActivityLog::factory()->withoutMaterial()->create([
+        'user_id' => $actor->getKey(),
+        'action' => ActivityAction::USER_CREATED,
+        'description' => 'Noite do dia 19',
+        'created_at' => '2026-09-20 01:00:00',
+    ]);
+
+    $this->actingAs($admin);
+
+    Livewire::test(ActivityLogIndex::class)
+        ->set('activeTab', 'changes')
+        ->set('changesFromDate', '2026-09-20')
+        ->set('changesUntilDate', '2026-09-20')
+        ->assertSee('Noite do dia 20')
+        ->assertSee('20/09/2026 23:30')
+        ->assertDontSee('Noite do dia 19');
+});
+
+it('stores activity timestamps in the application timezone', function () {
+    $this->travelTo('2026-09-21 12:00:00');
+
+    $log = app(LogActivity::class)->handle(
+        User::factory()->admin()->create(),
+        ActivityAction::USER_CREATED,
+        'Registro com horário.',
+    );
+
+    expect($log->fresh()->created_at->toDateTimeString())->toBe('2026-09-21 12:00:00');
+});

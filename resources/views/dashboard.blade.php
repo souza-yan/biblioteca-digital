@@ -146,7 +146,7 @@
                                 @forelse ($publishedMaterials as $material)
                                     <x-materials.card variant="featured" :material="$material" :version="$material->currentVersion"
                                         :href="route('painel.library.show', $material)"
-                                        :date="$material->published_at?->format('d/m/Y') ?? 'Data não informada'" :type="$material->type">
+                                        :date="$material->published_at?->inDisplayTimezone()->format('d/m/Y') ?? 'Data não informada'" :type="$material->type">
                                         <x-slot:titleAction>
                                             @livewire('materials.favorite-button', ['material' => $material, 'isFavorited' => $material->is_favorited], key('dashboard-favorite-'.$material->getKey()))
                                         </x-slot:titleAction>
@@ -613,7 +613,7 @@
 
                                 <time class="shrink-0 text-base text-slate-400"
                                     datetime="{{ $activity->created_at->toIso8601String() }}">
-                                    {{ $activity->created_at->format('d/m H:i') }}
+                                    {{ $activity->created_at->inDisplayTimezone()->format('d/m H:i') }}
                                 </time>
                             </article>
                         @empty

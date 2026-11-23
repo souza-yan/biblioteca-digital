@@ -10,6 +10,7 @@ use App\Models\School;
 use App\Models\User;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
@@ -300,8 +301,8 @@ class ActivityLogIndex extends Component
             ))
             ->when($this->downloadsUserFilter !== '', fn (Builder $query): Builder => $query->where('user_id', $this->downloadsUserFilter))
             ->when($this->downloadsMaterialFilter !== '', fn (Builder $query): Builder => $query->where('material_id', $this->downloadsMaterialFilter))
-            ->when($this->downloadsFromDate !== '', fn (Builder $query): Builder => $query->whereDate('downloaded_at', '>=', $this->downloadsFromDate))
-            ->when($this->downloadsUntilDate !== '', fn (Builder $query): Builder => $query->whereDate('downloaded_at', '<=', $this->downloadsUntilDate))
+            ->when($this->downloadsFromDate !== '', fn (Builder $query): Builder => $query->where('downloaded_at', '>=', $this->dateBoundary($this->downloadsFromDate, 'startOfDay')))
+            ->when($this->downloadsUntilDate !== '', fn (Builder $query): Builder => $query->where('downloaded_at', '<=', $this->dateBoundary($this->downloadsUntilDate, 'endOfDay')))
             ->orderByDesc('downloaded_at')
             ->orderByDesc('id');
     }
@@ -325,8 +326,8 @@ class ActivityLogIndex extends Component
             ))
             ->when($this->changesUserFilter !== '', fn (Builder $query): Builder => $query->where('user_id', $this->changesUserFilter))
             ->when($this->changesActionFilter !== '', fn (Builder $query): Builder => $query->where('action', $this->changesActionFilter))
-            ->when($this->changesFromDate !== '', fn (Builder $query): Builder => $query->whereDate('created_at', '>=', $this->changesFromDate))
-            ->when($this->changesUntilDate !== '', fn (Builder $query): Builder => $query->whereDate('created_at', '<=', $this->changesUntilDate))
+            ->when($this->changesFromDate !== '', fn (Builder $query): Builder => $query->where('created_at', '>=', $this->dateBoundary($this->changesFromDate, 'startOfDay')))
+            ->when($this->changesUntilDate !== '', fn (Builder $query): Builder => $query->where('created_at', '<=', $this->dateBoundary($this->changesUntilDate, 'endOfDay')))
             ->orderByDesc('created_at')
             ->orderByDesc('id');
     }
@@ -349,8 +350,8 @@ class ActivityLogIndex extends Component
                     ->where('school_user.is_active', true),
             ))
             ->when($this->accessesUserFilter !== '', fn (Builder $query): Builder => $query->where('user_id', $this->accessesUserFilter))
-            ->when($this->accessesFromDate !== '', fn (Builder $query): Builder => $query->whereDate('created_at', '>=', $this->accessesFromDate))
-            ->when($this->accessesUntilDate !== '', fn (Builder $query): Builder => $query->whereDate('created_at', '<=', $this->accessesUntilDate))
+            ->when($this->accessesFromDate !== '', fn (Builder $query): Builder => $query->where('created_at', '>=', $this->dateBoundary($this->accessesFromDate, 'startOfDay')))
+            ->when($this->accessesUntilDate !== '', fn (Builder $query): Builder => $query->where('created_at', '<=', $this->dateBoundary($this->accessesUntilDate, 'endOfDay')))
             ->orderByDesc('created_at')
             ->orderByDesc('id');
     }
@@ -494,5 +495,17 @@ class ActivityLogIndex extends Component
             ActivityAction::AUTH_LOGOUT->value => 'bg-gray-100 text-gray-700',
             ActivityAction::MATERIAL_PREVIEWED->value => 'bg-indigo-100 text-indigo-800',
         ];
+    }
+
+    /**
+     * Converts a day chosen in the display timezone into the stored (application) timezone.
+     *
+     * @param  'startOfDay'|'endOfDay'  $edge
+     */
+    private function dateBoundary(string $date, string $edge): Carbon
+    {
+        return Carbon::createFromFormat('Y-m-d', $date, (string) config('app.display_timezone'))
+            ->{$edge}()
+            ->setTimezone((string) config('app.timezone'));
     }
 }

@@ -133,7 +133,7 @@
                                     <td class="px-4 py-3 text-sm text-gray-600">{{ $version->publisher?->name ?? '—' }}
                                     </td>
                                     <td class="whitespace-nowrap px-4 py-3 text-sm text-gray-600">
-                                        {{ $version->created_at?->format('d/m/Y H:i') }}</td>
+                                        {{ $version->created_at?->inDisplayTimezone()->format('d/m/Y H:i') }}</td>
                                     <td class="px-4 py-3 text-right text-sm">
                                         @if ($version->isNot($material->currentVersion)
                                             && in_array($version->mime_type, ['application/pdf', 'image/png', 'image/jpeg', 'image/webp', 'image/gif', 'text/plain', 'video/mp4', 'video/webm', 'audio/mpeg'], true))
@@ -188,7 +188,7 @@
                                     {{ strtoupper(pathinfo($version->original_name, PATHINFO_EXTENSION) ?: 'ARQ') }}
                                 </span>
                                 <span>{{ number_format($version->size / 1024, 1, ',', '.') }} KB</span>
-                                <span>{{ $version->created_at?->format('d/m/Y') }}</span>
+                                <span>{{ $version->created_at?->inDisplayTimezone()->format('d/m/Y') }}</span>
                             </div>
                             @if ($version->change_note)
                                 <p class="mt-3 border-t border-slate-200 pt-3 text-sm leading-5 text-slate-600">
