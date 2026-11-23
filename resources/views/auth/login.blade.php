@@ -27,16 +27,16 @@
                                     this.clearIdentifier(false);
                                     return;
                                 }
-                                const login = this.$el.elements.namedItem('login');
+                                const login = this.$root.elements.namedItem('login');
                                 if (!login.value) login.value = record.identifier;
-                                this.$el.elements.namedItem('remember').checked = true;
+                                this.$root.elements.namedItem('remember').checked = true;
                             } catch (error) {}
                         },
                         saveIdentifier() {
                             try {
-                                if (this.$el.elements.namedItem('remember').checked) {
+                                if (this.$root.elements.namedItem('remember').checked) {
                                     localStorage.setItem('biblioteca.remembered-login', JSON.stringify({
-                                        identifier: this.$el.elements.namedItem('login').value.trim(),
+                                        identifier: this.$root.elements.namedItem('login').value.trim(),
                                         expiresAt: Date.now() + this.identifierLifetime,
                                     }));
                                 } else {
@@ -45,15 +45,15 @@
                             } catch (error) {}
                         },
                         forgetIdentifier() {
-                            if (this.$el.elements.namedItem('remember').checked) return;
+                            if (this.$root.elements.namedItem('remember').checked) return;
                             try {
                                 localStorage.removeItem('biblioteca.remembered-login');
                             } catch (error) {}
                         },
                         clearIdentifier(clearField = true) {
                             try { localStorage.removeItem('biblioteca.remembered-login'); } catch (error) {}
-                            this.$el.elements.namedItem('remember').checked = false;
-                            if (clearField) this.$el.elements.namedItem('login').value = '';
+                            this.$root.elements.namedItem('remember').checked = false;
+                            if (clearField) this.$root.elements.namedItem('login').value = '';
                         }
                     }"
                     x-init="$nextTick(() => restoreIdentifier())"

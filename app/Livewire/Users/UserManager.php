@@ -85,7 +85,7 @@ class UserManager extends Component
         abort_unless($actor->isAdmin() && $this->form->role === Role::TEACHER->value, 403);
 
         unset($this->form->school_ids[$index]);
-        $this->form->school_ids = array_values($this->form->school_ids);
+        $this->form->school_ids = array_values($this->form->school_ids) ?: [null];
         $this->resetValidation();
     }
 
@@ -142,8 +142,8 @@ class UserManager extends Component
             ? $user->schools()
                 ->wherePivot('is_active', true)
                 ->pluck('schools.id')
-                ->all()
-            : [];
+                ->all() ?: [null]
+            : [null];
         $this->showForm = true;
     }
 

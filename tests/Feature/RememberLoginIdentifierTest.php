@@ -19,7 +19,7 @@ test('remembering login stores only the identifier and respects opting out', fun
         };
         const state = vm.runInNewContext('(' + process.argv[1] + ')', { localStorage: storage });
         const fields = { login: { value: '' }, remember: { checked: false } };
-        state.$el = { elements: { namedItem(name) { assert.ok(name in fields); return fields[name]; } } };
+        state.$root = { elements: { namedItem(name) { assert.ok(name in fields); return fields[name]; } } };
         state.restoreIdentifier();
         assert.equal(fields.login.value, '');
         assert.equal(fields.remember.checked, false);

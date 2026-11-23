@@ -32,8 +32,28 @@ class UserForm extends Form
 
     public ?int $school_id = null;
 
-    /** @var array<int, int|string|null> */
-    public array $school_ids = [];
+    /**
+     * Keeps one empty slot so the first school select always has a bound key.
+     *
+     * @var array<int, int|string|null>
+     */
+    public array $school_ids = [null];
+
+    /**
+     * @param  array<string, mixed>  $attributes
+     * @return array<string, mixed>
+     */
+    protected function prepareForValidation($attributes): array
+    {
+        if (is_array($attributes['school_ids'] ?? null)) {
+            $attributes['school_ids'] = array_values(array_filter(
+                $attributes['school_ids'],
+                fn (mixed $schoolId): bool => $schoolId !== null && $schoolId !== '',
+            ));
+        }
+
+        return $attributes;
+    }
 
     /**
      * @return array<string, array<int, mixed>>

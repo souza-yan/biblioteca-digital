@@ -481,3 +481,27 @@ it('excludes schools selected in other fields and restores them when changed or 
         ->call('removeSchool', 1)
         ->assertViewHas('teacherSchoolOptions', fn (array $options): bool => array_column($options[0], 'value') === [$schoolA->id, $schoolB->id, $schoolC->id]);
 });
+
+it('always keeps a bound slot for the first teacher school select', function () {
+    $this->actingAs(User::factory()->admin()->create());
+    $school = School::factory()->create();
+
+    $component = Livewire::test(UserManager::class)
+        ->call('openCreate')
+        ->assertSet('form.school_ids', [null])
+        ->call('addSchool')
+        ->call('removeSchool', 0)
+        ->call('removeSchool', 0)
+        ->assertSet('form.school_ids', [null]);
+
+    $component
+        ->set('form.name', 'Professora Sem Escola Extra')
+        ->set('form.email', 'professora.slot@example.com')
+        ->set('form.cpf', '52998224725')
+        ->set('form.school_ids.0', $school->getKey())
+        ->call('save')
+        ->assertHasNoErrors();
+
+    $teacher = User::query()->where('email', 'professora.slot@example.com')->firstOrFail();
+    expect($teacher->schools()->pluck('schools.id')->all())->toBe([$school->getKey()]);
+});
