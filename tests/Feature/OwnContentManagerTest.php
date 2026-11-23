@@ -66,6 +66,7 @@ it('rechecks school membership when an already opened management page refreshes'
     $component = Livewire::actingAs($staff)->test(OwnContentManager::class);
 
     $staff->schools()->updateExistingPivot($staff->school()->getKey(), ['is_active' => false]);
+    $staff->forgetSchoolContext();
 
     $component->call('$refresh')->assertForbidden();
 });

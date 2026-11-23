@@ -25,6 +25,10 @@ class User extends Authenticatable
     use HasProfilePhoto;
     use Notifiable;
 
+    private bool $schoolContextResolved = false;
+
+    private ?School $resolvedSchool = null;
+
     /**
      * The attributes that are mass assignable.
      *
@@ -170,6 +174,10 @@ class User extends Authenticatable
 
     public function hasSchoolMembership(School $school): bool
     {
+        if ($this->relationLoaded('schools') && $this->schools->contains($school)) {
+            return true;
+        }
+
         return $this->schools()
             ->whereKey($school->getKey())
             ->exists();
@@ -192,11 +200,36 @@ class User extends Authenticatable
      */
     public function school(): ?School
     {
+        if ($this->schoolContextResolved) {
+            return $this->resolvedSchool;
+        }
+
         $activeSchools = $this->schools()
             ->wherePivot('is_active', true)
             ->limit(2)
             ->get();
 
-        return $activeSchools->count() === 1 ? $activeSchools->first() : null;
+        $this->resolvedSchool = $activeSchools->count() === 1 ? $activeSchools->first() : null;
+        $this->schoolContextResolved = true;
+
+        return $this->resolvedSchool;
+    }
+
+    /**
+     * Clears the memoized school context after membership changes on this instance.
+     */
+    public function forgetSchoolContext(): static
+    {
+        $this->schoolContextResolved = false;
+        $this->resolvedSchool = null;
+
+        return $this;
+    }
+
+    public function refresh(): static
+    {
+        $this->forgetSchoolContext();
+
+        return parent::refresh();
     }
 }

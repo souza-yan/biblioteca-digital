@@ -86,6 +86,7 @@ it('returns no school context when staff has anything other than one active scho
         ->and($staff->hasExactlyOneActiveSchool())->toBeFalse();
 
     $staff->schools()->updateExistingPivot($school->last()->getKey(), ['is_active' => false]);
+    $staff->forgetSchoolContext();
 
     expect($staff->school()?->is($school->first()))->toBeTrue()
         ->and($staff->hasExactlyOneActiveSchool())->toBeTrue();
