@@ -292,7 +292,7 @@ class MaterialManager extends Component
                     : $query->where('category_id', $this->categoryFilter)
             )
             ->orderBy('title')
-            ->paginate($actor->isStaff() ? 10 : 15);
+            ->paginate(10);
 
         $categories = $listCategoryOptions->all();
 

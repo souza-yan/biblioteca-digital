@@ -8,6 +8,16 @@
             <h1 class="text-3xl font-bold tracking-tight text-blue-800 sm:text-4xl">Meus favoritos</h1>
             <p class="mt-2 text-base text-slate-500">Seus materiais publicados salvos para consultar depois.</p>
         </div>
+        <x-skeleton.gate name="favorite-material-pages" label="Carregando favoritos" :pagination-page="$materials->getPageName()" :initial="false">
+            <x-slot:skeleton>
+                <div class="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+                    @forelse ($materials as $material)
+                        <x-materials.card-skeleton :material="$material" />
+                    @empty
+                        <x-skeleton.line class="w-60" />
+                    @endforelse
+                </div>
+            </x-slot:skeleton>
         <div class="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
             @forelse ($materials as $material)
                 <x-materials.card :material="$material" :version="$material->currentVersion"
@@ -31,6 +41,8 @@
                 </div>
             @endforelse
         </div>
+
+        </x-skeleton.gate>
 
         <x-ts-modal wire="showMobileMaterialDetail" size="lg" center
             x-on:mobile-material-preview-closed.window="show = true">

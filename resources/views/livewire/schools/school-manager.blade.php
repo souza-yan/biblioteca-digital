@@ -1,6 +1,17 @@
 <div>
     <div class="mx-auto w-full max-w-screen-2xl space-y-6 px-4 py-6 sm:px-6 lg:space-y-8 lg:px-8 lg:py-8">
         {{-- Cabeçalho da administração das unidades escolares. --}}
+        <x-skeleton.gate name="school-controls" label="Carregando controles de escolas">
+            <x-slot:skeleton>
+                <div class="space-y-6 lg:space-y-8">
+                    <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+                        <h1 class="mt-2 text-3xl font-bold tracking-tight sm:text-4xl"><x-skeleton.text class="w-fit">Escolas</x-skeleton.text></h1>
+                        <x-skeleton.button class="w-full sm:w-40" />
+                    </div>
+                    <div class="max-w-xl"><x-skeleton.text class="w-fit text-sm font-medium">Buscar escola</x-skeleton.text><x-skeleton.block class="mt-1 h-11 rounded-lg" /></div>
+                </div>
+            </x-slot:skeleton>
+            <div class="space-y-6 lg:space-y-8">
         <header class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
             <div>
                 <h1 class="mt-2 text-3xl font-bold tracking-tight text-blue-800 sm:text-4xl">Escolas</h1>
@@ -17,7 +28,9 @@
         </div>
 
         {{-- Cards das escolas com os respectivos gestores e vínculos. --}}
-        <x-skeleton.gate name="school-list" label="Carregando escolas">
+            </div>
+        </x-skeleton.gate>
+        <x-skeleton.gate name="school-list" label="Carregando escolas" :pagination-page="$schools->getPageName()">
             <x-slot:skeleton>
                 @include('livewire.schools.school-list-skeleton')
             </x-slot:skeleton>

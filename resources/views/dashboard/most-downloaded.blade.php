@@ -46,6 +46,20 @@
                 </p>
             </div>
 
+            <x-skeleton.gate name="download-ranking-pages" label="Carregando ranking de materiais">
+                <x-slot:skeleton>
+                    <div class="divide-y divide-slate-100">
+                        @forelse ($topDownloadedMaterials as $material)
+                            <div class="flex items-center gap-4 py-4 first:pt-0 last:pb-0">
+                                <x-skeleton.circle />
+                                <div class="min-w-0 flex-1"><x-skeleton.text class="w-fit text-base font-semibold">{{ $material->title }}</x-skeleton.text><x-skeleton.text class="mt-1 w-fit text-sm">{{ $material->category?->name ?? 'Sem categoria' }}</x-skeleton.text></div>
+                                <x-skeleton.block class="h-10 w-20 rounded-lg" />
+                            </div>
+                        @empty
+                            <x-skeleton.line class="my-10 w-60" />
+                        @endforelse
+                    </div>
+                </x-slot:skeleton>
             <div class="divide-y divide-slate-100">
                 @forelse ($topDownloadedMaterials as $material)
                     <a href="{{ route('painel.materials.show', ['material' => $material->getKey()]) }}"
@@ -77,6 +91,8 @@
                     </p>
                 @endforelse
             </div>
+
+            </x-skeleton.gate>
 
             @if ($topDownloadedMaterials->hasPages())
                 <div class="border-t border-slate-100 pt-4">

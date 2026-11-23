@@ -66,6 +66,24 @@
                 </div>
             </div>
 
+            <x-skeleton.gate name="category-library-pages" label="Carregando categorias" :pagination-page="$categories->getPageName()" :initial="false">
+                <x-slot:skeleton>
+                    @if ($isStaff)
+                        <div class="grid grid-cols-2 gap-3 md:hidden">
+                            @foreach ($categoryCards as $category)
+                                <x-categories.library-card-skeleton :category="$category" compact />
+                            @endforeach
+                        </div>
+                    @endif
+                    <div @class(['grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3', 'hidden md:grid' => $isStaff])>
+                        @forelse ($categoryCards as $category)
+                            <x-categories.library-card-skeleton :category="$category" />
+                        @empty
+                            <x-skeleton.line class="w-60" />
+                        @endforelse
+                    </div>
+                </x-slot:skeleton>
+                <div class="space-y-5">
             @if ($isStaff)
                 <div class="grid grid-cols-2 gap-3 md:hidden">
                     @forelse ($categoryCards as $category)
@@ -133,6 +151,9 @@
                     </div>
                 @endforelse
             </div>
+
+                </div>
+            </x-skeleton.gate>
 
             @if ($categories->hasPages())
                 <x-pagination :paginator="$categories" />

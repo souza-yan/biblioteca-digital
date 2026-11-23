@@ -21,7 +21,7 @@
 </section>
 <div class="min-w-0">
     <section class="rounded-2xl border border-slate-200 bg-white p-4 sm:p-6">
-        <div class="flex items-start justify-between gap-4"><x-skeleton.text class="text-lg font-bold sm:text-xl">Materiais mais acessados</x-skeleton.text><x-skeleton.text class="shrink-0 text-sm font-semibold">Ver materiais</x-skeleton.text></div>
+        <div class="flex items-start justify-between gap-4"><x-skeleton.text class="text-lg font-bold sm:text-xl">Materiais mais acessados</x-skeleton.text></div>
         <div class="mt-4 space-y-2 sm:mt-5 sm:space-y-3">
             @forelse ($topDownloadedMaterials as $material)
                 <div class="flex min-h-16 items-center gap-3 rounded-xl border border-slate-100 bg-slate-50/70 p-3 sm:gap-4 sm:p-4">

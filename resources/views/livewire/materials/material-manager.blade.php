@@ -16,6 +16,15 @@
         <div class="mx-auto w-full max-w-screen-2xl {{ $embedded ? 'space-y-5' : 'space-y-6 px-4 py-6 sm:px-6 lg:space-y-8 lg:px-8 lg:py-8' }}">
             {{-- Cabeçalho e ações permitidas conforme o perfil autenticado. --}}
             @unless ($embedded)
+            <x-skeleton.gate name="material-header" label="Carregando cabeçalho de materiais">
+                <x-slot:skeleton>
+                    <div class="mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
+                        <h1 class="text-3xl font-bold tracking-tight sm:text-4xl"><x-skeleton.text class="w-fit">{{ $actor?->isStaff() ? 'Meus materiais' : 'Materiais' }}</x-skeleton.text></h1>
+                        @if ($canCreateMaterials && $actor?->isAdmin())
+                            <x-skeleton.button class="w-full sm:w-44" />
+                        @endif
+                    </div>
+                </x-slot:skeleton>
             <div class="mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
                 <div class="min-w-0">
                     <h1 class="text-3xl font-bold tracking-tight text-blue-800 sm:text-4xl">
@@ -31,6 +40,7 @@
                     @endif
                 </div>
             </div>
+            </x-skeleton.gate>
             @endunless
 
             @error('publish')
@@ -67,7 +77,7 @@
 
             {{-- Acervo gerenciável e ações de ciclo de vida do material. --}}
             </x-skeleton.gate>
-            <x-skeleton.gate name="material-list" label="Carregando listagem de materiais">
+            <x-skeleton.gate name="material-list" label="Carregando listagem de materiais" :pagination-page="$materials->getPageName()">
                 <x-slot:skeleton>
                     @include('livewire.materials.material-list-skeleton')
                 </x-slot:skeleton>

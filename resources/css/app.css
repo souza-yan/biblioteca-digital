@@ -158,15 +158,7 @@
     }
 
     html.sidebar-collapsed #app-sidebar .sidebar-municipal-logo {
-        padding: 0.75rem;
-    }
-
-    html.sidebar-collapsed #app-sidebar .sidebar-municipal-logo span {
-        padding: 0.25rem;
-    }
-
-    html.sidebar-collapsed #app-sidebar .sidebar-municipal-logo svg {
-        height: 2rem;
+        display: none;
     }
 
     html.sidebar-collapsed #app-sidebar .sidebar-nav-link,

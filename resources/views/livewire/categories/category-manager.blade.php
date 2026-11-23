@@ -14,11 +14,16 @@
         <div class="mx-auto w-full max-w-screen-2xl {{ $embedded ? 'space-y-5' : 'space-y-6 px-4 py-6 sm:px-6 lg:space-y-8 lg:px-8 lg:py-8' }}">
         {{-- Cabeçalho da gestão de taxonomia do acervo. --}}
         @unless ($embedded)
+        <x-skeleton.gate name="category-header" label="Carregando cabeçalho de categorias">
+            <x-slot:skeleton>
+                <div class="mb-8"><h1 class="text-3xl font-bold tracking-tight sm:text-4xl"><x-skeleton.text class="w-fit">{{ $actor?->isStaff() ? 'Minhas categorias' : 'Categorias' }}</x-skeleton.text></h1></div>
+            </x-slot:skeleton>
         <div class="mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
             <div>
                 <h1 class="text-3xl font-bold tracking-tight text-blue-800 sm:text-4xl">{{ $actor?->isStaff() ? 'Minhas categorias' : 'Categorias' }}</h1>
             </div>
         </div>
+        </x-skeleton.gate>
         @endunless
 
         <x-skeleton.gate name="category-controls" label="Carregando busca de categorias">
@@ -45,7 +50,7 @@
 
         {{-- Categorias e controles administrativos de ativação. --}}
         </x-skeleton.gate>
-        <x-skeleton.gate name="category-list" label="Carregando listagem de categorias">
+        <x-skeleton.gate name="category-list" label="Carregando listagem de categorias" :pagination-page="$categories->getPageName()">
             <x-slot:skeleton>
                 @include('livewire.categories.category-list-skeleton')
             </x-slot:skeleton>

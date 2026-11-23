@@ -1,4 +1,4 @@
-<section class="overflow-hidden rounded-3xl bg-blue-800 px-5 py-7 shadow-sm sm:px-8 sm:py-9">
+<section class="overflow-hidden rounded-2xl bg-blue-800 px-5 py-7 shadow-sm sm:px-8 sm:py-9">
     <div class="max-w-2xl">
         <x-skeleton.text class="text-3xl font-bold tracking-tight sm:text-4xl">Encontre recursos para suas aulas</x-skeleton.text>
         <x-skeleton.text class="mt-3 text-base sm:text-lg">Explore projetos, atividades e materiais de robótica educacional.</x-skeleton.text>

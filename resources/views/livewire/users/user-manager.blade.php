@@ -84,7 +84,7 @@
         {{-- Cartões no celular evitam que a tabela e suas ações comprimam a busca. --}}
             </div>
         </x-skeleton.gate>
-        <x-skeleton.gate name="user-list" label="Carregando professores">
+        <x-skeleton.gate name="user-list" label="Carregando professores" :pagination-page="$users->getPageName()">
             <x-slot:skeleton>
                 @include('livewire.users.user-list-skeleton')
             </x-slot:skeleton>

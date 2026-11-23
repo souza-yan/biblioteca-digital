@@ -45,6 +45,16 @@
             </div>
         @endif
 
+        <x-skeleton.gate name="published-material-pages" label="Carregando materiais" :pagination-page="$materials->getPageName()" :initial="false">
+            <x-slot:skeleton>
+                <div class="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+                    @forelse ($materials as $material)
+                        <x-materials.card-skeleton :material="$material" :actions="$isTeacher || auth()->user()->can('update', $material) ? 2 : 1" />
+                    @empty
+                        <x-skeleton.line class="w-60" />
+                    @endforelse
+                </div>
+            </x-slot:skeleton>
         <div class="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
             @forelse ($materials as $material)
                 <x-materials.card :material="$material" :version="$material->currentVersion"
@@ -89,6 +99,8 @@
                 </div>
             @endforelse
         </div>
+
+        </x-skeleton.gate>
 
         <x-ts-modal wire="showMobileMaterialDetail" size="lg" center
             x-on:mobile-material-preview-closed.window="show = true">

@@ -19,7 +19,7 @@
     </article>
 @else
     <article {{ $attributes->class('flex min-w-0 flex-col rounded-2xl border border-slate-200 bg-white p-3 shadow-sm') }} aria-hidden="true">
-        <x-skeleton.block class="aspect-[2480/3508] w-full rounded-lg" />
+        <x-skeleton.block class="aspect-[2480/3508] w-full rounded-xl" />
         <div class="min-w-0 pt-3">
             <x-skeleton.text class="break-words text-sm font-semibold leading-5">{{ $material->title }}</x-skeleton.text>
             <x-skeleton.text class="mt-1 break-words text-xs">{{ $material->category?->name ?? 'Sem categoria' }}</x-skeleton.text>

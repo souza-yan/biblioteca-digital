@@ -18,7 +18,7 @@
 
         @if ($isTeacher)
 
-            <section class="overflow-hidden rounded-3xl bg-blue-800 px-5 py-7 text-white shadow-sm sm:px-8 sm:py-9" aria-labelledby="teacher-welcome-title">
+            <section class="overflow-hidden rounded-2xl bg-blue-800 px-5 py-7 text-white shadow-sm sm:px-8 sm:py-9" aria-labelledby="teacher-welcome-title">
                 <div class="max-w-2xl">
                     <h1 id="teacher-welcome-title" class="text-3xl font-bold tracking-tight sm:text-4xl">
                         Encontre recursos para suas aulas
@@ -249,7 +249,6 @@
                         <div>
                             <h2 id="staff-materials-title" class="text-lg font-bold text-slate-900 sm:text-xl">Materiais mais acessados</h2>
                         </div>
-                        <a href="{{ route('painel.library.categories') }}" class="shrink-0 text-sm font-semibold text-blue-800 hover:underline">Ver materiais</a>
                     </div>
                     <div class="mt-4 space-y-2 sm:mt-5 sm:space-y-3">
                         @forelse ($topDownloadedMaterials as $material)
