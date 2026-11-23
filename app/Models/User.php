@@ -95,6 +95,22 @@ class User extends Authenticatable
         return $this->role === Role::TEACHER;
     }
 
+    /**
+     * Teachers linked to schools lose access once every school membership is deactivated.
+     */
+    public function canAccessSystem(): bool
+    {
+        if (! $this->is_active) {
+            return false;
+        }
+
+        if (! $this->isTeacher() || ! $this->schools()->exists()) {
+            return true;
+        }
+
+        return $this->schools()->wherePivot('is_active', true)->exists();
+    }
+
     public function requiresPasswordChange(): bool
     {
         return ! $this->isAdmin() && $this->must_change_password;

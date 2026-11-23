@@ -56,7 +56,7 @@ class FortifyServiceProvider extends ServiceProvider
 
             $user = $query->first();
 
-            if ($user && Hash::check($request->password, $user->password) && $user->is_active) {
+            if ($user && Hash::check($request->password, $user->password) && $user->canAccessSystem()) {
                 return $user;
             }
 
